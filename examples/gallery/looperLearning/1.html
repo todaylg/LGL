@@ -8,15 +8,15 @@
     <link rel="icon" type="image/png" href="assets/favicon.png">
 
     <title>Looper</title>
-    <link href="../assets/main.css" rel="stylesheet">
+    <link href="../../assets/main.css" rel="stylesheet">
 </head>
 
 <body>
     <script type="module">
-        import { Renderer, Camera, Transform, Program, Mesh, Vec3, Color } from '../../src/Core.js';
-        import { Cube, Orbit } from '../../src/Extras.js';
-        import BasePrimitivesShader from './shaders/baseShader.js';
-        import noise from '../assets/js/perlin.js';
+        import { Renderer, Camera, Transform, Program, Mesh, Vec3, Color } from '../../../src/Core.js';
+        import { Cube, Orbit } from '../../../src/Extras.js';
+        import BasePrimitivesShader from '../shaders/baseShader.js';
+        import noise from '../../assets/js/perlin.js';
 
         {
             const renderer = new Renderer({ dpr: 2 });
@@ -50,6 +50,9 @@
                             vertex: BasePrimitivesShader.vertex,
                             fragment: BasePrimitivesShader.fragment,
                             uniforms: {
+                                lightColor: { value: new Color([0.807, 0.99, 1]) },
+                                ambientLightColor: { value: new Color([0.313, 0.313, 0.313])  },
+                                ambientStrength: { value: 0.5 },
                                 baseColor: { value: new Color([1, 1, 1]) }
                             }
                         });
@@ -61,7 +64,6 @@
                     }
                 }
             }
-            console.log(cubes[0].mesh.program);
             scene.addChild(group);
             group.rotation.z = Math.PI / 2;
 
