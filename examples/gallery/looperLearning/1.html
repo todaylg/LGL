@@ -16,9 +16,11 @@
         import { Renderer, Camera, Transform, Program, Mesh, Vec3, Color } from '../../../src/Core.js';
         import { Cube, Orbit } from '../../../src/Extras.js';
         import BasePrimitivesShader from '../shaders/baseShader.js';
-        import noise from '../../assets/js/perlin.js';
+        import Noise from '../../assets/js/perlin.js';
 
         {
+            let noise = new Noise();
+            noise.seed(0);
             const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
