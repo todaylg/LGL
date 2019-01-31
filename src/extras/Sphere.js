@@ -18,7 +18,7 @@ export class Sphere extends Geometry {
         const grid = [];
 
         let n = new Vec3();
-
+        // generate vertices, normals and uvs
         for (let iy = 0; iy <= hSegs; iy++) {
             let vRow = [];
             let v = iy / hSegs;
@@ -27,16 +27,16 @@ export class Sphere extends Geometry {
                 let x = -radius * Math.cos(pStart + u * pLength) * Math.sin(tStart + v * tLength);
                 let y = radius * Math.cos(tStart + v * tLength);
                 let z = radius * Math.sin(pStart + u * pLength) * Math.sin(tStart + v * tLength);
-
+                // vertex
                 position[i * 3]     = x;
                 position[i * 3 + 1] = y;
                 position[i * 3 + 2] = z;
-
+                // normal
                 n.set(x, y, z).normalize();
                 normal[i * 3]     = n.x;
                 normal[i * 3 + 1] = n.y;
                 normal[i * 3 + 2] = n.z;
-
+                // uv
                 uv[i * 2]     = u;
                 uv[i * 2 + 1] = 1 - v;
 

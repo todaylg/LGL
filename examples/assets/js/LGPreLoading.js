@@ -81,7 +81,7 @@ class LGPreLoading {
         //Black BG
         context.fillStyle = '#000';
         context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-        const time = (.001 * (nowTime - this.startTime)) % this.loopDuration;
+        let time = (.001 * (nowTime - this.startTime)) % this.loopDuration;
         const t = time / this.loopDuration;
         context.save();
         //Text
@@ -98,6 +98,7 @@ class LGPreLoading {
             }
         } else if (arrLength === 2) {
             context.globalAlpha = 1;
+            //Effect1
             if(this.RADIUS < 2*this.canvas.width || this.RADIUS < 2*this.canvas.height){
                 this.RADIUS+=60;
             }else{
@@ -105,6 +106,14 @@ class LGPreLoading {
                 typeof this.callback === 'function' && this.callback();
                 this.callback = null;
             }
+            //Effect2
+            // if(this.circles.length){
+            //     this.circles.shift();
+            // }else{
+            //     context.globalAlpha = 0;
+            //     typeof this.callback === 'function' && this.callback();
+            //     this.callback = null;
+            // }
         }
         let LoadingText = loadingTextArr.join('');
         context.strokeText(LoadingText, this.canvasWidth / 2, this.canvasHeight / 2);

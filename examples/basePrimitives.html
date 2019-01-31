@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-
     <title>Base Primitives - Plane, Cube, Sphere</title>
     <link href="assets/main.css" rel="stylesheet">
 </head>
 <body>
     <script type="module">
         import {Renderer, Camera, Transform, Program, Mesh} from '../src/Core.js';
-        import {Plane, Sphere, Cube} from '../src/Extras.js';
+        import {Plane, Sphere, Cube, Torus} from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
 
         {
@@ -37,6 +35,7 @@
             const planeGeometry = new Plane(gl);
             const sphereGeometry = new Sphere(gl);
             const cubeGeometry = new Cube(gl);
+            const torusGeometry = new Torus(gl, 0.5, 0.1, 16, 100);
 
             const program = new Program(gl, {
                 vertex: BasePrimitivesShader.vertex,
@@ -57,6 +56,10 @@
             cube.position.set(0, -1.3, 0);
             cube.setParent(scene);
 
+            const torus = new Mesh(gl, {geometry: torusGeometry, program});
+            torus.position.set(1.5, 1.3, 0);
+            torus.setParent(scene);
+
             requestAnimationFrame(update);
             function update() {
                 requestAnimationFrame(update);
@@ -64,6 +67,7 @@
                 plane.rotation.y -= 0.02;
                 sphere.rotation.y -= 0.03;
                 cube.rotation.y -= 0.04;
+                torus.rotation.y -= 0.02;
 
                 renderer.render({scene, camera});
             }

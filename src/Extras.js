@@ -4,3 +4,4 @@ export {Plane} from './extras/Plane.js';
 export {Cube} from './extras/Cube.js';
 export {Sphere} from './extras/Sphere.js';
 export {Text} from './extras/Text.js';
+export {Torus} from './extras/Torus.js';
