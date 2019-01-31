@@ -13,28 +13,30 @@
     <canvas class="canvas2D"></canvas>
     <script type="module">
         import LGPreLoading from '../../assets/js/LGPreLoading.js';
-        import {Renderer, Geometry, Program, Mesh, Camera, Transform, Texture} from '../../../src/Core.js';
-        import {Sphere, Orbit} from '../../../src/Extras.js';
-        import SkyBox from '../shaders/SkySphereShader.js';
+        import { Renderer, Geometry, Program, Mesh, Camera, Transform, Texture, Color } from '../../../src/Core.js';
+        import { Sphere, Orbit, Torus } from '../../../src/Extras.js';
+        import torusShader from './253/torusShader.js';
+        import baseShader from './253/baseShader.js';
+        import discShader from './253/discShader.js';
 
         {
             // let preLoading = new LGPreLoading(document.querySelector('.canvas2D'));
-            const renderer = new Renderer({dpr: 2});
+            const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
 
-            const camera = new Camera(gl, {fov: 45});
-            camera.position.set(0, 0, 8);
+            const camera = new Camera(gl, { fov: 45 });
+            camera.position.set(0, 0, 18);
 
             const controls = new Orbit(camera, {
-                enablePan: false,
-                enableZoom: false,
+                // enablePan: false,
+                // enableZoom: false,
             });
 
             function resize() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                camera.perspective({aspect: gl.canvas.width / gl.canvas.height})
+                camera.perspective({ aspect: gl.canvas.width / gl.canvas.height })
             }
             window.addEventListener('resize', resize, false);
             resize();
@@ -42,45 +44,91 @@
             const scene = new Transform();
 
             // Texture is equirectangular
-            const texture = new Texture(gl);
-            const img = new Image();
-            img.onload = () => {    
-                texture.image = img;
-                // preLoading.finish(() => {
-                //     console.log("preLoad End!!!");
-                //     document.querySelector('.canvas2D').remove();
-                // })
+            const starTexture = new Texture(gl);
+            const starImg = new Image();
+            starImg.onload = () => {
+                starTexture.image = starImg;
             }
-            img.src = '253/stars.jpg';
+            starImg.src = '253/stars.jpg';
 
             // Use Sphere geometry to render equirectangular textures
-            const geometry = new Sphere(gl, 1, 64);
+            const sphereGeometry = new Sphere(gl, 1, 64);
+            const torusGeometry = new Torus(gl, 2, 2, 36, 100);
 
-            const program = new Program(gl, {
-                vertex: SkyBox.vertex,
-                fragment: SkyBox.fragment,
+            const torusProgram = new Program(gl, {
+                vertex: torusShader.vertex,
+                fragment: torusShader.fragment,
                 uniforms: {
-                    tMap: {value: texture},
+                    tMap: { value: starTexture },
                 },
                 // Need inside of sphere to be visible
                 cullFace: null,
+                transparent: true
             });
 
-            // A smaller sphere in the center just to help illustrate
-            const mesh = new Mesh(gl, {geometry, program});
-            mesh.setParent(scene);
-
             // Camera will dwell inside skybox
-            const skybox = new Mesh(gl, {geometry, program});
-            skybox.scale.set(10);
-            skybox.setParent(scene);
+            const skySphere = new Mesh(gl, { geometry: sphereGeometry, program: torusProgram });
+            skySphere.scale.set(30);
+            skySphere.setParent(scene);
+
+            const blackHole = new Transform();
+            const blackHoleRadius = 2;
+
+            // A smaller sphere in the center just to help illustrate
+            const torus = new Mesh(gl, { geometry: torusGeometry, program: torusProgram });
+            blackHole.addChild(torus);
+            const basicProgram = new Program(gl, {
+                vertex: baseShader.vertex,
+                fragment: baseShader.fragment,
+                uniforms: {
+                    lightColor: { value: new Color([0.807, 0.99, 1]) },
+                    ambientLightColor: { value: new Color([0.313, 0.313, 0.313]) },
+                    ambientStrength: { value: 0.5 },
+                    baseColor: { value: new Color([0, 0, 0]) }
+                },
+            })
+            const body = new Mesh(gl, { geometry: new Sphere(gl, blackHoleRadius, 64), program: basicProgram });
+            blackHole.addChild(body);
+
+            const noiseTexture = new Texture(gl);
+            const noiseImg = new Image();
+            noiseImg.onload = () => {
+                noiseTexture.image = noiseImg;
+            }
+            noiseImg.src = '253/swirl.jpg';
+            const discProgram = new Program(gl, {
+                vertex: discShader.vertex,
+                fragment: discShader.fragment,
+                uniforms: {
+                    radius: { value: blackHoleRadius },
+                    max: { value: 0 },
+                    repeat: { value: 0 },
+                    noiseTexture: { value: noiseTexture },
+                    time: { value: 0 },
+                    opacity: { value: .25 }
+                },
+                transparent: true,
+                depthWrite: false,
+                cullFace: null,
+            });
+            const discRadius1 = 2;
+            const disc1 = new Mesh(gl, {
+                geometry:  new Torus(gl, blackHoleRadius + discRadius1, discRadius1, 36, 100),
+                program: discProgram
+            });
+            disc1.scale.z = .1;
+            disc1.program.uniforms.repeat.value = 3;
+            disc1.program.uniforms.radius.value = blackHoleRadius;
+            disc1.program.uniforms.max.value = discRadius1;
+            blackHole.addChild(disc1);
+            blackHole.setParent(scene);
 
             requestAnimationFrame(update);
             function update() {
                 requestAnimationFrame(update);
 
                 controls.update();
-                renderer.render({scene, camera});
+                renderer.render({ scene, camera });
             }
         }
     </script>
