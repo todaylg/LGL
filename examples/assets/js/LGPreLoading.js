@@ -1,21 +1,7 @@
 import Noise from '../../assets/js/perlin.js';
-const TAU = 2 * Math.PI;
+import { TAU, randomInRange, parabola, pointInEllipse } from './Util.js';
+
 let loadingTextArr = ['L', 'O', 'A', 'D', 'I', 'N', 'G'];
-function randomInRange(min, max) {
-    return min + Math.random() * (max - min);
-}
-function parabola(x, k) {
-    return Math.pow(4 * x * (1 - x), k);
-}
-
-function pointInEllipse(a, b, theta, t) {
-    //r*cos(A+B) = r*[cos(A)Cos(B) - sin(A)sin(B)]
-    //https://www.quora.com/How-is-x-x-cos-theta-+-y-sin-theta  
-    const x = a * Math.cos(t * TAU) * Math.cos(theta) - b * Math.sin(t * TAU) * Math.sin(theta);
-    const y = a * Math.cos(t * TAU) * Math.sin(theta) + b * Math.sin(t * TAU) * Math.cos(theta);
-    return { x, y }
-}
-
 class LGPreLoading {
     constructor(canvas, opts={}) {
         this.canvas = canvas;
@@ -107,13 +93,6 @@ class LGPreLoading {
                 this.callback = null;
             }
             //Effect2
-            // if(this.circles.length){
-            //     this.circles.shift();
-            // }else{
-            //     context.globalAlpha = 0;
-            //     typeof this.callback === 'function' && this.callback();
-            //     this.callback = null;
-            // }
         }
         let LoadingText = loadingTextArr.join('');
         context.strokeText(LoadingText, this.canvasWidth / 2, this.canvasHeight / 2);

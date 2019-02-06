@@ -67,6 +67,7 @@ export class Color extends Float32Array {
             this.r = hue2rgb(p, q, h + 1 / 3);
             this.g = hue2rgb(p, q, h);
             this.b = hue2rgb(p, q, h - 1 / 3);
+            return this;
         }
     }
 }

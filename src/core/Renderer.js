@@ -198,6 +198,7 @@ export class Renderer {
     drawOpaque(scene, camera) {
         const opaque = [];//闭包
         scene.traverse(node => {//node => Transform实例的this
+            if (!node.visible) return;
             if (!node.program || node.program.transparent) return;
             opaque.splice(getRenderOrder(node), 0, node);//排序
         });
@@ -222,6 +223,7 @@ export class Renderer {
         const transparent = [];
         const custom = [];
         scene.traverse(node => {
+            if (!node.visible) return;
             if (!node.program || !node.program.transparent) return;
 
             // If manual order set, add to queue last
@@ -284,6 +286,7 @@ export class Renderer {
             this.drawTransparent(scene, camera);
         } else {
             scene.traverse(node => {
+                if (!node.visible) return true;
                 if (!node.draw) return;
                 node.draw({ camera });
             });

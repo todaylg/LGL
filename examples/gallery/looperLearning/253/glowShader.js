@@ -1,4 +1,4 @@
-  const vs = `
+const vertex = `
 precision highp float;
 
 attribute vec3 position;
@@ -16,7 +16,20 @@ void main() {
   vPosition = position;
   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mvPosition;
-}
-`;
+  
+}`;
 
-  export { vs };
+const fragment = `
+precision highp float;
+
+uniform float max;
+
+varying vec3 vPosition;
+
+void main() {
+  float d = clamp(1.-length(vPosition)/max,0.,1.);
+  d = pow(d,2.);
+  gl_FragColor = vec4(1.,1.,1.,d);
+}`;
+
+export default { vertex, fragment };

@@ -7,11 +7,12 @@ export class Transform {
     constructor() {
         this.parent = null;
         this.children = [];
-
+        this.visible = true;
+        
         this.matrix = new Mat4();
         this.worldMatrix = new Mat4();
         this.matrixAutoUpdate = true;
-
+        
         this.position = new Vec3();
         this.quaternion = new Quat();
         this.scale = new Vec3([1, 1, 1]);

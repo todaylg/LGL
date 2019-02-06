@@ -2,6 +2,7 @@ const vertex = `#version 300 es
 precision highp float;
 precision highp int;
 
+in vec2 uv;
 in vec3 position;
 in vec3 normal;
 
@@ -12,8 +13,10 @@ uniform mat3 normalMatrix;
 
 out vec3 vNormal;
 out vec3 FragPos;
+out vec2 vUv;
 
 void main() {
+    vUv = uv;
     vNormal = normalize(normalMatrix * normal);
     FragPos = vec3( modelViewMatrix * vec4(position, 1.0));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
