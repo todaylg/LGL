@@ -16,13 +16,13 @@ out vec3 vRefract;
 out float rim;
 
 void main() {
-  e = normalize( vec3( modelViewMatrix * vec4( position, 1.0 ) ) );
+  vec4 mPosition = modelMatrix * vec4( position, 1.0 );
+  vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+  e = normalize( vec3( mvPosition) );
   n = normalize( normalMatrix * normal );
   rim = pow(abs(dot(e,n)),2.);
-  vec4 mPosition = modelMatrix * vec4( position, 1.0 );
   vec3 nWorld = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
-  vRefract = normalize( refract( normalize( mPosition.xyz - cameraPosition ), nWorld, .5 ) );
-  vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+  vRefract = normalize( refract( normalize( mPosition.xyz - cameraPosition ), nWorld, .5 ) );//折射
   gl_Position = projectionMatrix * mvPosition;
 }`;
 

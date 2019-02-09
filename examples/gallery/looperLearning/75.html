@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>Noise Fade</title>
+    <link href="../../assets/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <script type="module">
+        import { Renderer, Camera, Transform, Program, Mesh, Vec3, Color } from '../../../src/Core.js';
+        import { Cube, Orbit } from '../../../src/Extras.js';
+        {
+            const renderer = new Renderer({ dpr: 2 });
+            const gl = renderer.gl;
+            document.body.appendChild(gl.canvas);
+            gl.clearColor(0, 0, 0, 0);
+
+            const camera = new Camera(gl, { fov: 35 });
+            camera.position.set(5.5, 8, 5.5);
+            camera.lookAt([0, 0, 0]);
+
+            const controls = new Orbit(camera);
+
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({ aspect: gl.canvas.width / gl.canvas.height })
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+            const group = new Transform();
+
+
+            requestAnimationFrame(update);
+            function update(t) {
+                controls.update();
+                renderer.render({ scene, camera });
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+
+</html>
