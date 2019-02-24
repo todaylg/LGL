@@ -35,7 +35,7 @@ class LGPreLoading {
 
         let update = () => {
             this.draw()
-            requestAnimationFrame(update);
+            this.stopId = requestAnimationFrame(update);
         }
         requestAnimationFrame(update);
     }
@@ -60,6 +60,9 @@ class LGPreLoading {
         context.stroke(path);
 
         context.restore();
+    }
+    destroy() {
+        window.cancelAnimationFrame(this.stopId);
     }
     draw() {
         let nowTime = performance.now();

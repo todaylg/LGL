@@ -48,15 +48,18 @@
             const starTexture = new Texture(gl);
             const noiseTexture = new Texture(gl);
             const particalTexture = new Texture(gl);
-            loadAllImages(['253/stars.jpg', '253/swirl.jpg', '253/dust.png']).then(([starImg, swirlImg, dustImg]) => {
+            const earthTexture = new Texture(gl);
+            loadAllImages(['253/stars.jpg', '253/swirl.jpg', '253/dust.png','253/earth.jpg']).then(([starImg, swirlImg, dustImg, earthImg]) => {
                 starTexture.image = starImg;
                 noiseTexture.image = swirlImg;
                 particalTexture.image = dustImg;
+                earthTexture.image = earthImg;
                 preLoading.finish(() => {
                     preloadEle.classList.add("hide");
                     gl.canvas.classList.add("show");
                     setTimeout(() => {
                         preloadEle.remove();
+                        preLoading.destroy();
                     }, 2000);
                 })
             })
@@ -86,7 +89,19 @@
             const skySphere = new Mesh(gl, { geometry: sphereGeometry, program: sphereProgram });
             skySphere.scale.set(60);
             group.addChild(skySphere);
-
+            const earthProgram = new Program(gl, {
+                vertex: sphereShader.vertex,
+                fragment: sphereShader.fragment,
+                uniforms: {
+                    tMap: { value: earthTexture },
+                    ambientLightColor: { value: ambientLightColor },
+                    ambientStrength: 0.5
+                },
+                cullFace: null
+            });
+            const earthSphere = new Mesh(gl, { geometry: sphereGeometry, program: earthProgram });
+            earthSphere.position.set(10,0,10);
+            group.addChild(earthSphere);
             //2.CenterTorus
             const torusGeometry = new Torus(gl, 2, 2, 36, 100);
             const torusProgram = new Program(gl, {
@@ -99,7 +114,6 @@
             });
             const torus = new Mesh(gl, { geometry: torusGeometry, program: torusProgram });
             blackHole.addChild(torus);
-
             //3.CenterSphere
             const basicProgram = new Program(gl, {
                 vertex: baseShader.vertex,
@@ -113,7 +127,6 @@
             })
             const body = new Mesh(gl, { geometry: new Sphere(gl, blackHoleRadius, 64), program: basicProgram });
             blackHole.addChild(body);
-
             //4.DiscPart1
             const discProgram = new Program(gl, {
                 vertex: discShader.vertex,
@@ -140,7 +153,6 @@
             disc1.program.uniforms.radius.value = blackHoleRadius;
             disc1.program.uniforms.max.value = discRadius1;
             //blackHole.addChild(disc1);
-
             //5.DiscPart2
             const discRadius2 = 20;
             const disc2 = new Mesh(gl, {
@@ -157,7 +169,7 @@
             group.addChild(disc2);
 
             //6.Partical
-            const particalNum = 10000;
+            const particalNum = 5000;
             const particlPos = new Float32Array(particalNum * 3);
             for (let i = 0; i < particalNum; i++) {
                 const r = randomInRange(blackHoleRadius, blackHoleRadius + .5 * discRadius2);
@@ -206,7 +218,7 @@
             scene.addChild(blackHole);
             scene.addChild(group);
 
-            const loopDuration = 10;
+            const loopDuration = 15;
             const startTime = performance.now();
             //7.Post
             const post = new Post(gl);
@@ -306,6 +318,7 @@
                 camera.lookAt(blackHole.position);
                 camera.rotation.z = .01 * TAU;
                 blackHole.lookAt(camera.position);
+                earthSphere.rotation.x = t * TAU/2;
                 group.rotation.y = t * TAU;
                 postRender(scene, camera);
                 requestAnimationFrame(update);

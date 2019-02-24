@@ -1,5 +1,11 @@
-// TODO : support more color formats - e.g 0xffffff, '#fff'
-
+/** 
+ * @class Color
+ * @description Color Class
+ * @param {Array} [array=[0, 0, 0]] The element(rgb) of Color.
+ * @example
+ * // create a new Three-Dimensional Vector
+ * new Color();
+ */
 export class Color extends Float32Array {
     constructor(array = [0, 0, 0]) {
         super(3);
@@ -7,7 +13,6 @@ export class Color extends Float32Array {
         this.set(...array);
         return this;
     }
-
     get r() {
         return this[0];
     }
@@ -31,28 +36,43 @@ export class Color extends Float32Array {
     set b(v) {
         this[2] = v;
     }
-
+    /**
+     * @function
+     * @description Set the components of Color to the given values
+     * @param {Number} r
+     * @param {Number} g
+     * @param {Number} b
+     * @returns {Color} out
+     */
     set(r, g, b) {
         this[0] = r;
         this[1] = g;
         this[2] = b;
         return this;
     }
-
-    static hexToRGB(hex) {
+    /**
+     * @function
+     * @description Set the Color from  hex format
+     * @param {Array} haxValue
+     * @returns {Color} out
+     */
+    setHex(hex) {
         if (hex.length === 4) hex = hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return r ? [
-            parseInt(r[1], 16) / 255,
-            parseInt(r[2], 16) / 255,
-            parseInt(r[3], 16) / 255
-        ] : null;
+        this.r = r ? parseInt(r[1], 16) / 255 : 0;
+        this.g = r ? parseInt(r[2], 16) / 255 : 0;
+        this.b = r ? parseInt(r[3], 16) / 255 : 0;
+        return this;
     }
-
+    /**
+      * @function
+      * @description Set the Color from  hsl format
+      * @param {Array} haxValue
+      * @returns {Color} out
+      */
     setHSL(h, s, l) {
-        var r, g, b;
         if (s == 0) {
-            r = g = b = l; // achromatic
+            this.r = this.g = this.b = l; // achromatic
         } else {
             let hue2rgb = function hue2rgb(p, q, t) {
                 if (t < 0) t += 1;
@@ -67,7 +87,7 @@ export class Color extends Float32Array {
             this.r = hue2rgb(p, q, h + 1 / 3);
             this.g = hue2rgb(p, q, h);
             this.b = hue2rgb(p, q, h - 1 / 3);
-            return this;
         }
+        return this;
     }
 }

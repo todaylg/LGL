@@ -2,7 +2,7 @@ const EPSILON = 0.000001;
 
 /**
  * Calculates the length of a vec3
- *
+ * @private @private
  * @param {vec3} a vector to calculate length of
  * @returns {Number} length of a
  */
@@ -15,7 +15,7 @@ export function length(a) {
 
 /**
  * Copy the values from one vec3 to another
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the source vector
  * @returns {vec3} out
@@ -29,7 +29,7 @@ export function copy(out, a) {
 
 /**
  * Set the components of a vec3 to the given values
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {Number} x X component
  * @param {Number} y Y component
@@ -45,7 +45,7 @@ export function set(out, x, y, z) {
 
 /**
  * Adds two vec3's
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -60,7 +60,7 @@ export function add(out, a, b) {
 
 /**
  * Subtracts vector b from vector a
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -75,7 +75,7 @@ export function subtract(out, a, b) {
 
 /**
  * Multiplies two vec3's
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -90,7 +90,7 @@ export function multiply(out, a, b) {
 
 /**
  * Divides two vec3's
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -105,7 +105,7 @@ export function divide(out, a, b) {
 
 /**
  * Math.ceil the components of a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to ceil
  * @returns {vec3} out
@@ -119,7 +119,7 @@ export function ceil(out, a) {
 
 /**
  * Math.floor the components of a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to floor
  * @returns {vec3} out
@@ -133,7 +133,7 @@ export function floor(out, a) {
 
 /**
  * Returns the minimum of two vec3's
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -148,7 +148,7 @@ export function min(out, a, b) {
 
 /**
  * Returns the maximum of two vec3's
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -163,7 +163,7 @@ export function max(out, a, b) {
 
 /**
  * Math.round the components of a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to round
  * @returns {vec3} out
@@ -177,7 +177,7 @@ export function round(out, a) {
 
 /**
  * Scales a vec3 by a scalar number
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to scale
  * @param {Number} b amount to scale the vector by
@@ -192,7 +192,7 @@ export function scale(out, a, b) {
 
 /**
  * Adds two vec3's after scaling the second operand by a scalar value
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -208,7 +208,7 @@ export function scaleAndAdd(out, a, b, scale) {
 
 /**
  * Calculates the euclidian distance between two vec3's
- *
+ * @private @private
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} distance between a and b
@@ -222,7 +222,7 @@ export function distance(a, b) {
 
 /**
  * Calculates the squared euclidian distance between two vec3's
- *
+ * @private @private
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} squared distance between a and b
@@ -236,7 +236,7 @@ export function squaredDistance(a, b) {
 
 /**
  * Calculates the squared length of a vec3
- *
+ * @private @private
  * @param {vec3} a vector to calculate squared length of
  * @returns {Number} squared length of a
  */
@@ -249,7 +249,7 @@ export function squaredLength(a) {
 
 /**
  * Negates the components of a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to negate
  * @returns {vec3} out
@@ -263,7 +263,7 @@ export function negate(out, a) {
 
 /**
  * Returns the inverse of the components of a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to invert
  * @returns {vec3} out
@@ -277,7 +277,7 @@ export function inverse(out, a) {
 
 /**
  * Normalize a vec3
- *
+ * @private @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to normalize
  * @returns {vec3} out
@@ -299,7 +299,7 @@ export function normalize(out, a) {
 
 /**
  * Calculates the dot product of two vec3's
- *
+ * @private
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} dot product of a and b
@@ -310,7 +310,7 @@ export function dot(a, b) {
 
 /**
  * Computes the cross product of two vec3's
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -328,7 +328,7 @@ export function cross(out, a, b) {
 
 /**
  * Performs a linear interpolation between two vec3's
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -347,7 +347,7 @@ export function lerp(out, a, b, t) {
 
 /**
  * Performs a hermite interpolation with two control points
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -372,7 +372,7 @@ export function hermite(out, a, b, c, d, t) {
 
 /**
  * Performs a bezier interpolation with two control points
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -399,7 +399,7 @@ export function bezier(out, a, b, c, d, t) {
 
 /**
  * Generates a random vector with the given scale
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
  * @returns {vec3} out
@@ -420,7 +420,7 @@ export function random(out, scale) {
 /**
  * Transforms the vec3 with a mat4.
  * 4th vector component is implicitly '1'
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to transform
  * @param {mat4} m matrix to transform with
@@ -438,7 +438,7 @@ export function transformMat4(out, a, m) {
 
 /**
  * Transforms the vec3 with a mat3.
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to transform
  * @param {mat3} m the 3x3 matrix to transform with
@@ -454,7 +454,7 @@ export function transformMat3(out, a, m) {
 
 /**
  * Transforms the vec3 with a quat
- *
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to transform
  * @param {quat} q quaternion to transform with
@@ -481,6 +481,7 @@ export function transformQuat(out, a, q) {
 
 /**
  * Rotate a 3D vector around the x-axis
+ * @private
  * @param {vec3} out The receiving vec3
  * @param {vec3} a The vec3 point to rotate
  * @param {vec3} b The origin of the rotation
@@ -509,6 +510,7 @@ export function rotateX(out, a, b, c) {
 
 /**
  * Rotate a 3D vector around the y-axis
+ * @private
  * @param {vec3} out The receiving vec3
  * @param {vec3} a The vec3 point to rotate
  * @param {vec3} b The origin of the rotation
@@ -537,6 +539,7 @@ export function rotateY(out, a, b, c) {
 
 /**
  * Rotate a 3D vector around the z-axis
+ * @private
  * @param {vec3} out The receiving vec3
  * @param {vec3} a The vec3 point to rotate
  * @param {vec3} b The origin of the rotation
@@ -565,6 +568,7 @@ export function rotateZ(out, a, b, c) {
 
 /**
  * Get the angle between two 3D vectors
+ * @private
  * @param {vec3} a The first operand
  * @param {vec3} b The second operand
  * @returns {Number} The angle in radians
@@ -590,7 +594,7 @@ export function angle(a, b) {
 
 /**
  * Returns a string representation of a vector
- *
+ * @private
  * @param {vec3} a vector to represent as a string
  * @returns {String} string representation of the vector
  */
@@ -600,7 +604,7 @@ export function str(a) {
 
 /**
  * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
- *
+ * @private
  * @param {vec3} a The first vector.
  * @param {vec3} b The second vector.
  * @returns {Boolean} True if the vectors are equal, false otherwise.
@@ -611,7 +615,7 @@ export function exactEquals(a, b) {
 
 /**
  * Returns whether or not the vectors have approximately the same elements in the same position.
- *
+ * @private
  * @param {vec3} a The first vector.
  * @param {vec3} b The second vector.
  * @returns {Boolean} True if the vectors are equal, false otherwise.
