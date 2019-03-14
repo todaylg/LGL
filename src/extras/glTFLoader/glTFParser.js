@@ -1,5 +1,5 @@
 /* GLTF PARSER */
-import { Transform, Mat4, Camera, Color, Texture, Geometry, Mesh, Program, Vec3 } from '../../Core.js';
+import { Transform, Mat4, Camera, Color, Texture, Geometry, Mesh, Program, Vec3 } from '/src/index.js';
 import { assignExtrasToUserData, radToDeg, EXTENSIONS } from './glTFLoaderUtil.js';
 
 export default class GLTFParser {

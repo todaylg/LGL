@@ -1,4 +1,4 @@
-import { Mat4 } from '../../math/Mat4.js';
+import { Mat4 } from '/src/math/Mat4.js';
 
 export const EXTENSIONS = {
 	KHR_BINARY_GLTF: 'KHR_binary_glTF',

@@ -49,9 +49,9 @@ export default class GLTFLoader {
 		}
 		//glTF is a Json File
 		let json = JSON.parse(content);
-		console.error("parse fin json: ", json);
+		console.error( "JSON.parse: ", json);
 		if (json.asset === undefined || json.asset.version[0] < 2) {
-			if (onError) onError(new Error('GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported. Use LegacyGLTFLoader instead.'));
+			if (onError) onError(new Error('GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported.'));
 			return;
 		}
 		//extension
