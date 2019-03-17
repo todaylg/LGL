@@ -1,5 +1,5 @@
 import GLTFParser from './glTFParser.js';
-import { extractUrlBase, decodeText } from './glTFLoaderUtil.js';
+import { extractUrlBase, decodeText } from './util.js';
 
 export default class GLTFLoader {
     constructor(){}
@@ -26,7 +26,7 @@ export default class GLTFLoader {
 			if (onError) onError(new Error('GLTFLoader: Unsupported glTF versions < 2.0.'));
 			return;
         }
-        let parser = new GLTFParser(json);
+        let parser = new GLTFParser(json, {path});
         parser.parse( (scene, scenes, cameras, animations, json) => {
             //Parse过后的glTF格式
 			let glTF = {
