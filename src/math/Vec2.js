@@ -3,14 +3,14 @@ import * as Vec2Func from './functions/Vec2Func.js';
 /** 
  * @class Vec2
  * @description Two-Dimensional Vector Class
- * @param {Array} [array=[0,0]] The element of Vec2.
+ * @param {Number} [x=0] The element of Vec2.x
+ * @param {Number} [y=x] The element of Vec2.y
  * @example
  * // create a new Two-Dimensional Vector
- * new Vec2([0,0]);
+ * new Vec2(0, 0);
  */
-export class Vec2 extends Float32Array {
-    constructor(array = [0, 0]) {
-        if (!array.length) array = [array, array];
+export class Vec2 extends Array {
+    constructor(x = 0, y = x) {
         super(array);
         return this;
     }
@@ -136,8 +136,8 @@ export class Vec2 extends Float32Array {
      * i.e.,√(x²+y²)
      * @returns {Number} length of this vec2
      */
-    length() {
-        return this.distance();
+    len() {
+        return Vec2Func.length(this);
     }
     /**
      * @function
@@ -257,7 +257,7 @@ export class Vec2 extends Float32Array {
     * @returns {Vec2} new Vec2
     */
     clone() {
-        return new Vec2(this);
+        return new Vec2(this[0], this[1]);
     }
     /**
      * @function

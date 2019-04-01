@@ -2,15 +2,17 @@ import * as Vec4Func from './functions/Vec4Func.js';
 /** 
  * @class Vec4
  * @description Four-Dimensional Vector Class
- * @param {Array} [array=[0,0,0,0]] The element of vec4.
+ * @param {Number} [x=0] The element of Vec4.x
+ * @param {Number} [y=x] The element of Vec4.y
+ * @param {Number} [z=x] The element of Vec4.z
+ * @param {Number} [z=x] The element of Vec4.w
  * @example
- * // create a new Three-Dimensional Vector
- * new vec4([0,0,0,0]);
+ * // create a new Four-Dimensional Vector
+ * new vec4(0, 0, 0, 0);
  */
-export class Vec4 extends Float32Array {
-    constructor(array = [0, 0, 0, 0]) {
-        if (!array.length) array = [array, array, array, array];
-        super(array);
+export class Vec4 extends Array {
+    constructor(x = 0, y = x, z = x, w = x) {
+        super(x, y, z, w);
         return this;
     }
 

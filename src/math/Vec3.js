@@ -3,15 +3,16 @@ import * as Vec3Func from './functions/Vec3Func.js';
 /** 
  * @class Vec3
  * @description Three-Dimensional Vector Class
- * @param {Array} [array=[0,0,0]] The element of Vec3.
+ * @param {Number} [x=0] The element of Vec3.x
+ * @param {Number} [y=x] The element of Vec3.y
+ * @param {Number} [z=x] The element of Vec3.z
  * @example
  * // create a new Three-Dimensional Vector
- * new vec3([0,0,0]);
+ * new Vec3(0, 0, 0);
  */
-export class Vec3 extends Float32Array {
-    constructor(array = [0, 0, 0]) {
-        if (!array.length) array = [array, array, array];
-        super(array);
+export class Vec3 extends Array {
+    constructor(x = 0, y = x, z = x) {
+        super(x, y, z);
         return this;
     }
 
@@ -305,7 +306,7 @@ export class Vec3 extends Float32Array {
     * @returns {vec3} new vec3
     */
     clone() {
-        return new Vec3(this);
+        return new Vec3(this[0], this[1], this[2]);
     }
     /**
      * @function

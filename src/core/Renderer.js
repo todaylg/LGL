@@ -4,8 +4,13 @@ import { Vec3 } from '../math/Vec3.js';
 const projMat4 = new Mat4();
 const tempVec3 = new Vec3();
 
-/**
- * Create webgl renderer
+/** 
+ * @class Renderer
+ * @description  Create webgl renderer
+ * @param {object} [options] -  The optional renderer parameters
+ * @param {HTMLCanvasElement} [options.canvas] -  the canvas to use get webgl renderer
+ * @example
+ * new Renderer({dpr: 2})
  */
 export class Renderer {
     constructor({
