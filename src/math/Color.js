@@ -42,7 +42,7 @@ export class Color extends Float32Array {
      * @param {Number} r
      * @param {Number} g
      * @param {Number} b
-     * @returns {Color} out
+     * @returns {Color} 
      */
     set(r, g, b) {
         this[0] = r;
@@ -54,7 +54,7 @@ export class Color extends Float32Array {
      * @function
      * @description Set the Color from  hex format
      * @param {Array} haxValue
-     * @returns {Color} out
+     * @returns {Color} 
      */
     setHex(hex) {
         if (hex.length === 4) hex = hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
@@ -68,7 +68,7 @@ export class Color extends Float32Array {
       * @function
       * @description Set the Color from  hsl format
       * @param {Array} haxValue
-      * @returns {Color} out
+      * @returns {Color} 
       */
     setHSL(h, s, l) {
         if (s == 0) {

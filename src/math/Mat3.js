@@ -25,7 +25,7 @@ export class Mat3 extends Float32Array {
      * @param {Number} m20
      * @param {Number} m21
      * @param {Number} m22
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     set(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
         Mat3Func.set(this, m00, m01, m02, m10, m11, m12, m20, m21, m22);
@@ -34,7 +34,7 @@ export class Mat3 extends Float32Array {
     /**
      * @function
      * @description Transpose the values of a mat3
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     transpose() {
         Mat3Func.transpose(this, this);
@@ -43,7 +43,7 @@ export class Mat3 extends Float32Array {
     /**
      * @function
      * @description Inverts a mat3(逆矩阵)
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     inverse(m = this) {
         Mat3Func.invert(this, m);
@@ -54,7 +54,7 @@ export class Mat3 extends Float32Array {
      * @description Translate a mat3 by the given vector
      * @param {vec2} v vector to translate by
      * @param {mat3} [m=this] the matrix to translate
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     translate(v, m = this) {
         Mat3Func.translate(this, m, v);
@@ -65,7 +65,7 @@ export class Mat3 extends Float32Array {
     * @description Rotates a mat3 by the given angle
     * @param {Number} v the angle to rotate the matrix by
     * @param {mat3} [m=this] the matrix to rotate
-    * @returns {mat3} out
+    * @returns {Mat3}
     */
     rotate(v, m = this) {
         Mat3Func.rotate(this, m, v);
@@ -76,7 +76,7 @@ export class Mat3 extends Float32Array {
     * @description Scales the mat3 by the dimensions in the given vec2
     * @param {vec2} v the vec2 to scale the matrix by
     * @param {mat3} [m=this] the matrix to scale
-    * @returns {mat3} out
+    * @returns {Mat3}
     */
     scale(v, m = this) {
         Mat3Func.scale(this, m, v);
@@ -87,7 +87,7 @@ export class Mat3 extends Float32Array {
      * @description Multiplies two mat3's
      * @param {mat3} ma the first operand
      * @param {mat3} mb the second operand
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     multiply(ma, mb) {
         if (mb) {
@@ -100,7 +100,7 @@ export class Mat3 extends Float32Array {
     /**
      * @function
      * @description Set a mat3 to the identity matrix(单位矩阵)
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     identity() {
         Mat3Func.identity(this);
@@ -110,7 +110,7 @@ export class Mat3 extends Float32Array {
     * @function
     * @description Copy the values from one mat3 to another
     * @param {mat3} m the source matrix
-    * @returns {mat3} out
+    * @returns {Mat3}
     */
     copy(m) {
         Mat3Func.copy(this, m);
@@ -120,7 +120,7 @@ export class Mat3 extends Float32Array {
      * @function
      * @description Copies the upper-left 3x3 values into the given mat3.
      * @param {mat3} m the source 4x4 matrix
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     fromMatrix4(m) {
         Mat3Func.fromMat4(this, m);
@@ -130,7 +130,7 @@ export class Mat3 extends Float32Array {
      * @function
      * @description Calculates a 3x3 matrix from the given quaternion
      * @param {mat3} q Quaternion to create matrix from
-     * @returns {mat3} out
+     * @returns {Mat3}
      */
     fromQuaternion(q) {
         Mat3Func.fromQuat(this, q);
@@ -142,7 +142,7 @@ export class Mat3 extends Float32Array {
     * @param {vec3} vec3a
     * @param {vec3} vec3b
     * @param {vec3} vec3c
-    * @returns {mat3} out
+    * @returns {Mat3}
     */
     fromBasis(vec3a, vec3b, vec3c) {
         this.set(

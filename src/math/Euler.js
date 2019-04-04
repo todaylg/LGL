@@ -54,7 +54,7 @@ export class Euler extends Float32Array {
      * @param {Number} x
      * @param {Number} [y=x]
      * @param {Number} [z=x]
-     * @returns {Euler} out
+     * @returns {Euler} 
      */
     set(x, y = x, z = x) {
         this[0] = x;
@@ -67,7 +67,7 @@ export class Euler extends Float32Array {
      * @function
      * @description Reset the order of Euler to the given values
      * @param {String} newOrder
-     * @returns {Euler} out
+     * @returns {Euler} 
      */
     reorder(order) {
         this.order = order;
@@ -78,7 +78,7 @@ export class Euler extends Float32Array {
      * @function
      * @description assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
      * @param {String} newOrder
-     * @returns {Euler} out
+     * @returns {Euler} 
      */
     fromRotationMatrix(m, order = this.order) {
         EulerFunc.fromRotationMatrix(this, m, order);

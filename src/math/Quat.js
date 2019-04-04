@@ -48,7 +48,7 @@ export class Quat extends Float32Array {
     /**
      * @function
      * @description Set a Quat to the identity quaternion
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     identity() {
         QuatFunc.identity(this);
@@ -62,7 +62,7 @@ export class Quat extends Float32Array {
     * @param {Number} y
     * @param {Number} z
     * @param {Number} w
-    * @returns {Quat} out
+    * @returns {Quat} 
     */
     set(x, y, z, w) {
         QuatFunc.set(this, x, y, z, w);
@@ -74,7 +74,7 @@ export class Quat extends Float32Array {
      * @description Rotates a quaternion by the given angle around the X axis
      * @param {Number} rad the angle to rotate the quaternion by
      * @param {Quat} [m=this] the quaternion to translate
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     rotateX(a) {
         QuatFunc.rotateX(this, this, a);
@@ -86,7 +86,7 @@ export class Quat extends Float32Array {
      * @description Rotates a quaternion by the given angle around the Y axis
      * @param {Number} rad the angle to rotate the quaternion by
      * @param {Quat} [m=this] the quaternion to translate
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     rotateY(a) {
         QuatFunc.rotateY(this, this, a);
@@ -98,7 +98,7 @@ export class Quat extends Float32Array {
      * @description Rotates a quaternion by the given angle around the Z axis
      * @param {Number} rad the angle to rotate the quaternion by
      * @param {Quat} [m=this] the quaternion to translate
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     rotateZ(a) {
         QuatFunc.rotateZ(this, this, a);
@@ -109,7 +109,7 @@ export class Quat extends Float32Array {
      * @function
      * @description Calculates the inverse of a Quat
      * @param {Quat} [q=this] Quat to calculate inverse of
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     inverse(q = this) {
         QuatFunc.invert(this, q);
@@ -120,7 +120,7 @@ export class Quat extends Float32Array {
     * @function
     * @description Calculates the conjugate(共轭) of a Quat
     * @param {Quat} [q=this] Quat to calculate inverse of
-    * @returns {Quat} out
+    * @returns {Quat} 
     */
     conjugate(q = this) {
         QuatFunc.conjugate(this, q);
@@ -131,7 +131,7 @@ export class Quat extends Float32Array {
      * @function
      * @description Copy the values from one quaternion to another.Equal to Vec4‘s copy function
      * @param {Quat} q the quaternion
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     copy(q) {
         QuatFunc.copy(this, q);
@@ -142,7 +142,7 @@ export class Quat extends Float32Array {
      * @function
      * @description Equal to Vec4‘s normalize function
      * @param {Quat} [q=this] the quaternion
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     normalize(q = this) {
         QuatFunc.normalize(this, q);
@@ -154,7 +154,7 @@ export class Quat extends Float32Array {
     * @description Multiplies two quats.if qB is null , Multiplies this and qA.
     * @param {Quat} qA the first operand
     * @param {Quat} qB the second operand
-    * @returns {Quat} out
+    * @returns {Quat} 
     */
     multiply(qA, qB) {
         if (qB) {
@@ -169,7 +169,7 @@ export class Quat extends Float32Array {
      * @function
      * @description Equal to Vec4‘s dot function
      * @param {Quat} v
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     dot(v) {
         return QuatFunc.dot(this, v);
@@ -180,7 +180,7 @@ export class Quat extends Float32Array {
      * NOTE: The resultant quaternion is not normalized, so you should be sure
      * to renormalize the quaternion yourself where necessary.
      * @param {mat3} matrix3 rotation matrix
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     fromMatrix3(matrix3) {
         QuatFunc.fromMat3(this, matrix3);
@@ -191,7 +191,7 @@ export class Quat extends Float32Array {
      * @function
      * @description Creates a quaternion from the given euler angle x, y, z.
      * @param {vec3} euler Angles to rotate around each axis in degrees.
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     fromEuler(euler) {
         QuatFunc.fromEuler(this, euler, euler.order);
@@ -204,7 +204,7 @@ export class Quat extends Float32Array {
      * @param {Quat} c the third operand
      * @param {Quat} d the fourth operand
      * @param {Number} t interpolation amount
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     slerp(q, t) {
         QuatFunc.slerp(this, this, b, c, d, t);
@@ -215,7 +215,7 @@ export class Quat extends Float32Array {
      * @description generate Quat from Array
      * @param {Array} a
      * @param {Number} b index offset of a
-     * @returns {Quat} out
+     * @returns {Quat} 
      */
     fromArray(a, o = 0) {
         this[0] = a[o];

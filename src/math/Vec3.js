@@ -45,7 +45,7 @@ export class Vec3 extends Array {
      * @param {Number} x
      * @param {Number} [y=x]
      * @param {Number} [z=x]
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     set(x, y = x, z = x) {
         Vec3Func.set(this, x, y, z);
@@ -55,7 +55,7 @@ export class Vec3 extends Array {
      * @function
      * @description Copy the values from one vec3 to another
      * @param {Array} v The value to copy.
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     copy(v) {
         Vec3Func.copy(this, v);
@@ -66,7 +66,7 @@ export class Vec3 extends Array {
      * @description Adds two vec3's
      * @param {Array} va
      * @param {Array} [vb=this]
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     add(va, vb) {
         if (vb) Vec3Func.add(this, va, vb);
@@ -78,7 +78,7 @@ export class Vec3 extends Array {
     * @description Subtracts vector b from vector a
     * @param {Array} va
     * @param {Array} [vb=this]
-    * @returns {vec3} out
+    * @returns {Vec3}
     */
     sub(va, vb) {
         if (vb) Vec3Func.subtract(this, va, vb);
@@ -89,7 +89,7 @@ export class Vec3 extends Array {
     * @function
     * @description Multiplies a vec3/number
     * @param {Array/Number} m
-    * @returns {vec3} out
+    * @returns {Vec3}
     */
     multiply(v) {
         if (v.length) Vec3Func.multiply(this, this, v);
@@ -100,7 +100,7 @@ export class Vec3 extends Array {
     * @function
     * @description Divides a vec3/number
     * @param {Array/Number} m
-    * @returns {vec3} out
+    * @returns {Vec3}
     */
     divide(v) {
         if (v.length) Vec3Func.divide(this, this, v);
@@ -112,7 +112,7 @@ export class Vec3 extends Array {
      * @description Scales a vec3 by a scalar number
      * i.e.,[x × b,y × b,z × b]
      * @param {Number} b amount to scale the vector by
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     scale(v) {
         Vec3Func.scale(this, this, v);
@@ -162,7 +162,7 @@ export class Vec3 extends Array {
      * @description Negates the components of a vec3.
      * i.e.,(-x,-y,-z)
      * @param {vec3} [v=this] vector to negate
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     negate(v = this) {
         Vec3Func.negate(this, v);
@@ -173,7 +173,7 @@ export class Vec3 extends Array {
      * @description Returns the inverse of the components of a vec3.
      * i.e.,(1/x,1/y,1/z)
      * @param {vec3} [v=this] vector to invert
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     inverse(v = this) {
         Vec3Func.inverse(this, v);
@@ -183,7 +183,7 @@ export class Vec3 extends Array {
      * @function
      * @description Normalize a vec3.
      * i.e.,v/|v| => (x/√(x²+y²+z²),y/√(x²+y²+z²),z/√(x²+y²+z²))
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     normalize() {
         Vec3Func.normalize(this, this);
@@ -195,7 +195,7 @@ export class Vec3 extends Array {
     * i.e.,x × v[0]+y × v[1]+ z × v[2]
     * https://blog.csdn.net/dcrmg/article/details/52416832
     * @param {vec3} v the operand
-    * @returns {vec3} dot product of a and b
+    * @returns {Vec3}dot product of a and b
     */
     dot(v) {
         return Vec3Func.dot(this, v);
@@ -208,7 +208,7 @@ export class Vec3 extends Array {
      * https://blog.csdn.net/dcrmg/article/details/52416832
      * @param {vec3} va the first operand
      * @param {vec3} vb the second operand
-     * @returns {vec3} cross product of a and b
+     * @returns {Vec3}cross product of a and b
      */
     cross(va, vb) {
         Vec3Func.cross(this, va, vb);
@@ -220,7 +220,7 @@ export class Vec3 extends Array {
      * i.e.,[x+t×(v[0]-x),y+t×(v[1]-x),z+t×(v[2]-z)];
      * @param {vec3} v the operand
      * @param {Number} t interpolation amount between the two inputs
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     lerp(v, t) {
         Vec3Func.lerp(this, this, v, t);
@@ -234,7 +234,7 @@ export class Vec3 extends Array {
      * @param {vec3} c the third operand
      * @param {vec3} d the fourth operand
      * @param {Number} t interpolation amount between the two inputs
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     hermite(v, b, c, d, t) {
         Vec3Func.hermite(this, this, v, b, c, d, t);
@@ -248,7 +248,7 @@ export class Vec3 extends Array {
      * @param {vec3} c the third operand
      * @param {vec3} d the fourth operand
      * @param {Number} t interpolation amount between the two inputs
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     bezier(v, b, c, d, t) {
         Vec3Func.bezier(this, this, v, b, c, d, t);
@@ -262,7 +262,7 @@ export class Vec3 extends Array {
      * 4th vector component is implicitly '1'
      * i.e.,[m[0] × x + m[4] × y + m[8] × z + m[12], m[1] × x + m[5] × y + m[9] × z + m[13],  m[2] × x + m[6] × y + m[10] × z + m[14]];
      * @param {mat4} m matrix to transform with
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     applyMatrix4(mat4) {
         Vec3Func.transformMat4(this, this, mat4);
@@ -274,7 +274,7 @@ export class Vec3 extends Array {
      * Transforms the vec3 with a quat
      * benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
      * @param {quat} m quaternion to transform with
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     applyQuaternion(q) {
         Vec3Func.transformQuat(this, this, q);
@@ -303,7 +303,7 @@ export class Vec3 extends Array {
     /**
     * @function
     * @description Deep copy from this vec3
-    * @returns {vec3} new vec3
+    * @returns {Vec3}new vec3
     */
     clone() {
         return new Vec3(this[0], this[1], this[2]);
@@ -313,7 +313,7 @@ export class Vec3 extends Array {
      * @description generate vec3 from Array
      * @param {Array} a
      * @param {Number} b index offset of a
-     * @returns {vec3} out
+     * @returns {Vec3}
      */
     fromArray(a, o = 0) {
         this[0] = a[o];

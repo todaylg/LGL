@@ -35,7 +35,7 @@ export class Vec2 extends Array {
      * @description Set the components of a vec2 to the given values
      * @param {Number} x
      * @param {Number} [y=x]
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     set(x, y = x) {
         Vec2Func.set(this, x, y);
@@ -45,7 +45,7 @@ export class Vec2 extends Array {
      * @function
      * @description Copy the values from one vec2 to another
      * @param {Array} v The value to copy.
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     copy(v) {
         Vec2Func.copy(this, v);
@@ -56,7 +56,7 @@ export class Vec2 extends Array {
      * @description Adds two vec2's
      * @param {Array} va
      * @param {Array} [vb=this]
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     add(va, vb) {
         if (vb) Vec2Func.add(this, va, vb);
@@ -68,7 +68,7 @@ export class Vec2 extends Array {
     * @description Subtracts vector b from vector a
     * @param {Array} va
     * @param {Array} [vb=this]
-    * @returns {vec2} out
+    * @returns {Vec2} 
     */
     sub(va, vb) {
         if (vb) Vec2Func.subtract(this, va, vb);
@@ -79,7 +79,7 @@ export class Vec2 extends Array {
     * @function
     * @description Multiplies a vec2/number
     * @param {Array/Number} m
-    * @returns {vec2} out
+    * @returns {Vec2} 
     */
     multiply(m) {
         if (m.length) Vec2Func.multiply(this, this, m);
@@ -90,7 +90,7 @@ export class Vec2 extends Array {
     * @function
     * @description Divides a vec2/number
     * @param {Array/Number} m
-    * @returns {vec2} out
+    * @returns {Vec2} 
     */
     divide(m) {
         if (m.length) Vec2Func.divide(this, this, m);
@@ -102,7 +102,7 @@ export class Vec2 extends Array {
      * @description Scales a vec2 by a scalar number
      * i.e.,[x × b,y × b]
      * @param {Number} b amount to scale the vector by
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     scale(v) {
         Vec2Func.scale(this, this, v);
@@ -112,7 +112,7 @@ export class Vec2 extends Array {
      * @function
      * @description Calculates the euclidian distance between two vec2's.
      * i.e.,length(this-v)
-     * @param {vec2} [v=[0,0]] the operand vec2
+     * @param {Vec2} [v=[0,0]] the operand vec2
      * @returns {Number} distance between this vec2 and v
      */
     distance(v) {
@@ -123,7 +123,7 @@ export class Vec2 extends Array {
      * @function
      * @description  Calculates the squared euclidian distance between two vec2's.
      * i.e.,length(this-v)²
-     * @param {vec2} [v=[0,0]] the operand vec2
+     * @param {Vec2} [v=[0,0]] the operand vec2
      * @returns {Number} squared distance between this vec2 and v
      */
     squaredDistance(v) {
@@ -152,8 +152,8 @@ export class Vec2 extends Array {
      * @function
      * @description Negates the components of a vec2.
      * i.e.,(-x,-y)
-     * @param {vec2} [v=this] vector to negate
-     * @returns {vec2} out
+     * @param {Vec2} [v=this] vector to negate
+     * @returns {Vec2} 
      */
     negate(v = this) {
         Vec2Func.negate(this, v);
@@ -164,7 +164,7 @@ export class Vec2 extends Array {
      * @description Returns the inverse of the components of a vec2.
      * i.e.,(1/x,1/y)
      * @param {vec2} [v=this] vector to invert
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     inverse(v = this) {
         Vec2Func.inverse(this, v);
@@ -174,7 +174,7 @@ export class Vec2 extends Array {
      * @function
      * @description Normalize a vec2.
      * i.e.,v/|v| => (x/√(x²+y²),y/√(x²+y²))
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     normalize() {
         Vec2Func.normalize(this, this);
@@ -184,8 +184,8 @@ export class Vec2 extends Array {
     * @description Calculates the dot product of two vec2's.
     * i.e.,x × v[0]+y × v[1]
     * https://blog.csdn.net/dcrmg/article/details/52416832 
-    * @param {vec2} v the operand
-    * @returns {vec2} dot product of a and b
+    * @param {Vec2} v the operand
+    * @returns {Vec2} dot product of a and b
     */
     dot(v) {
         return Vec2Func.dot(this, v);
@@ -197,9 +197,9 @@ export class Vec2 extends Array {
      * Note that the cross product returns a scalar of z.
      * i.e.,va[0] × vb[1] - va[1] × vb[0];
      * https://blog.csdn.net/dcrmg/article/details/52416832
-     * @param {vec2} va the first operand
-     * @param {vec2} vb the second operand
-     * @returns {Number} out
+     * @param {Vec2} va the first operand
+     * @param {Vec2} vb the second operand
+     * @returns {Number} 
      */
     cross(va, vb) {
         return Vec2Func.cross(va, vb);
@@ -208,9 +208,9 @@ export class Vec2 extends Array {
      * @function
      * @description Performs a linear interpolation between two vec2's
      * i.e.,[x+a×(v[0]-x),y+a×(v[1]-x)];
-     * @param {vec2} v the operand
+     * @param {Vec2} v the operand
      * @param {Number} a interpolation amount between the two inputs
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     lerp(v, a) {
         Vec2Func.lerp(this, this, v, a);
@@ -221,7 +221,7 @@ export class Vec2 extends Array {
      * 3rd vector component is implicitly '1'
      * i.e.,[m[0] × x + m[3] * y + m[6], m[1] × x + m[4] × y + m[7]];
      * @param {mat3} m matrix to transform with
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     applyMatrix3(mat3) {
         Vec2Func.transformMat3(this, this, mat3);
@@ -235,7 +235,7 @@ export class Vec2 extends Array {
      * 4th vector component is implicitly '1'
      * i.e.,[m[0] × x + m[4] × y + m[12], m[1] × x + m[5] × y + m[13]];
      * @param {mat4} m matrix to transform with
-     * @returns {vec2} out
+     * @returns {Vec2} 
      */
     applyMatrix4(mat4) {
         Vec2Func.transformMat4(this, this, mat4);
@@ -264,7 +264,7 @@ export class Vec2 extends Array {
      * @description generate Vec2 from Array
      * @param {Array} a
      * @param {Number} b index offset of a
-     * @returns {Vec2} out
+     * @returns {Vec2} 
      */
     fromArray(a, o = 0) {
         this[0] = a[o];
