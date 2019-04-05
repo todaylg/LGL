@@ -5,10 +5,19 @@ const arrayCacheF32 = {};
 
 /**
  * Create glProgram
+ * 
+ * @class
  * @param {WebGLContext} gl 
- * @param {String} vertex vertexShader Source Code
- * @param {String} fragment fragmentShader Source Code
- * @return program glProgram Object
+ * @param {Object} [options] -  The optional program parameters
+ * @param {String} [options.fragment] - vertexShader source code
+ * @param {String} [options.vertex] - fragmentShader source code
+ * @param {Object} [options.uniforms] - Uniforms attibute object
+ * @param {Boolean} [options.transparent] - Whether is transparent
+ * @param {GLenum} [options.cullFace] - Whether or not front- and/or back-facing polygons can be culled
+ * @param {GLenum} [options.frontFace] - Whether polygons are front- or back-facing by setting a winding orientation
+ * @param {Boolean} [options.depthTest] - Whether enable depth test
+ * @param {Boolean} [options.depthWrite] -Whether enable depth write
+ * @param {GLenum} [options.depthFunc] - Specifies a function that compares incoming pixel depth to the current depth buffer value.
  */
 export class Program {
     constructor(gl, {
@@ -80,20 +89,6 @@ export class Program {
         for (let uIndex = 0; uIndex < numUniforms; uIndex++) {
             let uniform = gl.getActiveUniform(this.program, uIndex);
             this.uniformLocations.set(uniform, gl.getUniformLocation(this.program, uniform.name));
-
-            // split uniforms' names to separate array and struct declarations
-            const split = uniform.name.match(/(\w+)/g);
-
-            uniform.uniformName = split[0];
-
-            if (split.length === 3) {
-                uniform.isStructArray = true;
-                uniform.structIndex = Number(split[1]);
-                uniform.structProperty = split[2];
-            } else if (split.length === 2 && isNaN(Number(split[1]))) {
-                uniform.isStruct = true;
-                uniform.structProperty = split[1];
-            }
         }
 
         // Get active attribute locations
@@ -107,19 +102,13 @@ export class Program {
         this.checkTextureUnits();
     }
 
-    // Check to see if any of the allocated texture units are overlapping
+    /**
+     * Check to see if any of the allocated texture units are overlapping
+     */
     checkTextureUnits() {
-
         const assignedTextureUnits = [];
         [...this.uniformLocations.keys()].every((activeUniform) => {
             let uniform = this.uniforms[activeUniform.uniformName];
-
-            if (activeUniform.isStruct) {
-                uniform = uniform[activeUniform.structProperty];
-            }
-            if (activeUniform.isStructArray) {
-                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
-            }
 
             if (!(uniform && uniform.value)) return true;
 
@@ -139,7 +128,6 @@ export class Program {
 
         function checkDuplicate(value) {
             if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
-
                 // If reused, set flag to true to assign sequential units when drawn
                 this.assignTextureUnits = true;
                 return false;
@@ -148,7 +136,14 @@ export class Program {
             return true;
         }
     }
-
+    /**
+     * Defines which function is used for blending pixel arithmetic.
+     * 
+     * @param {GLenum} src - source factor
+     * @param {GLenum} dst - destination factor
+     * @param {GLenum} srcAlpha - source alpha value
+     * @param {GLenum} dstAlpha - destination alpha value.
+     */
     setBlendFunc(src, dst, srcAlpha, dstAlpha) {
         this.blendFunc.src = src;
         this.blendFunc.dst = dst;
@@ -156,12 +151,19 @@ export class Program {
         this.blendFunc.dstAlpha = dstAlpha;
         if (src) this.transparent = true;
     }
-
+    /**
+     * Set the RGB blend equation and alpha blend equation separately
+     * 
+     * @param {GLenum} modeRGB - A GLenum specifying how the red, green and blue components of source and destination colors are combined
+     * @param {GLenum} modeAlpha - A GLenum specifying how the alpha component (transparency) of source and destination colors are combined
+     */
     setBlendEquation(modeRGB, modeAlpha) {
         this.blendEquation.modeRGB = modeRGB;
         this.blendEquation.modeAlpha = modeAlpha;
     }
-
+    /**
+     * Apply the options state to renderer
+     */
     applyState() {
         if (this.depthTest) this.gl.renderer.enable(this.gl.DEPTH_TEST);
         else this.gl.renderer.disable(this.gl.DEPTH_TEST);
@@ -179,38 +181,29 @@ export class Program {
         if (this.blendFunc.src) this.gl.renderer.setBlendFunc(this.blendFunc.src, this.blendFunc.dst, this.blendFunc.srcAlpha, this.blendFunc.dstAlpha);
         if (this.blendEquation.modeRGB) this.gl.renderer.setBlendEquation(this.blendEquation.modeRGB, this.blendEquation.modeAlpha);
     }
-
+    /**
+     * Use the Programe according to the options setting
+     * 
+     * @param {Object} options - The options of Programe's use
+     * @param {Boolean} [options.programActive=false] - Whether program is active
+     * @param {Boolean} [options.flipFaces=false] - Whether flipFaces
+     */
     use({
         programActive = false,
         flipFaces = false,
     } = {}) {
-
         // Used if this.assignTextureUnits is true, when texture units overlap
         let textureUnit = -1;
-
         // Avoid gl call if program already in use
         if (!programActive) {
             this.gl.useProgram(this.program);
             this.gl.renderer.currentProgram = this.id;
         }
-
         // Set only the active uniforms found in the shader
         this.uniformLocations.forEach((location, activeUniform) => {
             let name = activeUniform.uniformName;
-
-            // get supplied uniform
+            // Get supplied uniform
             let uniform = this.uniforms[name];
-
-            // For structs, get the specific property instead of the entire object
-            if (activeUniform.isStruct) {
-                uniform = uniform[activeUniform.structProperty];
-                name += `.${activeUniform.structProperty}`;
-            }
-            if (activeUniform.isStructArray) {
-                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
-                name += `[${activeUniform.structIndex}].${activeUniform.structProperty}`;
-            }
-
             if (!uniform) {
                 return warn(`Active uniform ${name} has not been supplied`);
             }
@@ -221,8 +214,8 @@ export class Program {
 
             if (uniform.value.texture) {
                 //Todo => Fix RenderTarget
-                if(!uniform.value.update) uniform.value = uniform.value.texture;
-                // if texture units overlapped, will fallback to sequential unit assignment
+                if (!uniform.value.update) uniform.value = uniform.value.texture;
+                // if texture units overlapped, will sequential unit assignment
                 textureUnit = this.assignTextureUnits ? textureUnit + 1 : uniform.value.textureUnit;
                 // Check if texture needs to be updated
                 uniform.value.update(textureUnit);
@@ -248,14 +241,23 @@ export class Program {
         this.applyState();
         if (flipFaces) this.gl.renderer.setFrontFace(this.frontFace === this.gl.CCW ? this.gl.CW : this.gl.CCW);
     }
-
+    /**
+     * Delete the program and shader
+     */
     remove() {
         this.gl.deleteProgram(this.program);
         this.gl.deleteShader(vertexShader);
         this.gl.deleteShader(fragmentShader);
     }
 }
-
+/**
+ * Set uniform value
+ * 
+ * @param {WebGLContext} gl
+ * @param {Number} - uniform value type
+ * @param {WebGLUniformLocation} - A WebGLUniformLocation object containing the location of the uniform attribute to modify
+ * @param {Number/Float32Array} A new value to be used for the uniform variable
+ */
 function setUniform(gl, type, location, value) {
     switch (type) {
         case 5126: return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value); // FLOAT
@@ -278,14 +280,12 @@ function setUniform(gl, type, location, value) {
     }
 }
 
-function addLineNumbers(string) {
-    let lines = string.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-        lines[i] = (i + 1) + ': ' + lines[i];
-    }
-    return lines.join('\n');
-}
-
+/**
+ * Flatten uniform arrays
+ * 
+ * @param {Array} array 
+ * @return {Float32Array}
+ */
 function flatten(array) {
     const arrayLen = array.length;
     const valueLen = array[0].length;
@@ -294,6 +294,14 @@ function flatten(array) {
     if (!value) arrayCacheF32[length] = value = new Float32Array(length);
     for (let i = 0; i < arrayLen; i++) value.set(array[i], i * valueLen);
     return value;
+}
+
+function addLineNumbers(string) {
+    let lines = string.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        lines[i] = (i + 1) + ': ' + lines[i];
+    }
+    return lines.join('\n');
 }
 
 let warnCount = 0;

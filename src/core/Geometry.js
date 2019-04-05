@@ -6,14 +6,19 @@ let ID = 0;
 let ATTR_ID = 0;
 
 /**
- * @param {Object} attribute 
-{
-    data - typed array eg UInt16Array for indices, Float32Array
-    size - int default 1
-    instanced - boolean default false. can pass true or divisor amount
-    type - gl enum default gl.UNSIGNED_SHORT for 'index', gl.FLOAT for others
-    normalize - boolean default false
-} 
+ * Create a geometry
+ * 
+ * @class
+ * @param {WebGLContext} gl 
+ * @param {Object} [attribute] -  The attribute of geometry parameters
+ * @param {Array} [attribute.data] - Typed array eg UInt16Array for indices, Float32Array
+ * @param {Number} [attribute.size=1]
+ * @param {Boolean} [attribute.instanced=false] - Boolean default false. can pass true or divisor amount
+ * @param {GLenum} [attribute.type] - Default gl.UNSIGNED_SHORT for 'index', gl.FLOAT for others
+ * @param {Boolean} [attribute.normalize=false] - Boolean default false
+ * 
+ * @example
+ * new Geometry(gl, {position: { size: 3, data: new Float32Array(data.position) });
  */
 export class Geometry {
     constructor(gl, attributes = {}) {
@@ -36,7 +41,9 @@ export class Geometry {
             this.addAttribute(key, attributes[key]);
         }
     }
-
+    /**
+    * Add attribute to geometry
+    */
     addAttribute(key, attr) {
         this.attributes[key] = attr;
         // Set options
@@ -70,7 +77,9 @@ export class Geometry {
             this.drawRange.count = Math.max(this.drawRange.count, attr.count);
         }
     }
-
+    /**
+    * Bind buffer and push attribute data to buffer
+    */
     updateAttribute(attr) {
         // Already bound, prevent gl command
         if (this.glState.boundBuffer !== attr.id) {
@@ -168,7 +177,6 @@ export class Geometry {
     }
 
     computeBoundingBox(array) {
-
         // Use position buffer if available
         if (!array && this.attributes.position) array = this.attributes.position.data;
         if (!array) console.warn('No position buffer found to compute bounds');
@@ -210,7 +218,6 @@ export class Geometry {
     }
 
     computeBoundingSphere(array) {
-
         // Use position buffer if available
         if (!array && this.attributes.position) array = this.attributes.position.data;
         if (!array) console.warn('No position buffer found to compute bounds');

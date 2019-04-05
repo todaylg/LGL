@@ -4,8 +4,9 @@ import { Vec3 } from "../math/Vec3.js";
 const tempVec3 = new Vec3();
 
 /**
- * @class Renderer
- * @description  Create webgl renderer
+ * Create webgl renderer
+ * 
+ * @class
  * @param {Object} [options] -  The optional renderer parameters
  * @param {HTMLCanvasElement} [options.canvas] -  The canvas to use get webgl renderer
  * @param {Number} [options.width] - The width of the canvas
@@ -142,6 +143,7 @@ export class Renderer {
   }
   /**
    * Set canvas's size from option's width/height and dpr parameter
+   * 
    * @param {Number} width - Class reference
    * @param {Number} height - Class reference
    */
@@ -159,6 +161,7 @@ export class Renderer {
   }
   /**
    * Set gl's viewport from option's width/height and dpr parameter
+   * 
    * @param {Number} width
    * @param {Number} height
    */
@@ -174,6 +177,7 @@ export class Renderer {
   }
   /**
    * Enable gl's capability
+   * 
    * @param {GLenum} - Class reference
    */
   enable(id) {
@@ -183,6 +187,7 @@ export class Renderer {
   }
   /**
    * Disable gl's capability
+   * 
    * @param {GLenum} - capability's name
    */
   disable(id) {
@@ -192,6 +197,7 @@ export class Renderer {
   }
   /**
    * Defines which function is used for blending pixel arithmetic.
+   * 
    * @param {GLenum} src - source factor
    * @param {GLenum} dst - destination factor
    * @param {GLenum} srcAlpha - source alpha value
@@ -215,6 +221,7 @@ export class Renderer {
   }
   /**
    * Set the RGB blend equation and alpha blend equation separately
+   * 
    * @param {GLenum} modeRGB - A GLenum specifying how the red, green and blue components of source and destination colors are combined
    * @param {GLenum} modeAlpha - A GLenum specifying how the alpha component (transparency) of source and destination colors are combined
    */
@@ -231,7 +238,8 @@ export class Renderer {
     else this.gl.blendEquation(modeRGB);
   }
   /**
-   * Whether or not front- and/or back-facing polygons can be culled.
+   * Whether or not front- and/or back-facing polygons can be culled
+   * 
    * @param {GLenum} value - A GLenum specifying whether front- or back-facing polygons are candidates for culling. The default value is gl.BACK
    */
   setCullFace(value) {
@@ -241,6 +249,7 @@ export class Renderer {
   }
   /**
    * Whether polygons are front- or back-facing by setting a winding orientation
+   * 
    * @param {GLenum} value - A GLenum type winding orientation. The default value is gl.CCW.
    */
   setFrontFace(value) {
@@ -250,6 +259,7 @@ export class Renderer {
   }
   /**
    * Whether writing into the depth buffer is enabled or disabled
+   * 
    * @param {GLboolean} value - A GLboolean specifying whether or not writing into the depth buffer is enabled. Default value: true, meaning that writing is enabled
    */
   setDepthMask(value) {
@@ -259,6 +269,7 @@ export class Renderer {
   }
   /**
    * Specifies a function that compares incoming pixel depth to the current depth buffer value
+   * 
    * @param {GLenum} value - A GLenum specifying the depth comparison function, which sets the conditions under which the pixel will be drawn. The default value is gl.LESS
    */
   setDepthFunc(value) {
@@ -268,6 +279,7 @@ export class Renderer {
   }
   /**
    * Specifies which texture unit to make active
+   * 
    * @param {Number} value - The texture unit to make active. The value is a gl.TEXTUREI where I is within the range from 0 to gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1
    */
   activeTexture(value) {
@@ -276,7 +288,8 @@ export class Renderer {
     this.gl.activeTexture(this.gl.TEXTURE0 + value);
   }
   /**
-   * Binds a given WebGLFramebuffer to a target.
+   * Binds a given WebGLFramebuffer to a target
+   * 
    * @param {Object} options - The optional framebuffer parameters
    * @param {GLenum} [options.target] - A GLenum specifying the binding point (target)
    * @param {WebGLFramebuffer} [options.buffer] - A WebGLFramebuffer object to bind
@@ -287,7 +300,8 @@ export class Renderer {
     this.gl.bindFramebuffer(target, buffer);
   }
   /**
-   * Get a WebGL extension.
+   * Get a WebGL extension
+   * 
    * @param {String} extension - A String for the name of the WebGL extension to enable.
    * @param {String} webgl2Func - A String for the name of the WebGL2 extension to enable.
    * @param {WebGLFramebuffer} extFunc - extension function of extension
@@ -309,6 +323,11 @@ export class Renderer {
     return this.extensions[extension][extFunc].bind(this.extensions[extension]);
   }
 
+  /**
+   * Sort Opaque Object（renderOrder=>program.id=>zDepth=>id）
+   *
+   * @private
+   */
   sortOpaque(a, b) {
     if (a.renderOrder !== b.renderOrder) {
       return a.renderOrder - b.renderOrder;
@@ -320,7 +339,11 @@ export class Renderer {
       return b.id - a.id;
     }
   }
-
+  /**
+   * Sort transparent Object（renderOrder=>zDepth=>id）
+   *
+   * @private
+   */
   sortTransparent(a, b) {
     if (a.renderOrder !== b.renderOrder) {
       return a.renderOrder - b.renderOrder;
@@ -331,7 +354,11 @@ export class Renderer {
       return b.id - a.id;
     }
   }
-
+  /**
+  * Sort UI Object（renderOrder=>program.id=>id）
+  *
+  * @private
+  */
   sortUI(a, b) {
     if (a.renderOrder !== b.renderOrder) {
       return a.renderOrder - b.renderOrder;
@@ -341,7 +368,11 @@ export class Renderer {
       return b.id - a.id;
     }
   }
-
+  /**
+    * Get the order of Render Object
+    *
+    * @private
+    */
   getRenderList({ scene, camera, frustumCull, sort }) {
     let renderList = [];
     if (camera && frustumCull) camera.updateFrustum();
@@ -383,7 +414,16 @@ export class Renderer {
     }
     return renderList;
   }
-
+  /**
+   * Renders the hole scene to its webGL view
+   * @param {Object} options - The optional render parameters
+   * @param {Transform} [options.scene] - The scene to be rendered
+   * @param {Camera} [options.camera] - The camera to be rendered
+   * @param {WebGLFramebuffer} [options.target=null] - The render target
+   * @param {Boolean} [options.update=true] - Whether updates all scene graph matrices
+   * @param {Boolean} [options.sort=true] - Whether sort render Object（Opaque、Transparent、UI）
+   * @param {Boolean} [options.frustumCull=true] - Whether enable frustumCull of camera
+   */
   render({
     scene,
     camera,
@@ -409,8 +449,8 @@ export class Renderer {
       }
       this.gl.clear(
         (this.color ? this.gl.COLOR_BUFFER_BIT : 0) |
-          (this.depth ? this.gl.DEPTH_BUFFER_BIT : 0) |
-          (this.stencil ? this.gl.STENCIL_BUFFER_BIT : 0)
+        (this.depth ? this.gl.DEPTH_BUFFER_BIT : 0) |
+        (this.stencil ? this.gl.STENCIL_BUFFER_BIT : 0)
       );
     }
     // updates all scene graph matrices

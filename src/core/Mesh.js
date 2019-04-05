@@ -67,7 +67,6 @@ export class Mesh extends Transform {
     }
 
     computeBoundingBox(array) {
-
         // Use position buffer if available
         if (!array && this.geometry.attributes.position) array = this.geometry.attributes.position.data;
         if (!array) console.warn('No position buffer found to compute bounds');
@@ -112,7 +111,6 @@ export class Mesh extends Transform {
     }
 
     computeBoundingSphere(array) {
-
         // Use position buffer if available
         if (!array && this.geometry.attributes.position) array = this.geometry.attributes.position.data;
         if (!array) console.warn('No position buffer found to compute bounds');
