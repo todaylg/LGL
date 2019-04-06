@@ -1,4 +1,4 @@
-// Based from ThreeJS' OrbitControls class, rewritten using es6 with some additions and subions.
+// Based from ThreeJS' OrbitControls class, rewritten using es6 with some additions and subtractions.
 // TODO: abstract event handlers so can be fed from other sources
 // TODO: make scroll zoom more accurate than just >/< zero
 
@@ -9,6 +9,47 @@ const STATE = {NONE: -1, ROTATE: 0, DOLLY: 1, PAN: 2, DOLLY_PAN: 3};
 const tempVec3 = new Vec3();
 const tempVec2a = new Vec2();
 const tempVec2b = new Vec2();
+
+class Orbit{
+    constructor(object, {
+        element = document,
+        enabled = true,
+        target = new Vec3(),
+        ease = 0.25,
+        inertia = 0.85,
+        enableRotate = true,
+        rotateSpeed = 0.1,
+        enableZoom = true,
+        zoomSpeed = 1,
+        enablePan = true,
+        panSpeed = 0.1,
+        minPolarAngle = 0,
+        maxPolarAngle = Math.PI,
+        minAzimuthAngle = -Infinity,
+        maxAzimuthAngle = Infinity,
+        minDistance = 0,
+        maxDistance = Infinity,
+    } = {}){
+        this.element = element;
+        this.enabled = enabled;
+        this.target = target;
+        this.ease = ease;
+        this.inertia = inertia;
+        this.enableRotate = enableRotate;
+        this.rotateSpeed = rotateSpeed;
+        this.enableZoom = enableZoom;
+        this.zoomSpeed = zoomSpeed;
+        this.enablePan = enablePan;
+        this.panSpeed = panSpeed;
+        this.minPolarAngle = minPolarAngle;
+        this.maxPolarAngle = maxPolarAngle;
+        this.minAzimuthAngle = minAzimuthAngle;
+        this.maxAzimuthAngle = maxAzimuthAngle;
+        this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
+    }
+}
+
 
 export function Orbit(object, {
     element = document,
@@ -48,7 +89,7 @@ export function Orbit(object, {
     // Grab initial position values
     const offset = new Vec3();
     offset.copy(object.position).sub(this.target);
-    spherical.radius = sphericalTarget.radius = offset.length();
+    spherical.radius = sphericalTarget.radius = offset.distance();
     spherical.theta = sphericalTarget.theta = Math.atan2(offset.x, offset.z);
     spherical.phi = sphericalTarget.phi = Math.acos(Math.min(Math.max(offset.y / sphericalTarget.radius, -1), 1));
 
@@ -124,7 +165,7 @@ export function Orbit(object, {
     const pan = (deltaX, deltaY) => {
         let el = element === document ? document.body : element;
         tempVec3.copy(object.position).sub(this.target);
-        let targetDistance = tempVec3.length();
+        let targetDistance = tempVec3.distance();
         targetDistance *= Math.tan(((object.fov || 45) / 2) * Math.PI / 180.0);
         panLeft(2 * deltaX * targetDistance / el.clientHeight, object.matrix);
         panUp(2 * deltaY * targetDistance / el.clientHeight, object.matrix);

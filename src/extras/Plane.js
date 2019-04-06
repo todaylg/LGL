@@ -1,7 +1,27 @@
 import { Geometry } from '../core/Geometry.js';
-
+/**
+ * Create a Plane Geometry
+ * 
+ * @class
+ * @extends Geometry
+ * @param {WebGLContext} gl
+ * @param {Object} [options] -  The optional plane parameters
+ * @param {Number} [options.width=1] - Width along the X axis
+ * @param {Number} [options.hieght=1] - Height along the Y axis
+ * @param {Number} [options.widthSegments=1] - Width segments 
+ * @param {Number} [options.heightSegments=1] - height segments 
+ * @param {Object} [options.attributes={}] - The other Geometry attribute of plane
+ */
 export class Plane extends Geometry {
-    constructor(gl, width = 1, height = width, wSegs = 1, hSegs = wSegs) {
+    constructor(gl, {
+        width = 1,
+        height = 1,
+        widthSegments = 1,
+        heightSegments = 1,
+        attributes = {},
+    } = {}) {
+        const wSegs = widthSegments;
+        const hSegs = heightSegments;
         // Determine length of arrays
         const num = (wSegs + 1) * (hSegs + 1);
         const numIndices = wSegs * hSegs;
@@ -14,12 +34,14 @@ export class Plane extends Geometry {
 
         Plane.buildPlane(position, normal, uv, index, width, height, 0, wSegs, hSegs);
 
-        super(gl, {
+        Object.assign(attributes, {
             position: { size: 3, data: position },
             normal: { size: 3, data: normal },
             uv: { size: 2, data: uv },
             index: { data: index },
         });
+
+        super(gl, attributes);
     }
 
     static buildPlane(position, normal, uv, index, width, height, depth, wSegs, hSegs,
@@ -57,7 +79,7 @@ export class Plane extends Geometry {
                 index[ii * 6] = a;
                 index[ii * 6 + 1] = b;
                 index[ii * 6 + 2] = d;
-                
+
                 index[ii * 6 + 3] = b;
                 index[ii * 6 + 4] = c;
                 index[ii * 6 + 5] = d;

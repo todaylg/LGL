@@ -126,7 +126,8 @@ export class Vec3 extends Array {
      * @returns {Number} distance between this vec3 and v
      */
     distance(v) {
-        return Vec3Func.distance(this, v);
+        if (v) return Vec3Func.distance(this, v);
+        else return Vec3Func.length(this);
     }
     /**
      * @function

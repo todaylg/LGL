@@ -1,15 +1,46 @@
-import {Geometry} from '../core/Geometry.js';
-import {Vec3} from '../math/Vec3.js';
-
+import { Geometry } from '../core/Geometry.js';
+import { Vec3 } from '../math/Vec3.js';
+/**
+ * Create a Sphere Geometry
+ * 
+ * @class
+ * @extends Geometry
+ * @param {WebGLContext} gl
+ * @param {Object} [options] -  The optional sphere parameters
+ * @param {Number} [options.radius=0.5] - Sphere radius
+ * @param {Number} [options.widthSegments=16] - Number of horizontal segments
+ * @param {Number} [options.heightSegments=Math.ceil(widthSegments * 0.5)] - Number of vertical segments
+ * @param {Number} [options.phiStart=0] - Specify horizontal starting angle
+ * @param {Object} [options.phiLength=Math.PI*2] - Specify horizontal sweep angle size
+ * @param {Object} [options.thetaStart=0] - Specify vertical starting angle
+ * @param {Object} [options.thetaLength=Math.PI] - Specify vertical sweep angle size
+ * @param {Object} [options.attributes={}] - The other Geometry attribute of sphere
+ */
 export class Sphere extends Geometry {
-    constructor(gl, radius = 0.5, wSegs = 16, hSegs = Math.ceil(wSegs * 0.5), pStart = 0, pLength = Math.PI * 2, tStart = 0, tLength = Math.PI) {
+    constructor(gl, {
+        radius = 0.5,
+        widthSegments = 16,
+        heightSegments = Math.ceil(widthSegments * 0.5),
+        phiStart = 0,
+        phiLength = Math.PI * 2,
+        thetaStart = 0,
+        thetaLength = Math.PI,
+        attributes = {},
+    } = {}) {
+        const wSegs = widthSegments;
+        const hSegs = heightSegments;
+        const pStart = phiStart;
+        const pLength = phiLength;
+        const tStart = thetaStart;
+        const tLength = thetaLength;
+
         const num = (wSegs + 1) * (hSegs + 1);
         const numIndices = wSegs * hSegs * 6;
 
         const position = new Float32Array(num * 3);
         const normal = new Float32Array(num * 3);
         const uv = new Float32Array(num * 2);
-        const index = new Uint16Array(numIndices);
+        const index = (num > 65536) ? new Uint32Array(numIndices) : new Uint16Array(numIndices);
 
         let i = 0;
         let iv = 0;
@@ -22,22 +53,22 @@ export class Sphere extends Geometry {
         for (let iy = 0; iy <= hSegs; iy++) {
             let vRow = [];
             let v = iy / hSegs;
-            for (let ix = 0; ix <= wSegs; ix++, i++) {
+            for (let ix = 0; ix <= wSegs; ix++ , i++) {
                 let u = ix / wSegs;
                 let x = -radius * Math.cos(pStart + u * pLength) * Math.sin(tStart + v * tLength);
                 let y = radius * Math.cos(tStart + v * tLength);
                 let z = radius * Math.sin(pStart + u * pLength) * Math.sin(tStart + v * tLength);
                 // vertex
-                position[i * 3]     = x;
+                position[i * 3] = x;
                 position[i * 3 + 1] = y;
                 position[i * 3 + 2] = z;
                 // normal
                 n.set(x, y, z).normalize();
-                normal[i * 3]     = n.x;
+                normal[i * 3] = n.x;
                 normal[i * 3 + 1] = n.y;
                 normal[i * 3 + 2] = n.z;
                 // uv
-                uv[i * 2]     = u;
+                uv[i * 2] = u;
                 uv[i * 2 + 1] = 1 - v;
 
                 vRow.push(iv++);
@@ -54,13 +85,13 @@ export class Sphere extends Geometry {
                 let d = grid[iy + 1][ix + 1];
 
                 if (iy !== 0 || tStart > 0) {
-                    index[ii * 3]     = a;
+                    index[ii * 3] = a;
                     index[ii * 3 + 1] = b;
                     index[ii * 3 + 2] = d;
                     ii++;
                 }
                 if (iy !== hSegs - 1 || te < Math.PI) {
-                    index[ii * 3]     = b;
+                    index[ii * 3] = b;
                     index[ii * 3 + 1] = c;
                     index[ii * 3 + 2] = d;
                     ii++;
@@ -68,11 +99,13 @@ export class Sphere extends Geometry {
             }
         }
 
-        super(gl, {
-            position: {size: 3, data: position},
-            normal: {size: 3, data: normal},
-            uv: {size: 2, data: uv},
-            index: {data: index},
+        Object.assign(attributes, {
+            position: { size: 3, data: position },
+            normal: { size: 3, data: normal },
+            uv: { size: 2, data: uv },
+            index: { data: index },
         });
+
+        super(gl, attributes);
     }
 }

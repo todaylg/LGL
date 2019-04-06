@@ -284,6 +284,15 @@ export class Mat4 extends Float32Array {
         return this;
     }
     /**
+     * @function
+     * @description  Returns the max scaling factor component of a transformation matrix. 
+     * @param  {mat4} mat Matrix to be decomposed (input)
+     * @returns {Number} 
+     */
+    getMaxScaleOnAxis() {
+        return Mat4Func.getMaxScaleOnAxis(this);
+    }
+    /**
     * @function
     * @description  Generates a matrix that makes something look at something else.
     * @param {vec3} eye Position of the viewer

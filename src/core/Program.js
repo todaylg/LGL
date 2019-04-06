@@ -89,6 +89,21 @@ export class Program {
         for (let uIndex = 0; uIndex < numUniforms; uIndex++) {
             let uniform = gl.getActiveUniform(this.program, uIndex);
             this.uniformLocations.set(uniform, gl.getUniformLocation(this.program, uniform.name));
+
+            // split uniforms' names to separate array and struct declarations
+            const split = uniform.name.match(/(\w+)/g);
+
+            uniform.uniformName = split[0];
+
+            //Todo:????
+            if (split.length === 3) {
+                uniform.isStructArray = true;
+                uniform.structIndex = Number(split[1]);
+                uniform.structProperty = split[2];
+            } else if (split.length === 2 && isNaN(Number(split[1]))) {
+                uniform.isStruct = true;
+                uniform.structProperty = split[1];
+            }
         }
 
         // Get active attribute locations
@@ -109,6 +124,13 @@ export class Program {
         const assignedTextureUnits = [];
         [...this.uniformLocations.keys()].every((activeUniform) => {
             let uniform = this.uniforms[activeUniform.uniformName];
+
+            if (activeUniform.isStruct) {
+                uniform = uniform[activeUniform.structProperty];
+            }
+            if (activeUniform.isStructArray) {
+                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
+            }
 
             if (!(uniform && uniform.value)) return true;
 
@@ -204,6 +226,17 @@ export class Program {
             let name = activeUniform.uniformName;
             // Get supplied uniform
             let uniform = this.uniforms[name];
+
+            // For structs, get the specific property instead of the entire object
+            if (activeUniform.isStruct) {
+                uniform = uniform[activeUniform.structProperty];
+                name += `.${activeUniform.structProperty}`;
+            }
+            if (activeUniform.isStructArray) {
+                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
+                name += `[${activeUniform.structIndex}].${activeUniform.structProperty}`;
+            }
+
             if (!uniform) {
                 return warn(`Active uniform ${name} has not been supplied`);
             }

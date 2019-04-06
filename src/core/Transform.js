@@ -20,9 +20,9 @@ export class Transform {
 
         this.position = new Vec3();
         this.quaternion = new Quat();
-        this.scale = new Vec3([1, 1, 1]);
+        this.scale = new Vec3(1, 1, 1);
         this.rotation = new Euler();
-        this.up = new Vec3([0, 1, 0]);
+        this.up = new Vec3(0, 1, 0);
 
         this.rotation.onChange = () => this.quaternion.fromEuler(this.rotation);
         this.quaternion.onChange = () => this.rotation.fromQuaternion(this.quaternion);
