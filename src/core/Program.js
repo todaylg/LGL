@@ -4,13 +4,13 @@ let ID = 0;
 const arrayCacheF32 = {};
 
 /**
- * Create glProgram
+ * Create Program
  * 
  * @class
  * @param {WebGLContext} gl 
  * @param {Object} [options] -  The optional program parameters
- * @param {String} [options.fragment] - vertexShader source code
- * @param {String} [options.vertex] - fragmentShader source code
+ * @param {String} [options.fragment] - VertexShader source code
+ * @param {String} [options.vertex] - FragmentShader source code
  * @param {Object} [options.uniforms] - Uniforms attibute object
  * @param {Boolean} [options.transparent] - Whether is transparent
  * @param {GLenum} [options.cullFace] - Whether or not front- and/or back-facing polygons can be culled
@@ -250,6 +250,7 @@ export class Program {
         this.gl.deleteShader(fragmentShader);
     }
 }
+
 /**
  * Set uniform value
  * 

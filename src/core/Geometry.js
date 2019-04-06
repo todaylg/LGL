@@ -1,4 +1,4 @@
-import {Vec3} from '../math/Vec3.js';
+import { Vec3 } from '../math/Vec3.js';
 
 const tempVec3 = new Vec3();
 
@@ -26,7 +26,7 @@ export class Geometry {
         this.attributes = attributes;
         this.id = ID++;
 
-        this.drawRange = {start: 0, count: 0};
+        this.drawRange = { start: 0, count: 0 };
         this.instancedCount = 0;
 
         // Unbind current VAO so that new buffers don't get added to active mesh
@@ -50,9 +50,9 @@ export class Geometry {
         attr.id = ATTR_ID++;
         attr.size = attr.size || 1;
         attr.type = attr.type || (
-            attr.data.constructor === Float32Array ? this.gl.FLOAT : 
-            attr.data.constructor === Uint16Array ? this.gl.UNSIGNED_SHORT : 
-            this.gl.UNSIGNED_INT); // Uint32Array
+            attr.data.constructor === Float32Array ? this.gl.FLOAT :
+                attr.data.constructor === Uint16Array ? this.gl.UNSIGNED_SHORT :
+                    this.gl.UNSIGNED_INT); // Uint32Array
         attr.target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
         attr.normalize = attr.normalize || false;
         attr.buffer = this.gl.createBuffer();
@@ -64,6 +64,7 @@ export class Geometry {
         this.updateAttribute(attr);
 
         // Update geometry counts. If indexed, ignore regular attributes
+        // Todo:啥用？
         if (attr.divisor) {
             this.isInstanced = true;
             if (this.instancedCount && this.instancedCount !== attr.count * attr.divisor) {
@@ -89,26 +90,47 @@ export class Geometry {
         this.gl.bufferData(attr.target, attr.data, this.gl.STATIC_DRAW);
         attr.needsUpdate = false;
     }
-
+    /**
+    * Set the attribute draw range count
+    * 
+    * @param {Object} value - The value of index key
+    */
     setIndex(value) {
         this.addAttribute('index', value);
     }
-
+    /**
+    * Set the attribute draw range start and count
+    * 
+    * @param {Number} start - The start value
+    * @param {Number} count - The count value
+    */
     setDrawRange(start, count) {
         this.drawRange.start = start;
         this.drawRange.count = count;
     }
-
+    /**
+    * Set the instance count value
+    * 
+    * @param {Number} value - The instance count value
+    */
     setInstancedCount(value) {
         this.instancedCount = value;
     }
-
+    /**
+    * Create Vertex Array Object and bind program
+    * 
+    * @param {Program} program - The program to bind new vao
+    */
     createVAO(program) {
         this.vao = this.gl.renderer.createVertexArray();
         this.gl.renderer.bindVertexArray(this.vao);
         this.bindAttributes(program);
     }
-
+    /**
+    * Bind attribute to program
+    * 
+    * @param {Program} program - The program to bind attribute
+    */
     bindAttributes(program) {
         // Link all attributes to program using gl.vertexAttribPointer
         program.attributeLocations.forEach((location, name) => {
@@ -136,7 +158,13 @@ export class Geometry {
         // Bind indices if geometry indexed
         if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer);
     }
-
+    /**
+    * Draw the Geometry
+    * 
+    * @param {Object} [options] -  The options of drawing parameters
+    * @param {GLenum} [options.mode=gl.TRIANGLES] - A GLenum specifying the type primitive to render.
+    * @param {Boolean} [options.geometryBound=false] -  Calculate geometry bounding or not
+    */
     draw({
         program,
         mode = this.gl.TRIANGLES,
@@ -175,7 +203,11 @@ export class Geometry {
             }
         }
     }
-
+    /**
+    * Calculate geometry bounding box
+    * 
+    * @param {Array} -  The geometry position data
+    */
     computeBoundingBox(array) {
         // Use position buffer if available
         if (!array && this.attributes.position) array = this.attributes.position.data;
@@ -190,7 +222,6 @@ export class Geometry {
                 radius: Infinity,
             };
         }
-
         const min = this.bounds.min;
         const max = this.bounds.max;
         const center = this.bounds.center;
@@ -203,20 +234,21 @@ export class Geometry {
             const x = array[i];
             const y = array[i + 1];
             const z = array[i + 2];
-
             min.x = Math.min(x, min.x);
             min.y = Math.min(y, min.y);
             min.z = Math.min(z, min.z);
-
             max.x = Math.max(x, max.x);
             max.y = Math.max(y, max.y);
             max.z = Math.max(z, max.z);
         }
-
         scale.sub(max, min);
         center.add(min, max).divide(2);
     }
-
+    /**
+    * Calculate geometry bounding sphere
+    * 
+    * @param {Array} -  The geometry position data
+    */
     computeBoundingSphere(array) {
         // Use position buffer if available
         if (!array && this.attributes.position) array = this.attributes.position.data;
@@ -229,16 +261,16 @@ export class Geometry {
             tempVec3.fromArray(array, i);
             maxRadiusSq = Math.max(maxRadiusSq, this.bounds.center.squaredDistance(tempVec3));
         }
-
         this.bounds.radius = Math.sqrt(maxRadiusSq);
     }
-
+    /**
+    * Remove geometry attributes
+    */
     remove() {
         if (this.vao) this.gl.renderer.deleteVertexArray(this.vao);
         for (let key in this.attributes) {
             this.gl.deleteBuffer(this.attributes[key].buffer);
             delete this.attributes[key];
-
         }
     }
 }

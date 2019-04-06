@@ -6,6 +6,28 @@ function isPowerOf2(value) {
 
 let ID = 0;
 
+/**
+ * Create Texture
+ * 
+ * @class
+ * @param {WebGLContext} gl 
+ * @param {Object} [options] -  The optional texture parameters
+ * @param {HTMLImageElement/HTMLCanvasElement/HTMLVideoElement/ImageBitmap/ImageData} [options.image] - image source
+ * @param {GLenum} [options.target=gl.TEXTURE_2D] - A GLenum specifying the binding point (target) of the active texture
+ * @param {GLenum} [options.type=gl.UNSIGNED_BYTE] - A GLenum specifying the data type of the texel(纹素) data.
+ * @param {GLenum} [options.format=gl.RGBA]  -A GLenum specifying the format of the texel data（In WebGL 1, this must be the same as internalformat）
+ * @param {GLenum} [options.internalFormat=format] - A GLenum specifying the color components in the texture.
+ * @param {GLint} [options.level=0] - A GLint specifying the level of detail. Level 0 is the base image level and level n is the nth mipmap reduction level
+ * @param {GLsizei} [options.width] - A GLsizei specifying the width of the texture.
+ * @param {GLsizei} [options.height=width] - A GLsizei specifying the height of the texture.
+ * @param {GLfloat/GLint} [options.wrapS=gl.CLAMP_TO_EDGE] - Param of TEXTURE_WRAP_S (texParameter)
+ * @param {GLenum} [options.wrapT=gl.CLAMP_TO_EDGE] - Param of TEXTURE_WRAP_T (texParameter)
+ * @param {Boolean} [options.generateMipmaps=true] - Whether generates a set of mipmaps
+ * @param {GLfloat/GLint} [options.minFilter=generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR] - Param of  TEXTURE_MIN_FILTER (texParameter)
+ * @param {GLfloat/GLint} [options.magFilter=gl.LINEAR] - Param of TEXTURE_MAG_FILTER (texParameter)
+ * @param {Boolean} [options.premultiplyAlpha=false] - Param of UNPACK_PREMULTIPLY_ALPHA_WEBGL (pixelStorei)
+ * @param {Boolean} [options.flipY=true] - Param of UNPACK_FLIP_Y_WEBGL (pixelStorei)
+ */
 export class Texture {
     constructor(gl, {
         image,
@@ -13,6 +35,9 @@ export class Texture {
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
         internalFormat = format,
+        level = 0,
+        width, // used for RenderTargets or Data Textures
+        height = width,
         wrapS = gl.CLAMP_TO_EDGE,
         wrapT = gl.CLAMP_TO_EDGE,
         generateMipmaps = true,
@@ -20,9 +45,6 @@ export class Texture {
         magFilter = gl.LINEAR,
         premultiplyAlpha = false,
         flipY = true,
-        level = 0,
-        width, // used for RenderTargets or Data Textures
-        height = width,
     } = {}) {
         this.gl = gl;
         this.id = ID++;
@@ -33,6 +55,9 @@ export class Texture {
         this.type = type;
         this.format = format;
         this.internalFormat = internalFormat;
+        this.level = level;
+        this.width = width;
+        this.height = height;
         this.minFilter = minFilter;
         this.magFilter = magFilter;
         this.wrapS = wrapS;
@@ -40,9 +65,6 @@ export class Texture {
         this.generateMipmaps = generateMipmaps;
         this.premultiplyAlpha = premultiplyAlpha;
         this.flipY = flipY;
-        this.level = level;
-        this.width = width;
-        this.height = height;
         this.texture = this.gl.createTexture();
 
         this.store = {
@@ -62,14 +84,20 @@ export class Texture {
         // TODO: test if premultiplyAlpha is global or per texture 
         this.state.premultiplyAlpha = false;
     }
-
+    /**
+     * Bind to active texture unit
+     */
     bind() {
         // Already bound to active texture unit
         if (this.glState.textureUnits[this.glState.activeTextureUnit] === this.id) return;
         this.gl.bindTexture(this.target, this.texture);
         this.glState.textureUnits[this.glState.activeTextureUnit] = this.id;
     }
-
+    /**
+     * Update the texture
+     * 
+     * @param {String} [textureUnit] -  The textureUnit of update
+     */
     update(textureUnit = this.textureUnit) {
         // Make sure that texture is bound to its texture unit
         if (this.glState.textureUnits[textureUnit] !== this.id) {
@@ -124,7 +152,7 @@ export class Texture {
 
             // TODO: all sides if cubemap
             // gl.TEXTURE_CUBE_MAP_POSITIVE_X
-            
+
             // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
             if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
                 this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
