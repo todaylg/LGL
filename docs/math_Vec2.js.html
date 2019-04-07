@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: math/Vec2.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>math/Vec2.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as Vec2Func from './functions/Vec2Func.js';
+
+/** 
+ * @class Vec2
+ * @description Two-Dimensional Vector Class
+ * @param {Number} [x=0] The element of Vec2.x
+ * @param {Number} [y=x] The element of Vec2.y
+ * @example
+ * // create a new Two-Dimensional Vector
+ * new Vec2(0, 0);
+ */
+export class Vec2 extends Array {
+    constructor(x = 0, y = x) {
+        super(x, y);
+        return this;
+    }
+
+    get x() {
+        return this[0];
+    }
+
+    set x(v) {
+        this[0] = v;
+    }
+
+    get y() {
+        return this[1];
+    }
+
+    set y(v) {
+        this[1] = v;
+    }
+    /**
+     * @function
+     * @description Set the components of a vec2 to the given values
+     * @param {Number} x
+     * @param {Number} [y=x]
+     * @returns {Vec2} 
+     */
+    set(x, y = x) {
+        Vec2Func.set(this, x, y);
+        return this;
+    }
+    /**
+     * @function
+     * @description Copy the values from one vec2 to another
+     * @param {Array} v The value to copy.
+     * @returns {Vec2} 
+     */
+    copy(v) {
+        Vec2Func.copy(this, v);
+        return this;
+    }
+    /**
+     * @function
+     * @description Adds two vec2's
+     * @param {Array} va
+     * @param {Array} [vb=this]
+     * @returns {Vec2} 
+     */
+    add(va, vb) {
+        if (vb) Vec2Func.add(this, va, vb);
+        else Vec2Func.add(this, this, va);
+        return this;
+    }
+    /**
+    * @function
+    * @description Subtracts vector b from vector a
+    * @param {Array} va
+    * @param {Array} [vb=this]
+    * @returns {Vec2} 
+    */
+    sub(va, vb) {
+        if (vb) Vec2Func.subtract(this, va, vb);
+        else Vec2Func.subtract(this, this, va);
+        return this;
+    }
+    /**
+    * @function
+    * @description Multiplies a vec2/number
+    * @param {Array/Number} m
+    * @returns {Vec2} 
+    */
+    multiply(m) {
+        if (m.length) Vec2Func.multiply(this, this, m);
+        else Vec2Func.scale(this, this, m);
+        return this;
+    }
+    /**
+    * @function
+    * @description Divides a vec2/number
+    * @param {Array/Number} m
+    * @returns {Vec2} 
+    */
+    divide(m) {
+        if (m.length) Vec2Func.divide(this, this, m);
+        else Vec2Func.scale(this, this, 1 / m);
+        return this;
+    }
+    /**
+     * @function
+     * @description Scales a vec2 by a scalar number
+     * i.e.,[x × b,y × b]
+     * @param {Number} b amount to scale the vector by
+     * @returns {Vec2} 
+     */
+    scale(v) {
+        Vec2Func.scale(this, this, v);
+        return this;
+    }
+    /**
+     * @function
+     * @description Calculates the euclidian distance between two vec2's.
+     * i.e.,length(this-v)
+     * @param {Vec2} [v=[0,0]] the operand vec2
+     * @returns {Number} distance between this vec2 and v
+     */
+    distance(v) {
+        if (v) return Vec2Func.distance(this, v);
+        else return Vec2Func.length(this);
+    }
+    /**
+     * @function
+     * @description  Calculates the squared euclidian distance between two vec2's.
+     * i.e.,length(this-v)²
+     * @param {Vec2} [v=[0,0]] the operand vec2
+     * @returns {Number} squared distance between this vec2 and v
+     */
+    squaredDistance(v) {
+        if (v) return Vec2Func.squaredDistance(this, v);
+        else return Vec2Func.squaredLength(this);
+    }
+    /**
+     * @function
+     * @description Calculates the length of a vec2.
+     * i.e.,√(x²+y²)
+     * @returns {Number} length of this vec2
+     */
+    len() {
+        return Vec2Func.length(this);
+    }
+    /**
+     * @function
+     * @description Calculates the squared length of a vec2.
+     * i.e.,x²+y²
+     * @returns {Number} squared length of this vec2
+     */
+    squaredLength() {
+        return this.squaredDistance();
+    }
+    /**
+     * @function
+     * @description Negates the components of a vec2.
+     * i.e.,(-x,-y)
+     * @param {Vec2} [v=this] vector to negate
+     * @returns {Vec2} 
+     */
+    negate(v = this) {
+        Vec2Func.negate(this, v);
+        return this;
+    }
+    /**
+     * @function
+     * @description Returns the inverse of the components of a vec2.
+     * i.e.,(1/x,1/y)
+     * @param {vec2} [v=this] vector to invert
+     * @returns {Vec2} 
+     */
+    inverse(v = this) {
+        Vec2Func.inverse(this, v);
+        return this;
+    }
+    /**
+     * @function
+     * @description Normalize a vec2.
+     * i.e.,v/|v| => (x/√(x²+y²),y/√(x²+y²))
+     * @returns {Vec2} 
+     */
+    normalize() {
+        Vec2Func.normalize(this, this);
+    }
+    /**
+    * @function
+    * @description Calculates the dot product of two vec2's.
+    * i.e.,x × v[0]+y × v[1]
+    * https://blog.csdn.net/dcrmg/article/details/52416832 
+    * @param {Vec2} v the operand
+    * @returns {Vec2} dot product of a and b
+    */
+    dot(v) {
+        return Vec2Func.dot(this, v);
+    }
+    /**
+     * @function
+     * @description 
+     * Computes the cross product of two vec2's.
+     * Note that the cross product returns a scalar of z.
+     * i.e.,va[0] × vb[1] - va[1] × vb[0];
+     * https://blog.csdn.net/dcrmg/article/details/52416832
+     * @param {Vec2} va the first operand
+     * @param {Vec2} vb the second operand
+     * @returns {Number} 
+     */
+    cross(va, vb) {
+        return Vec2Func.cross(va, vb);
+    }
+    /**
+     * @function
+     * @description Performs a linear interpolation between two vec2's
+     * i.e.,[x+a×(v[0]-x),y+a×(v[1]-x)];
+     * @param {Vec2} v the operand
+     * @param {Number} a interpolation amount between the two inputs
+     * @returns {Vec2} 
+     */
+    lerp(v, a) {
+        Vec2Func.lerp(this, this, v, a);
+    }
+    /**
+     * @function
+     * @description Transforms the vec2 with a mat3
+     * 3rd vector component is implicitly '1'
+     * i.e.,[m[0] × x + m[3] * y + m[6], m[1] × x + m[4] × y + m[7]];
+     * @param {mat3} m matrix to transform with
+     * @returns {Vec2} 
+     */
+    applyMatrix3(mat3) {
+        Vec2Func.transformMat3(this, this, mat3);
+        return this;
+    }
+    /**
+     * @function
+     * @description
+     * Transforms the vec2 with a mat4
+     * 3rd vector component is implicitly '0'
+     * 4th vector component is implicitly '1'
+     * i.e.,[m[0] × x + m[4] × y + m[12], m[1] × x + m[5] × y + m[13]];
+     * @param {mat4} m matrix to transform with
+     * @returns {Vec2} 
+     */
+    applyMatrix4(mat4) {
+        Vec2Func.transformMat4(this, this, mat4);
+        return this;
+    }
+    /**
+     * @function
+     * @description
+     * Returns whether or not the vectors exactly have the same elements in the same position (when compared with ===)
+     * @param {vec2} b The compare vector.
+     * @returns {Boolean} True if the vectors are equal, false otherwise.
+     */
+    equals(v) {
+        return Vec2Func.exactEquals(this, v);
+    }
+    /**
+    * @function
+    * @description Deep copy from this Vec2
+    * @returns {Vec2} new Vec2
+    */
+    clone() {
+        return new Vec2(this[0], this[1]);
+    }
+    /**
+     * @function
+     * @description generate Vec2 from Array
+     * @param {Array} a
+     * @param {Number} b index offset of a
+     * @returns {Vec2} 
+     */
+    fromArray(a, o = 0) {
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        return this;
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

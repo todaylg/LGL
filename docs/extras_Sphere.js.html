@@ -1,0 +1,201 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: extras/Sphere.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>extras/Sphere.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Geometry } from '../core/Geometry.js';
+import { Vec3 } from '../math/Vec3.js';
+/**
+ * Create a Sphere Geometry
+ * 
+ * @class
+ * @extends Geometry
+ * @param {WebGLContext} gl
+ * @param {Object} [options] -  The optional sphere parameters
+ * @param {Number} [options.radius=0.5] - Sphere radius
+ * @param {Number} [options.widthSegments=16] - Number of horizontal segments
+ * @param {Number} [options.heightSegments=Math.ceil(widthSegments * 0.5)] - Number of vertical segments
+ * @param {Number} [options.phiStart=0] - Specify horizontal starting angle
+ * @param {Object} [options.phiLength=Math.PI*2] - Specify horizontal sweep angle size
+ * @param {Object} [options.thetaStart=0] - Specify vertical starting angle
+ * @param {Object} [options.thetaLength=Math.PI] - Specify vertical sweep angle size
+ * @param {Object} [options.attributes={}] - The other Geometry attribute of sphere
+ */
+export class Sphere extends Geometry {
+    constructor(gl, {
+        radius = 0.5,
+        widthSegments = 16,
+        heightSegments = Math.ceil(widthSegments * 0.5),
+        phiStart = 0,
+        phiLength = Math.PI * 2,
+        thetaStart = 0,
+        thetaLength = Math.PI,
+        attributes = {},
+    } = {}) {
+        const wSegs = widthSegments;
+        const hSegs = heightSegments;
+        const pStart = phiStart;
+        const pLength = phiLength;
+        const tStart = thetaStart;
+        const tLength = thetaLength;
+
+        const num = (wSegs + 1) * (hSegs + 1);
+        const numIndices = wSegs * hSegs * 6;
+
+        const position = new Float32Array(num * 3);
+        const normal = new Float32Array(num * 3);
+        const uv = new Float32Array(num * 2);
+        const index = (num > 65536) ? new Uint32Array(numIndices) : new Uint16Array(numIndices);
+
+        let i = 0;
+        let iv = 0;
+        let ii = 0;
+        let te = tStart + tLength;
+        const grid = [];
+
+        let n = new Vec3();
+        // generate vertices, normals and uvs
+        for (let iy = 0; iy &lt;= hSegs; iy++) {
+            let vRow = [];
+            let v = iy / hSegs;
+            for (let ix = 0; ix &lt;= wSegs; ix++ , i++) {
+                let u = ix / wSegs;
+                let x = -radius * Math.cos(pStart + u * pLength) * Math.sin(tStart + v * tLength);
+                let y = radius * Math.cos(tStart + v * tLength);
+                let z = radius * Math.sin(pStart + u * pLength) * Math.sin(tStart + v * tLength);
+                // vertex
+                position[i * 3] = x;
+                position[i * 3 + 1] = y;
+                position[i * 3 + 2] = z;
+                // normal
+                n.set(x, y, z).normalize();
+                normal[i * 3] = n.x;
+                normal[i * 3 + 1] = n.y;
+                normal[i * 3 + 2] = n.z;
+                // uv
+                uv[i * 2] = u;
+                uv[i * 2 + 1] = 1 - v;
+
+                vRow.push(iv++);
+            }
+
+            grid.push(vRow);
+        }
+
+        for (let iy = 0; iy &lt; hSegs; iy++) {
+            for (let ix = 0; ix &lt; wSegs; ix++) {
+                let a = grid[iy][ix + 1];
+                let b = grid[iy][ix];
+                let c = grid[iy + 1][ix];
+                let d = grid[iy + 1][ix + 1];
+
+                if (iy !== 0 || tStart > 0) {
+                    index[ii * 3] = a;
+                    index[ii * 3 + 1] = b;
+                    index[ii * 3 + 2] = d;
+                    ii++;
+                }
+                if (iy !== hSegs - 1 || te &lt; Math.PI) {
+                    index[ii * 3] = b;
+                    index[ii * 3 + 1] = c;
+                    index[ii * 3 + 2] = d;
+                    ii++;
+                }
+            }
+        }
+
+        Object.assign(attributes, {
+            position: { size: 3, data: position },
+            normal: { size: 3, data: normal },
+            uv: { size: 2, data: uv },
+            index: { data: index },
+        });
+
+        super(gl, attributes);
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

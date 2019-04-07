@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: core/RenderTarget.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>core/RenderTarget.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// TODO: multi target rendering
+// TODO: test stencil and depth
+// TODO: destroy
+import { Texture } from './Texture.js';
+
+/**
+ * Create RenderTarget
+ * 
+ * @class
+ * @param {WebGLContext} gl 
+ * @param {Object} [options] -  The optional renderTarget parameters
+ * @param {Number} [options.width=canvas.width] - The width of renderTarget
+ * @param {Number} [options.height=canvas.height] - The height of renderTarget
+ * @param {GLenum} [options.target=gl.FRAMEBUFFER] - A GLenum specifying the binding point (target), Collection buffer data storage of color, alpha, depth and stencil buffers used to render an image.
+ * @param {Number} [options.color=1] - Number of color attachments
+ * @param {Boolean} [options.depth=true] - Specifying the internal format of the renderbuffer is DEPTH_COMPONENT16 or not
+ * @param {Boolean} [options.stencil=false] - Specifying the internal format of the renderbuffer is STENCIL_INDEX8 or not
+ * @param {Boolean} [options.stencil=false] - Whether is depth textures (note depth textures break stencil - so can't use together)depthTexture = false, // note - stencil breaks
+ */
+export class RenderTarget {
+    constructor(gl, {
+        width = gl.canvas.width,
+        height = gl.canvas.height,
+        target = gl.FRAMEBUFFER,
+        color = 1, // number of color attachments
+        depth = true,
+        stencil = false,
+        depthTexture = false, // note - stencil breaks
+        wrapS = gl.CLAMP_TO_EDGE,
+        wrapT = gl.CLAMP_TO_EDGE,
+        minFilter = gl.LINEAR,
+        magFilter = gl.LINEAR,
+    } = {}) {
+        this.gl = gl;
+        this.width = width;
+        this.height = height;
+        this.buffer = this.gl.createFramebuffer();
+        this.target = target;
+        this.gl.bindFramebuffer(this.target, this.buffer);
+        this.textures = [];
+        // TODO: multi target rendering
+        // create and attach required num of color textures
+        for (let i = 0; i &lt; color; i++) {
+            this.textures.push(new Texture(gl, {
+                width, height, wrapS, wrapT, minFilter, magFilter,
+                flipY: false,
+                generateMipmaps: false,
+            }));
+            this.textures[i].update();
+            // color, alpha
+            this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
+        }
+
+        // alias for majority of use cases
+        this.texture = this.textures[0];
+
+        // depth and stencil
+        // note depth textures break stencil - so can't use together
+        if (depthTexture &amp;&amp; (this.gl.renderer.isWebgl2 || this.gl.renderer.getExtension('WEBGL_depth_texture'))) {
+            this.depthTexture = new Texture(gl, {
+                width, height, wrapS, wrapT,
+                minFilter: this.gl.NEAREST,
+                magFilter: this.gl.NEAREST,
+                flipY: false,
+                format: this.gl.DEPTH_COMPONENT,
+                internalFormat: gl.renderer.isWebgl2 ? this.gl.DEPTH_COMPONENT24 : this.gl.DEPTH_COMPONENT,
+                type: this.gl.UNSIGNED_INT,
+                generateMipmaps: false,
+            });
+            this.depthTexture.update();
+            this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0 /* level */);
+        } else {
+            // Render buffers (attaches a WebGLRenderbuffer object to a WebGLFramebuffer object)
+            if (depth &amp;&amp; !stencil) {
+                this.depthBuffer = this.gl.createRenderbuffer();
+                this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
+                this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, width, height);
+                this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);
+            }
+
+            if (stencil &amp;&amp; !depth) {
+                this.stencilBuffer = this.gl.createRenderbuffer();
+                this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.stencilBuffer);
+                this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.STENCIL_INDEX8, width, height);
+                this.gl.framebufferRenderbuffer(this.target, this.gl.STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, this.stencilBuffer);
+            }
+
+            if (depth &amp;&amp; stencil) {
+                this.depthStencilBuffer = this.gl.createRenderbuffer();
+                this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthStencilBuffer);
+                this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_STENCIL, width, height);
+                this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, this.depthStencilBuffer);
+            }
+        }
+        this.gl.bindFramebuffer(this.target, null);
+    }
+    clone() {
+        // deep clone
+        return new RenderTarget(this.gl, this);
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

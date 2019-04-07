@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: core/Transform.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>core/Transform.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Vec3 } from '../math/Vec3.js';
+import { Quat } from '../math/Quat.js';
+import { Mat4 } from '../math/Mat4.js';
+import { Euler } from '../math/Euler.js';
+
+/**
+ * The base class for objects that are rendered on the screen.
+ *
+ * @class
+ */
+export class Transform {
+    constructor() {
+        this.parent = null;
+        this.children = [];
+        this.visible = true;
+
+        this.matrix = new Mat4();
+        this.worldMatrix = new Mat4();
+        this.matrixAutoUpdate = true;
+
+        this.position = new Vec3();
+        this.quaternion = new Quat();
+        this.scale = new Vec3(1, 1, 1);
+        this.rotation = new Euler();
+        this.up = new Vec3(0, 1, 0);
+
+        this.rotation.onChange = () => this.quaternion.fromEuler(this.rotation);
+        this.quaternion.onChange = () => this.rotation.fromQuaternion(this.quaternion);
+    }
+
+    /**
+     * Set the parent Transform object
+     *
+     * @param {Transform} parent - The parent to add this object to
+     * @param {Boolean} [notifyParent=true] Whether sync info to parent's children list
+     */
+    setParent(parent, notifyParent = true) {
+        if (notifyParent &amp;&amp; this.parent &amp;&amp; parent !== this.parent) this.parent.removeChild(this, false);
+        this.parent = parent;
+        if (notifyParent &amp;&amp; parent) parent.addChild(this, false);
+    }
+    /**
+     * Add the Transform object to parent Transform object
+     *
+     * @param {Transform} child - The child to add
+     * @param {Boolean} [notifyChild=true] Whether sync info to child's parent 
+     */
+    addChild(child, notifyChild = true) {
+        if (!~this.children.indexOf(child)) this.children.push(child);
+        if (notifyChild) child.setParent(this, false);
+    }
+    /**
+     * Remove the Transform object from parent Transform object
+     *
+     * @param {Transform} child - The child to remove
+     * @param {Boolean} [notifyChild=true] Whether sync info to child's parent 
+     */
+    removeChild(child, notifyChild = true) {
+        if (!!~this.children.indexOf(child)) this.children.splice(this.children.indexOf(child), 1);
+        if (notifyChild) child.setParent(null, false);
+    }
+    /**
+     * Update the world matrix of this Transform group
+     *
+     * @param {Boolean} force - Whether force update matrix
+     */
+    updateMatrixWorld(force) {
+        if (this.matrixAutoUpdate) this.updateMatrix();
+        if (this.worldMatrixNeedsUpdate || force) {
+            if (this.parent === null) this.worldMatrix.copy(this.matrix);
+            else this.worldMatrix.multiply(this.parent.worldMatrix, this.matrix);
+            this.worldMatrixNeedsUpdate = false;
+            force = true;
+        }
+
+        let children = this.children;
+        for (let i = 0, l = children.length; i &lt; l; i++) {
+            children[i].updateMatrixWorld(force);
+        }
+    }
+    /**
+     * Update the matrix from a quaternion rotation, vector translation and vector scale
+     */
+    updateMatrix() {
+        this.matrix.compose(this.quaternion, this.position, this.scale);
+        this.worldMatrixNeedsUpdate = true;
+    }
+    /**
+     * Traverse the callback function to all this Transfrom group
+     * 
+     * @param {Boolean} force - Whether force update matrix
+     */
+    traverse(callback) {
+        callback(this);
+        for (let i = 0, l = this.children.length; i &lt; l; i++) {
+            this.children[i].traverse(callback);
+        }
+    }
+    /**
+    * Decompose the matrix to a quaternion rotation, vector translation ,vector rotation, vector scale
+    */
+    decompose() {
+        this.matrix.getTranslation(this.position);
+        this.matrix.getRotation(this.quaternion);
+        this.matrix.getScaling(this.scale);
+        this.rotation.fromQuaternion(this.quaternion);
+    }
+    /**
+    * Update matrix to lookAt the target
+    * 
+    * @param {Transfrom} target - the target to lookAt
+    * @param {Boolean} invert - Whether invert lookAt target to self
+    */
+    lookAt(target, invert = false) {
+        if (invert) this.matrix.lookAt(this.position, target, this.up);
+        else this.matrix.lookAt(target, this.position, this.up);
+        this.matrix.getRotation(this.quaternion);
+        this.rotation.fromQuaternion(this.quaternion);
+    };
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

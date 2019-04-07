@@ -2,7 +2,7 @@ const EPSILON = 0.000001;
 
 /**
  * Calculates the length of a vec3
- * @private @private
+ * @private
  * @param {vec3} a vector to calculate length of
  * @returns {Number} length of a
  */
@@ -15,7 +15,7 @@ export function length(a) {
 
 /**
  * Copy the values from one vec3 to another
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the source vector
  * @returns {vec3} out
@@ -29,7 +29,7 @@ export function copy(out, a) {
 
 /**
  * Set the components of a vec3 to the given values
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {Number} x X component
  * @param {Number} y Y component
@@ -45,7 +45,7 @@ export function set(out, x, y, z) {
 
 /**
  * Adds two vec3's
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -60,7 +60,7 @@ export function add(out, a, b) {
 
 /**
  * Subtracts vector b from vector a
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -75,7 +75,7 @@ export function subtract(out, a, b) {
 
 /**
  * Multiplies two vec3's
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -90,7 +90,7 @@ export function multiply(out, a, b) {
 
 /**
  * Divides two vec3's
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -105,7 +105,7 @@ export function divide(out, a, b) {
 
 /**
  * Math.ceil the components of a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to ceil
  * @returns {vec3} out
@@ -119,7 +119,7 @@ export function ceil(out, a) {
 
 /**
  * Math.floor the components of a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to floor
  * @returns {vec3} out
@@ -133,7 +133,7 @@ export function floor(out, a) {
 
 /**
  * Returns the minimum of two vec3's
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -148,7 +148,7 @@ export function min(out, a, b) {
 
 /**
  * Returns the maximum of two vec3's
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -163,7 +163,7 @@ export function max(out, a, b) {
 
 /**
  * Math.round the components of a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to round
  * @returns {vec3} out
@@ -177,7 +177,7 @@ export function round(out, a) {
 
 /**
  * Scales a vec3 by a scalar number
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to scale
  * @param {Number} b amount to scale the vector by
@@ -192,7 +192,7 @@ export function scale(out, a, b) {
 
 /**
  * Adds two vec3's after scaling the second operand by a scalar value
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
@@ -208,7 +208,7 @@ export function scaleAndAdd(out, a, b, scale) {
 
 /**
  * Calculates the euclidian distance between two vec3's
- * @private @private
+ * @private
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} distance between a and b
@@ -222,7 +222,7 @@ export function distance(a, b) {
 
 /**
  * Calculates the squared euclidian distance between two vec3's
- * @private @private
+ * @private
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} squared distance between a and b
@@ -236,7 +236,7 @@ export function squaredDistance(a, b) {
 
 /**
  * Calculates the squared length of a vec3
- * @private @private
+ * @private
  * @param {vec3} a vector to calculate squared length of
  * @returns {Number} squared length of a
  */
@@ -249,7 +249,7 @@ export function squaredLength(a) {
 
 /**
  * Negates the components of a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to negate
  * @returns {vec3} out
@@ -263,7 +263,7 @@ export function negate(out, a) {
 
 /**
  * Returns the inverse of the components of a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to invert
  * @returns {vec3} out
@@ -277,7 +277,7 @@ export function inverse(out, a) {
 
 /**
  * Normalize a vec3
- * @private @private
+ * @private
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to normalize
  * @returns {vec3} out

@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: math/Quat.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>math/Quat.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as QuatFunc from './functions/QuatFunc.js';
+/** 
+ * @class Quat
+ * @description Four-Dimensional Vector Class
+ */
+export class Quat extends Float32Array {
+    constructor(array = [0, 0, 0, 1]) {
+        super(array);
+        this.onChange = () => { };
+        return this;
+    }
+
+    get x() {
+        return this[0];
+    }
+
+    set x(v) {
+        this[0] = v;
+        this.onChange();
+    }
+
+    get y() {
+        return this[1];
+    }
+
+    set y(v) {
+        this[1] = v;
+        this.onChange();
+    }
+
+    get z() {
+        return this[2];
+    }
+
+    set z(v) {
+        this[2] = v;
+        this.onChange();
+    }
+
+    get w() {
+        return this[3];
+    }
+
+    set w(v) {
+        this[3] = v;
+        this.onChange();
+    }
+    /**
+     * @function
+     * @description Set a Quat to the identity quaternion
+     * @returns {Quat} 
+     */
+    identity() {
+        QuatFunc.identity(this);
+        this.onChange();
+        return this;
+    }
+    /**
+    * @function
+    * @description Set the components of a quaternion to the given values.Equal to Vec4‘s set function.
+    * @param {Number} x
+    * @param {Number} y
+    * @param {Number} z
+    * @param {Number} w
+    * @returns {Quat} 
+    */
+    set(x, y, z, w) {
+        QuatFunc.set(this, x, y, z, w);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Rotates a quaternion by the given angle around the X axis
+     * @param {Number} rad the angle to rotate the quaternion by
+     * @param {Quat} [m=this] the quaternion to translate
+     * @returns {Quat} 
+     */
+    rotateX(a) {
+        QuatFunc.rotateX(this, this, a);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Rotates a quaternion by the given angle around the Y axis
+     * @param {Number} rad the angle to rotate the quaternion by
+     * @param {Quat} [m=this] the quaternion to translate
+     * @returns {Quat} 
+     */
+    rotateY(a) {
+        QuatFunc.rotateY(this, this, a);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Rotates a quaternion by the given angle around the Z axis
+     * @param {Number} rad the angle to rotate the quaternion by
+     * @param {Quat} [m=this] the quaternion to translate
+     * @returns {Quat} 
+     */
+    rotateZ(a) {
+        QuatFunc.rotateZ(this, this, a);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Calculates the inverse of a Quat
+     * @param {Quat} [q=this] Quat to calculate inverse of
+     * @returns {Quat} 
+     */
+    inverse(q = this) {
+        QuatFunc.invert(this, q);
+        this.onChange();
+        return this;
+    }
+    /**
+    * @function
+    * @description Calculates the conjugate(共轭) of a Quat
+    * @param {Quat} [q=this] Quat to calculate inverse of
+    * @returns {Quat} 
+    */
+    conjugate(q = this) {
+        QuatFunc.conjugate(this, q);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Copy the values from one quaternion to another.Equal to Vec4‘s copy function
+     * @param {Quat} q the quaternion
+     * @returns {Quat} 
+     */
+    copy(q) {
+        QuatFunc.copy(this, q);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Equal to Vec4‘s normalize function
+     * @param {Quat} [q=this] the quaternion
+     * @returns {Quat} 
+     */
+    normalize(q = this) {
+        QuatFunc.normalize(this, q);
+        this.onChange();
+        return this;
+    }
+    /**
+    * @function
+    * @description Multiplies two quats.if qB is null , Multiplies this and qA.
+    * @param {Quat} qA the first operand
+    * @param {Quat} qB the second operand
+    * @returns {Quat} 
+    */
+    multiply(qA, qB) {
+        if (qB) {
+            QuatFunc.multiply(this, qA, qB);
+        } else {
+            QuatFunc.multiply(this, this, qA);
+        }
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Equal to Vec4‘s dot function
+     * @param {Quat} v
+     * @returns {Quat} 
+     */
+    dot(v) {
+        return QuatFunc.dot(this, v);
+    }
+    /**
+     * @function
+     * @description Creates a quaternion from the given 3x3 rotation matrix.
+     * NOTE: The resultant quaternion is not normalized, so you should be sure
+     * to renormalize the quaternion yourself where necessary.
+     * @param {mat3} matrix3 rotation matrix
+     * @returns {Quat} 
+     */
+    fromMatrix3(matrix3) {
+        QuatFunc.fromMat3(this, matrix3);
+        this.onChange();
+        return this;
+    }
+    /**
+     * @function
+     * @description Creates a quaternion from the given euler angle x, y, z.
+     * @param {vec3} euler Angles to rotate around each axis in degrees.
+     * @returns {Quat} 
+     */
+    fromEuler(euler) {
+        QuatFunc.fromEuler(this, euler, euler.order);
+        return this;
+    }
+    /**
+     * @function
+     * @description Performs a spherical linear interpolation with two control points
+     *  @param {Quat} b the second operand
+     * @param {Quat} c the third operand
+     * @param {Quat} d the fourth operand
+     * @param {Number} t interpolation amount
+     * @returns {Quat} 
+     */
+    slerp(q, t) {
+        QuatFunc.slerp(this, this, b, c, d, t);
+        return this;
+    }
+    /**
+     * @function
+     * @description generate Quat from Array
+     * @param {Array} a
+     * @param {Number} b index offset of a
+     * @returns {Quat} 
+     */
+    fromArray(a, o = 0) {
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        this[2] = a[o + 2];
+        this[3] = a[o + 3];
+        return this;
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

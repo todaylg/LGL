@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: core/Texture.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>core/Texture.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const emptyPixel = new Uint8Array(4);
+
+function isPowerOf2(value) {
+    return (value &amp; (value - 1)) === 0;
+}
+
+let ID = 0;
+
+/**
+ * Create Texture
+ * 
+ * @class
+ * @param {WebGLContext} gl 
+ * @param {Object} [options] -  The optional texture parameters
+ * @param {HTMLImageElement/HTMLCanvasElement/HTMLVideoElement/ImageBitmap/ImageData} [options.image] - image source
+ * @param {GLenum} [options.target=gl.TEXTURE_2D] - A GLenum specifying the binding point (target) of the active texture
+ * @param {GLenum} [options.type=gl.UNSIGNED_BYTE] - A GLenum specifying the data type of the texel(纹素) data.
+ * @param {GLenum} [options.format=gl.RGBA]  -A GLenum specifying the format of the texel data（In WebGL 1, this must be the same as internalformat）
+ * @param {GLenum} [options.internalFormat=format] - A GLenum specifying the color components in the texture.
+ * @param {GLint} [options.level=0] - A GLint specifying the level of detail. Level 0 is the base image level and level n is the nth mipmap reduction level
+ * @param {GLsizei} [options.width] - A GLsizei specifying the width of the texture.
+ * @param {GLsizei} [options.height=width] - A GLsizei specifying the height of the texture.
+ * @param {GLfloat/GLint} [options.wrapS=gl.CLAMP_TO_EDGE] - Param of TEXTURE_WRAP_S (texParameter)
+ * @param {GLenum} [options.wrapT=gl.CLAMP_TO_EDGE] - Param of TEXTURE_WRAP_T (texParameter)
+ * @param {Boolean} [options.generateMipmaps=true] - Whether generates a set of mipmaps
+ * @param {GLfloat/GLint} [options.minFilter=generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR] - Param of  TEXTURE_MIN_FILTER (texParameter)
+ * @param {GLfloat/GLint} [options.magFilter=gl.LINEAR] - Param of TEXTURE_MAG_FILTER (texParameter)
+ * @param {Boolean} [options.premultiplyAlpha=false] - Param of UNPACK_PREMULTIPLY_ALPHA_WEBGL (pixelStorei)
+ * @param {Boolean} [options.flipY=true] - Param of UNPACK_FLIP_Y_WEBGL (pixelStorei)
+ */
+export class Texture {
+    constructor(gl, {
+        image,
+        target = gl.TEXTURE_2D,
+        type = gl.UNSIGNED_BYTE,
+        format = gl.RGBA,
+        internalFormat = format,
+        level = 0,
+        width, // used for RenderTargets or Data Textures
+        height = width,
+        wrapS = gl.CLAMP_TO_EDGE,
+        wrapT = gl.CLAMP_TO_EDGE,
+        generateMipmaps = true,
+        minFilter = generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR,
+        magFilter = gl.LINEAR,
+        premultiplyAlpha = false,
+        flipY = true,
+    } = {}) {
+        this.gl = gl;
+        this.id = ID++;
+        // Assign texture unit spread over max available units to avoid frequent binding
+        this.textureUnit = this.gl.renderer.state.textureUnitIndex++ % this.gl.renderer.parameters.maxTextureUnits;
+        this.image = image;
+        this.target = target;
+        this.type = type;
+        this.format = format;
+        this.internalFormat = internalFormat;
+        this.level = level;
+        this.width = width;
+        this.height = height;
+        this.minFilter = minFilter;
+        this.magFilter = magFilter;
+        this.wrapS = wrapS;
+        this.wrapT = wrapT;
+        this.generateMipmaps = generateMipmaps;
+        this.premultiplyAlpha = premultiplyAlpha;
+        this.flipY = flipY;
+        this.texture = this.gl.createTexture();
+
+        this.store = {
+            image: null,
+        };
+
+        // Alias for state store to avoid redundant calls for global state
+        this.glState = this.gl.renderer.state;
+
+        // State store to avoid redundant calls for per-texture state
+        this.state = {};
+        this.state.minFilter = this.gl.NEAREST_MIPMAP_LINEAR;
+        this.state.magFilter = this.gl.LINEAR;
+        this.state.wrapS = this.gl.REPEAT;
+        this.state.wrapT = this.gl.REPEAT;
+
+        // TODO: test if premultiplyAlpha is global or per texture 
+        this.state.premultiplyAlpha = false;
+    }
+    /**
+     * Bind to active texture unit
+     */
+    bind() {
+        // Already bound to active texture unit
+        if (this.glState.textureUnits[this.glState.activeTextureUnit] === this.id) return;
+        this.gl.bindTexture(this.target, this.texture);
+        this.glState.textureUnits[this.glState.activeTextureUnit] = this.id;
+    }
+    /**
+     * Update the texture
+     * 
+     * @param {String} [textureUnit] -  The textureUnit of update
+     */
+    update(textureUnit = this.textureUnit) {
+        // Make sure that texture is bound to its texture unit
+        if (this.glState.textureUnits[textureUnit] !== this.id) {
+            this.gl.renderer.activeTexture(textureUnit);
+            this.bind();
+        }
+
+        if (this.image === this.store.image &amp;&amp; !this.needsUpdate) return;
+        this.needsUpdate = false;
+
+        // Even if bound, set active texture unit to perform texture functions
+        this.gl.renderer.activeTexture(textureUnit);
+
+        // Check if need to bind to texture unit
+        this.bind();
+
+        if (this.flipY !== this.glState.flipY) {
+            this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, this.flipY);
+            this.glState.flipY = this.flipY;
+        }
+
+        if (this.premultiplyAlpha !== this.state.premultiplyAlpha) {
+            this.gl.pixelStorei(this.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premultiplyAlpha);
+            this.state.premultiplyAlpha = this.premultiplyAlpha;
+        }
+
+        if (this.minFilter !== this.state.minFilter) {
+            this.gl.texParameteri(this.target, this.gl.TEXTURE_MIN_FILTER, this.minFilter);
+            this.state.minFilter = this.minFilter;
+        }
+
+        if (this.magFilter !== this.state.magFilter) {
+            this.gl.texParameteri(this.target, this.gl.TEXTURE_MAG_FILTER, this.magFilter);
+            this.state.magFilter = this.magFilter;
+        }
+
+        if (this.wrapS !== this.state.wrapS) {
+            this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+            this.state.wrapS = this.wrapS;
+        }
+
+        if (this.wrapT !== this.state.wrapT) {
+            this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+            this.state.wrapT = this.wrapT;
+        }
+
+        if (this.image) {
+            if (this.image.width) {
+                this.width = this.image.width;
+                this.height = this.image.height;
+            }
+
+            // TODO: all sides if cubemap
+            // gl.TEXTURE_CUBE_MAP_POSITIVE_X
+
+            // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
+            if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
+                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+            } else {
+                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
+            }
+
+            // TODO: support everything
+            // WebGL1:
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);
+            // gl.texImage2D(target, level, internalformat, format, type, ImageData? pixels);
+            // gl.texImage2D(target, level, internalformat, format, type, HTMLImageElement? pixels);
+            // gl.texImage2D(target, level, internalformat, format, type, HTMLCanvasElement? pixels);
+            // gl.texImage2D(target, level, internalformat, format, type, HTMLVideoElement? pixels);
+            // gl.texImage2D(target, level, internalformat, format, type, ImageBitmap? pixels);
+
+            // WebGL2:
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, GLintptr offset);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLCanvasElement source);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLImageElement source);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLVideoElement source);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageBitmap source);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageData source);
+            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView srcData, srcOffset);
+
+            if (this.generateMipmaps) {
+                // For WebGL1, if not a power of 2, turn off mips, set wrapping to clamp to edge and minFilter to linear
+                if (!this.gl.renderer.isWebgl2 &amp;&amp; (!isPowerOf2(this.image.width) || !isPowerOf2(this.image.height))) {
+                    this.generateMipmaps = false;
+                    this.wrapS = this.wrapT = this.gl.CLAMP_TO_EDGE;
+                    this.minFilter = this.gl.LINEAR;
+                } else {
+                    this.gl.generateMipmap(this.target);
+                }
+            }
+        } else {
+            if (this.width) {
+                // image intentionally left null for RenderTarget
+                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0, this.format, this.type, null);
+            } else {
+                // Upload empty pixel if no image to avoid errors while image or video loading
+                this.gl.texImage2D(this.target, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, emptyPixel);
+            }
+        }
+        this.store.image = this.image;
+        this.onUpdate &amp;&amp; this.onUpdate();
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

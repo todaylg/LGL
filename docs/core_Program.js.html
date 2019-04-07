@@ -1,4 +1,68 @@
-let ID = 0;
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: core/Program.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>core/Program.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>let ID = 0;
 
 // cache of typed arrays used to flatten uniform arrays
 const arrayCacheF32 = {};
@@ -49,7 +113,7 @@ export class Program {
         this.blendEquation = {};
 
         // Set default blendFunc if transparent flagged
-        if (this.transparent && !this.blendFunc.src) {
+        if (this.transparent &amp;&amp; !this.blendFunc.src) {
             if (this.gl.renderer.premultipliedAlpha) this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
             else this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         }
@@ -86,7 +150,7 @@ export class Program {
         // Get active uniform locations
         this.uniformLocations = new Map();
         let numUniforms = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
-        for (let uIndex = 0; uIndex < numUniforms; uIndex++) {
+        for (let uIndex = 0; uIndex &lt; numUniforms; uIndex++) {
             let uniform = gl.getActiveUniform(this.program, uIndex);
             this.uniformLocations.set(uniform, gl.getUniformLocation(this.program, uniform.name));
 
@@ -100,7 +164,7 @@ export class Program {
                 uniform.isStructArray = true;
                 uniform.structIndex = Number(split[1]);
                 uniform.structProperty = split[2];
-            } else if (split.length === 2 && isNaN(Number(split[1]))) {
+            } else if (split.length === 2 &amp;&amp; isNaN(Number(split[1]))) {
                 uniform.isStruct = true;
                 uniform.structProperty = split[1];
             }
@@ -109,7 +173,7 @@ export class Program {
         // Get active attribute locations
         this.attributeLocations = new Map();
         let numAttribs = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
-        for (let aIndex = 0; aIndex < numAttribs; aIndex++) {
+        for (let aIndex = 0; aIndex &lt; numAttribs; aIndex++) {
             let attribute = gl.getActiveAttrib(this.program, aIndex);
             this.attributeLocations.set(attribute.name, gl.getAttribLocation(this.program, attribute.name));
         }
@@ -132,11 +196,11 @@ export class Program {
                 uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
             }
 
-            if (!(uniform && uniform.value)) return true;
+            if (!(uniform &amp;&amp; uniform.value)) return true;
 
             // Texture array
-            if (uniform.value.length && uniform.value[0].texture) {
-                for (let i = 0; i < uniform.value.length - 1; i++) {
+            if (uniform.value.length &amp;&amp; uniform.value[0].texture) {
+                for (let i = 0; i &lt; uniform.value.length - 1; i++) {
                     if (!checkDuplicate(uniform.value[i])) return false;
                 }
             }
@@ -241,7 +305,7 @@ export class Program {
                 return warn(`Active uniform ${name} has not been supplied`);
             }
 
-            if (uniform && uniform.value === undefined) {
+            if (uniform &amp;&amp; uniform.value === undefined) {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 
@@ -257,7 +321,7 @@ export class Program {
             }
 
             // For texture arrays, set uniform as an array of texture units instead of just one
-            if (uniform.value.length && uniform.value[0].texture) {
+            if (uniform.value.length &amp;&amp; uniform.value[0].texture) {
                 const textureUnits = [];
                 uniform.value.forEach(value => {
                     textureUnit = this.assignTextureUnits ? textureUnit + 1 : value.textureUnit;
@@ -328,13 +392,13 @@ function flatten(array) {
     const length = arrayLen * valueLen;
     let value = arrayCacheF32[length];
     if (!value) arrayCacheF32[length] = value = new Float32Array(length);
-    for (let i = 0; i < arrayLen; i++) value.set(array[i], i * valueLen);
+    for (let i = 0; i &lt; arrayLen; i++) value.set(array[i], i * valueLen);
     return value;
 }
 
 function addLineNumbers(string) {
     let lines = string.split('\n');
-    for (let i = 0; i < lines.length; i++) {
+    for (let i = 0; i &lt; lines.length; i++) {
         lines[i] = (i + 1) + ': ' + lines[i];
     }
     return lines.join('\n');
@@ -346,4 +410,30 @@ function warn(message) {
     console.warn(message);
     warnCount++;
     if (warnCount > 100) console.warn('More than 100 program warnings - stopping logs.');
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
