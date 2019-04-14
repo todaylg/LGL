@@ -1,16 +1,17 @@
 /** 
  * @class Color
  * @description Color Class
- * @param {Array} [array=[0, 0, 0]] The element(rgb) of Color.
+ * @param {Number} [r=0] The element of Color.r
+ * @param {Number} [g=x] The element of Color.g
+ * @param {Number} [b=x] The element of Color.b
  * @example
  * // create a new Three-Dimensional Vector
  * new Color();
  */
-export class Color extends Float32Array {
-    constructor(array = [0, 0, 0]) {
-        super(3);
-        if (typeof array === 'string') array = Color.hexToRGB(array);
-        this.set(...array);
+export class Color extends Array {
+    constructor(r = 0, g = 0, b = 0) {
+        if (typeof r === 'string') [r, g, b] = Color.hexToRGB(r);
+        super(r, g, b);
         return this;
     }
     get r() {
@@ -52,27 +53,58 @@ export class Color extends Float32Array {
     }
     /**
      * @function
-     * @description Set the Color from  hex format
-     * @param {Array} haxValue
-     * @returns {Color} 
+     * @description Conversion hex format to rgb format
+     * @param {String} hexValue
+     * @returns {Array} 
+     * @example
+     * const rgb = Color.hexToRGB('#FFF');
      */
-    setHex(hex) {
+    static hexToRGB(hex) {
         if (hex.length === 4) hex = hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        this.r = r ? parseInt(r[1], 16) / 255 : 0;
-        this.g = r ? parseInt(r[2], 16) / 255 : 0;
-        this.b = r ? parseInt(r[3], 16) / 255 : 0;
-        return this;
+        if (!r) console.warn(`Unable to convert hex string ${hex} to rgb values`);
+        return [
+            parseInt(r[1], 16) / 255,
+            parseInt(r[2], 16) / 255,
+            parseInt(r[3], 16) / 255
+        ];
+    }
+    /**
+     * @function
+     * @description Conversion rgb format to hex format
+     * @param {Array} rgbValue
+     * @returns {Array} 
+     * @example
+     * const hex = Color.rgbToHex([255,255,255]);
+     */
+    static rgbToHex(rgb) {
+        if (!rgb.length || rgb.length != 3) console.error(`Unable to convert rgb array ${rgb} to hex value`);
+        let resHexStr = '#';
+        for (let index = 0; index < rgb.length; index++) {
+            let hex = Number(rgb[index]).toString(16);
+            if (hex.length < 2) {
+                hex = '0' + hex;
+            }
+            resHexStr += hex;
+        }
+        return resHexStr;
     }
     /**
       * @function
-      * @description Set the Color from  hsl format
-      * @param {Array} haxValue
-      * @returns {Color} 
+      * @description  Conversion hsl format to rgb format
+      * https://en.wikipedia.org/wiki/HSL_and_HSV.
+      * @param {Number} h hue(色相)
+      * @param {Number} s saturation(饱和度)
+      * @param {Number} l lightness(亮度)
+      * @returns {Array} 
+      * 
+      * @example
+      * const rgb = Color.hslToRGB(0.1,0.2,0.3);
       */
-    setHSL(h, s, l) {
+    static hslToRGB(h, s, l) {
+        let r, g, b;
         if (s == 0) {
-            this.r = this.g = this.b = l; // achromatic
+            r = g = b = l; // achromatic
         } else {
             let hue2rgb = function hue2rgb(p, q, t) {
                 if (t < 0) t += 1;
@@ -84,10 +116,84 @@ export class Color extends Float32Array {
             }
             let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
             let p = 2 * l - q;
-            this.r = hue2rgb(p, q, h + 1 / 3);
-            this.g = hue2rgb(p, q, h);
-            this.b = hue2rgb(p, q, h - 1 / 3);
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
         }
-        return this;
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+    /**
+      * @function
+      * @description  Conversion rgb format to hsl format
+      * https://en.wikipedia.org/wiki/HSL_and_HSV.
+      * @param {Number} r
+      * @param {Number} g 
+      * @param {Number} b
+      * @returns {Array} 
+      * 
+      * @example
+      * const rgb = Color.rgbToHsl(255,255,255);
+      */
+    static rgbToHsl(r, g, b) {
+        r /= 255, g /= 255, b /= 255;
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        if (max == min) {
+            h = s = 0; // achromatic
+        } else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return [h, s, l];
+    }
+    /**
+      * @function
+      * @description  Conversion rgb format to hsv format
+      * https://en.wikipedia.org/wiki/HSL_and_HSV
+      * @param {Number} r
+      * @param {Number} g 
+      * @param {Number} b
+      * @returns {Array} 
+      */
+    static rgbToHsv(r, g, b) {
+        r = r / 255;
+        g = g / 255;
+        b = b / 255;
+        let h, s, v;
+        let min = Math.min(r, g, b);
+        let max = v = Math.max(r, g, b);
+        let l = (min + max) / 2;
+        let difference = max - min;
+    
+        if (max == min) {
+            h = 0;
+        } else {
+            switch (max) {
+            case r:
+                h = (g - b) / difference + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = 2.0 + (b - r) / difference;
+                break;
+            case b:
+                h = 4.0 + (r - g) / difference;
+                break;
+            }
+            h = Math.round(h * 60);
+        }
+        if (max == 0) {
+            s = 0;
+        } else {
+            s = 1 - min / max;
+        }
+        s = Math.round(s * 100);
+        v = Math.round(v * 100);
+        return [h, s, v];
     }
 }

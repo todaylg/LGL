@@ -4,7 +4,7 @@ import { Mat4 } from '../math/Mat4.js';
 import { Euler } from '../math/Euler.js';
 
 /**
- * The base class for objects that are rendered on the screen.
+ * The base class of transform object
  *
  * @class
  */

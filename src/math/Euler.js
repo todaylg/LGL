@@ -7,18 +7,19 @@ const tmpMat4 = new Mat4();
  * @class Euler
  * @description Euler Class
  * @param {Array} [array=[0, 0, 0]] The element of Euler.
+ * @param {Number} [x=0] The element of Euler.x
+ * @param {Number} [y=x] The element of Euler.y
+ * @param {Number} [z=x] The element of Euler.z
  * @param {String} [order='YXZ'] The order of Euler.
  * @example
  * // create a new Three-Dimensional Vector
  * new Euler();
  */
-export class Euler extends Float32Array {
-    constructor(array = [0, 0, 0], order = 'YXZ') {
-        super(3);
-        if (typeof array === 'string') array = this.hexToRGB(array);
-        this.onChange = () => { };
-        this.set(...array);
-        this.reorder(order);
+export class Euler extends Array {
+    constructor(x = 0, y = x, z = x, order = 'YXZ') {
+        super(x, y, z);
+        this.order = order;
+        this.onChange = () => {};
         return this;
     }
 
