@@ -321,7 +321,7 @@ export class Orbit {
     /**
     * Handle mobile touch start event
     */
-    onTouchStart = (e) => {
+    onTouchStart(e){
         if (!this.enabled) return;
         e.preventDefault();
         switch (e.touches.length) {
