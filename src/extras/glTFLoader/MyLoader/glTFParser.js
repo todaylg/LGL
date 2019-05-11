@@ -1,6 +1,7 @@
-import { Transform, Mat4, Camera } from '/src/index.js';
+import { Transform, Mat4, Camera, Color } from '/src/index.js';
 import { GLTFRegistry, resolveURL } from './util.js';
-import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES } from './const.js';
+import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, EXTENSIONS } from './const.js';
+import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 export default class GLTFParser {
     constructor(json, options={}) {
         this.json = json || {};
@@ -156,7 +157,7 @@ export default class GLTFParser {
     /**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#scenes
 	 * @param {number} sceneIndex
-	 * @return {Promise<THREE.Scene>}
+	 * @return {Transform}
      * Dependencies: node、skin
 	 */
     loadScene(sceneIndex) {
@@ -262,7 +263,7 @@ export default class GLTFParser {
         let meshDef = json.meshes[meshIndex];
         return this.getMultiDependencies([
             'accessor',
-            // 'material'
+            'material'
         ]).then(function (dependencies) {
             let primitives = meshDef.primitives;
             let originalMaterials = [];
@@ -371,7 +372,7 @@ export default class GLTFParser {
                         // workarounds for mesh and geometry
                         if (material.aoMap && geometry.attributes.uv2 === undefined && geometry.attributes.uv !== undefined) {
                             console.log('THREE.GLTFLoader: Duplicating UVs to support aoMap.');
-                            geometry.addAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                            geometry.addAttribute('uv2', new BufferAttribute(geometry.attributes.uv.array, 2));
                         }
                         if (material.isGLTFSpecularGlossinessMaterial) {
                             // for GLTFSpecularGlossinessMaterial(ShaderMaterial) uniforms runtime update
@@ -394,7 +395,7 @@ export default class GLTFParser {
     /**
 	 * Specification: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#accessors
 	 * @param {number} accessorIndex
-	 * @return {Promise<THREE.BufferAttribute|THREE.InterleavedBufferAttribute>}
+	 * @return {Promise<BufferAttribute|THREE.InterleavedBufferAttribute>}
      * Dependencies: bufferView
 	 */
     loadAccessor(accessorIndex) {
@@ -448,7 +449,7 @@ export default class GLTFParser {
                 } else {
                     array = new TypedArray(bufferView, byteOffset, accessorDef.count * itemSize);
                 }
-                bufferAttribute = new THREE.BufferAttribute(array, itemSize, normalized);
+                bufferAttribute = new BufferAttribute(array, itemSize, normalized);
             }
             // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#sparse-accessors
             if (accessorDef.sparse !== undefined) {
@@ -468,9 +469,10 @@ export default class GLTFParser {
                     if (itemSize >= 2) bufferAttribute.setY(index, sparseValues[i * itemSize + 1]);
                     if (itemSize >= 3) bufferAttribute.setZ(index, sparseValues[i * itemSize + 2]);
                     if (itemSize >= 4) bufferAttribute.setW(index, sparseValues[i * itemSize + 3]);
-                    if (itemSize >= 5) throw new Error('THREE.GLTFLoader: Unsupported itemSize in sparse BufferAttribute.');
+                    if (itemSize >= 5) throw new Error('GLTFLoader: Unsupported itemSize in sparse BufferAttribute.');
                 }
             }
+            console.log("bufferAttribute", bufferAttribute);
             return bufferAttribute;
         });
     }
@@ -497,13 +499,114 @@ export default class GLTFParser {
     loadBuffer(bufferIndex) {
         let bufferDef = this.json.buffers[bufferIndex];
         if (bufferDef.type && bufferDef.type !== 'arraybuffer') {
-            throw new Error('THREE.GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.');
+            throw new Error('GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.');
         }
         let path = this.path;
         return fetch(resolveURL(bufferDef.uri, path)).then(response => {
-            return response.blob();
+            return response.arrayBuffer();
         })
     }
+
+    /**
+	 * Specification: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#materials
+	 * @param {number} materialIndex
+	 * @return {Promise<THREE.Material>}
+     * Dependencies: texture
+	 */
+    loadMaterial(materialIndex) {
+        let parser = this;
+        let json = this.json;
+        let extensions = this.extensions;
+        let materialDef = json.materials[materialIndex];
+        let materialType;
+        let materialParams = {};
+        let materialExtensions = materialDef.extensions || {};
+        let pending = [];
+        if (materialExtensions[EXTENSIONS.KHR_MATERIALS_PBR_SPECULAR_GLOSSINESS]) {
+            let sgExtension = extensions[EXTENSIONS.KHR_MATERIALS_PBR_SPECULAR_GLOSSINESS];
+            materialType = sgExtension.getMaterialType(materialDef);
+            pending.push(sgExtension.extendParams(materialParams, materialDef, parser));
+        } else if (materialExtensions[EXTENSIONS.KHR_MATERIALS_UNLIT]) {
+            let kmuExtension = extensions[EXTENSIONS.KHR_MATERIALS_UNLIT];
+            materialType = kmuExtension.getMaterialType(materialDef);
+            pending.push(kmuExtension.extendParams(materialParams, materialDef, parser));
+        } else {
+            // Specification:
+            // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#metallic-roughness-material
+            // materialType = THREE.MeshStandardMaterial;
+            let metallicRoughness = materialDef.pbrMetallicRoughness || {};
+            materialParams.color = new Color(1.0, 1.0, 1.0);
+            materialParams.opacity = 1.0;
+            if (Array.isArray(metallicRoughness.baseColorFactor)) {
+                var array = metallicRoughness.baseColorFactor;
+                materialParams.color.fromArray(array);
+                materialParams.opacity = array[3];
+            }
+            if (metallicRoughness.baseColorTexture !== undefined) {
+                pending.push(parser.assignTexture(materialParams, 'map', metallicRoughness.baseColorTexture.index));
+            }
+            materialParams.metalness = metallicRoughness.metallicFactor !== undefined ? metallicRoughness.metallicFactor : 1.0;
+            materialParams.roughness = metallicRoughness.roughnessFactor !== undefined ? metallicRoughness.roughnessFactor : 1.0;
+            if (metallicRoughness.metallicRoughnessTexture !== undefined) {
+                var textureIndex = metallicRoughness.metallicRoughnessTexture.index;
+                pending.push(parser.assignTexture(materialParams, 'metalnessMap', textureIndex));
+                pending.push(parser.assignTexture(materialParams, 'roughnessMap', textureIndex));
+            }
+        }
+        if (materialDef.doubleSided === true) {
+            materialParams.side = THREE.DoubleSide;
+        }
+        var alphaMode = materialDef.alphaMode || ALPHA_MODES.OPAQUE;
+        if (alphaMode === ALPHA_MODES.BLEND) {
+            materialParams.transparent = true;
+        } else {
+            materialParams.transparent = false;
+            if (alphaMode === ALPHA_MODES.MASK) {
+                materialParams.alphaTest = materialDef.alphaCutoff !== undefined ? materialDef.alphaCutoff : 0.5;
+            }
+        }
+        if (materialDef.normalTexture !== undefined && materialType !== THREE.MeshBasicMaterial) {
+            pending.push(parser.assignTexture(materialParams, 'normalMap', materialDef.normalTexture.index));
+            materialParams.normalScale = new THREE.Vector2(1, 1);
+            if (materialDef.normalTexture.scale !== undefined) {
+                materialParams.normalScale.set(materialDef.normalTexture.scale, materialDef.normalTexture.scale);
+            }
+        }
+        if (materialDef.occlusionTexture !== undefined && materialType !== THREE.MeshBasicMaterial) {
+            pending.push(parser.assignTexture(materialParams, 'aoMap', materialDef.occlusionTexture.index));
+            if (materialDef.occlusionTexture.strength !== undefined) {
+                materialParams.aoMapIntensity = materialDef.occlusionTexture.strength;
+            }
+        }
+        if (materialDef.emissiveFactor !== undefined && materialType !== THREE.MeshBasicMaterial) {
+            materialParams.emissive = new THREE.Color().fromArray(materialDef.emissiveFactor);
+        }
+        if (materialDef.emissiveTexture !== undefined && materialType !== THREE.MeshBasicMaterial) {
+            pending.push(parser.assignTexture(materialParams, 'emissiveMap', materialDef.emissiveTexture.index));
+        }
+        return Promise.all(pending).then(function () {
+            var material;
+            if (materialType === THREE.ShaderMaterial) {
+                material = extensions[EXTENSIONS.KHR_MATERIALS_PBR_SPECULAR_GLOSSINESS].createMaterial(materialParams);
+            } else {
+                material = new materialType(materialParams);
+            }
+            if (materialDef.name !== undefined) material.name = materialDef.name;
+            // Normal map textures use OpenGL conventions:
+            // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#materialnormaltexture
+            if (material.normalScale) {
+                material.normalScale.y = - material.normalScale.y;
+            }
+            // baseColorTexture, emissiveTexture, and specularGlossinessTexture use sRGB encoding.
+            if (material.map) material.map.encoding = THREE.sRGBEncoding;
+            if (material.emissiveMap) material.emissiveMap.encoding = THREE.sRGBEncoding;
+            if (material.specularMap) material.specularMap.encoding = THREE.sRGBEncoding;
+            assignExtrasToUserData(material, materialDef);
+            if (materialDef.extensions) addUnknownExtensionsToUserData(extensions, material, materialDef);
+            return material;
+        });
+
+    };
     /**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#cameras
 	 * @param {number} cameraIndex
