@@ -78,7 +78,7 @@ export class Camera extends Transform {
     * @param {Number} [options.far=this.far] - The orthographic camera's far parameters
     * @param {Number} [options.left=-1] - The orthographic camera's left parameters
     * @param {Number} [options.right=1] - The orthographic camera's right parameters
-    * @param {Number} [options.bottom=1] - The orthographic camera's bottom parameters
+    * @param {Number} [options.bottom=-1] - The orthographic camera's bottom parameters
     * @param {Number} [options.top=1] - The orthographic camera's top parameters
     * @return {Camera}
     */
@@ -87,7 +87,7 @@ export class Camera extends Transform {
         far = this.far,
         left = -1,
         right = 1,
-        bottom = 1,
+        bottom = -1,
         top = 1,
     } = {}) {
         this.projectionMatrix.fromOrthogonal({ left, right, bottom, top, near, far });

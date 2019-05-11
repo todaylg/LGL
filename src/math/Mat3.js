@@ -4,13 +4,26 @@ import * as Mat3Func from './functions/Mat3Func.js';
  * @class Mat3
  * @description Three order matrix
  * @param {Array} [array=[1, 0, 0, 0, 1, 0, 0, 0, 1]] The element of matrix.
+ * @param {Number} [m00=1] The 0 row 0 column element of matrix
+ * @param {Number} [m01=0] The 0 row 1 column element of matrix
+ * @param {Number} [m02=0] The 0 row 2 column element of matrix
+ * @param {Number} [m10=0] The 1 row 0 column element of matrix
+ * @param {Number} [m11=1] The 1 row 1 column element of matrix
+ * @param {Number} [m12=0] The 1 row 2 column element of matrix
+ * @param {Number} [m20=0] The 2 row 0 column element of matrix
+ * @param {Number} [m21=0] The 2 row 1 column element of matrix
+ * @param {Number} [m22=1] The 2 row 2 column element of matrix
  * @example
  * // create a new Three-Dimensional Vector
  * new Mat3();
  */
-export class Mat3 extends Float32Array {
-    constructor(array = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
-        super(array);
+export class Mat3 extends Array {
+    constructor(
+        m00 = 1, m01 = 0, m02 = 0, 
+        m10 = 0, m11 = 1, m12 = 0, 
+        m20 = 0, m21 = 0, m22 = 1
+    ) {
+        super(m00, m01, m02, m10, m11, m12, m20, m21, m22);
         return this;
     }
     /**

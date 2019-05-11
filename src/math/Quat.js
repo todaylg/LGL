@@ -1,12 +1,16 @@
 import * as QuatFunc from './functions/QuatFunc.js';
 /** 
  * @class Quat
- * @description Four-Dimensional Vector Class
+ * @description Quaternion Class
+ * @param {Number} [x=0]
+ * @param {Number} [y=0]
+ * @param {Number} [z=0]
+ * @param {Number} [w=1]
  */
-export class Quat extends Float32Array {
-    constructor(array = [0, 0, 0, 1]) {
-        super(array);
-        this.onChange = () => { };
+export class Quat extends Array {
+    constructor(x = 0, y = 0, z = 0, w = 1) {
+        super(x, y, z, w);
+        this.onChange = () => {};
         return this;
     }
 

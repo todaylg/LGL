@@ -2,14 +2,30 @@ import * as Mat4Func from './functions/Mat4Func.js';
 /** 
  * @class Mat4
  * @description Four order matrix
- * @param {Array} [array=[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]] The element of matrix.
+ * @param {Number} [m00=1] The 0 row 0 column element of matrix
+ * @param {Number} [m01=0] The 0 row 1 column element of matrix
+ * @param {Number} [m02=0] The 0 row 2 column element of matrix
+ * @param {Number} [m03=0] The 0 row 3 column element of matrix
+ * @param {Number} [m10=0] The 1 row 0 column element of matrix
+ * @param {Number} [m11=1] The 1 row 1 column element of matrix
+ * @param {Number} [m12=0] The 1 row 2 column element of matrix
+ * @param {Number} [m13=0] The 1 row 3 column element of matrix
+ * @param {Number} [m20=0] The 2 row 0 column element of matrix
+ * @param {Number} [m21=0] The 2 row 1 column element of matrix
+ * @param {Number} [m22=1] The 2 row 2 column element of matrix
+ * @param {Number} [m23=0] The 2 row 3 column element of matrix
  * @example
  * // create a new Three-Dimensional Vector
  * new Mat4();
  */
-export class Mat4 extends Float32Array {
-    constructor(array = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) {
-        super(array);
+export class Mat4 extends Array {
+    constructor(
+        m00 = 1, m01 = 0, m02 = 0, m03 = 0, 
+        m10 = 0, m11 = 1, m12 = 0, m13 = 0, 
+        m20 = 0, m21 = 0, m22 = 1, m23 = 0, 
+        m30 = 0, m31 = 0, m32 = 0, m33 = 1
+    ) {
+        super(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
         return this;
     }
 

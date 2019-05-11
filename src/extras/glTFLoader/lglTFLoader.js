@@ -12,7 +12,6 @@ import {
 import GLTFParser from './glTFParser.js';
 
 export default class GLTFLoader {
-	constructor() { }
 	async load(url, onLoad, onError) {
 		let resourcePath;
 		if (this.resourcePath !== undefined) {

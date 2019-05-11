@@ -1415,13 +1415,14 @@ export function targetTo(out, eye, target, up) {
         z2 = eyez - target[2];
 
     let len = z0 * z0 + z1 * z1 + z2 * z2;
+    //Normalized z
     if (len > 0) {
         len = 1 / Math.sqrt(len);
         z0 *= len;
         z1 *= len;
         z2 *= len;
     }
-
+    //Cross product up and z
     let x0 = upy * z2 - upz * z1,
         x1 = upz * z0 - upx * z2,
         x2 = upx * z1 - upy * z0;
@@ -1438,7 +1439,7 @@ export function targetTo(out, eye, target, up) {
     out[1] = x1;
     out[2] = x2;
     out[3] = 0;
-    out[4] = z1 * x2 - z2 * x1;
+    out[4] = z1 * x2 - z2 * x1;//Cross product x and z
     out[5] = z2 * x0 - z0 * x2;
     out[6] = z0 * x1 - z1 * x0;
     out[7] = 0;

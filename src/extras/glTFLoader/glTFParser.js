@@ -1,6 +1,6 @@
 /* GLTF PARSER */
 import { Transform, Mat4, Camera, Color, Texture, Geometry, Mesh, Program, Vec3 } from '/src/index.js';
-import { assignExtrasToUserData, radToDeg, EXTENSIONS } from './glTFLoaderUtil.js';
+import { GLTFRegistry, assignExtrasToUserData, radToDeg, EXTENSIONS } from './glTFLoaderUtil.js';
 
 export default class GLTFParser {
     constructor(json, extensions, options) {
@@ -11,7 +11,7 @@ export default class GLTFParser {
         this.cache = new GLTFRegistry();
         // BufferGeometry caching
         this.primitiveCache = [];
-        this.multiplePrimitivesCache = [];  ``
+        this.multiplePrimitivesCache = [];
         this.multiPassGeometryCache = [];
     }
 
@@ -25,7 +25,6 @@ export default class GLTFParser {
         // Fire the callback on complete
         this.getMultiDependencies([//load data info
             'scene',
-            'animation',
             'camera'
         ]).then(function (dependencies) {
             let scenes = dependencies.scenes || [];
@@ -145,12 +144,6 @@ export default class GLTFParser {
                 case 'texture':
                     dependency = this.loadTexture(index);
                     break;
-                case 'skin':
-                    dependency = this.loadSkin(index);
-                    break;
-                case 'animation':
-                    dependency = this.loadAnimation(index);
-                    break;
                 case 'camera':
                     dependency = this.loadCamera(index);
                     break;
@@ -174,8 +167,7 @@ export default class GLTFParser {
         let extensions = this.extensions;
         let sceneDef = this.json.scenes[sceneIndex];
         return this.getMultiDependencies([
-            'node',
-            'skin'
+            'node'
         ]).then(function (dependencies) {
             let scene = new Transform();
             if (sceneDef.name !== undefined) scene.name = sceneDef.name;
@@ -183,46 +175,21 @@ export default class GLTFParser {
             if (sceneDef.extensions) addUnknownExtensionsToUserData(extensions, scene, sceneDef);
             let nodeIds = sceneDef.nodes || [];
             for (let i = 0, il = nodeIds.length; i < il; i++) {
-                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes, dependencies.skins);
+                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes);
             }
             return scene;
         });
-        function buildNodeHierachy(nodeId, parentObject, json, allNodes, skins) {
+        function buildNodeHierachy(nodeId, parentObject, json, allNodes) {
             let node = allNodes[nodeId];
             let nodeDef = json.nodes[nodeId];
-            // build skeleton here as well
-            if (nodeDef.skin !== undefined) {
-                let meshes = node.isGroup === true ? node.children : [node];
-                for (let i = 0, il = meshes.length; i < il; i++) {
-                    let mesh = meshes[i];
-                    let skinEntry = skins[nodeDef.skin];
-                    let bones = [];
-                    let boneInverses = [];
-                    for (let j = 0, jl = skinEntry.joints.length; j < jl; j++) {
-                        let jointId = skinEntry.joints[j];
-                        let jointNode = allNodes[jointId];
-                        if (jointNode) {
-                            bones.push(jointNode);
-                            let mat = new Mat4();
-                            if (skinEntry.inverseBindMatrices !== undefined) {
-                                mat.fromArray(skinEntry.inverseBindMatrices.array, j * 16);
-                            }
-                            boneInverses.push(mat);
-                        } else {
-                            console.warn('GLTFLoader: Joint "%s" could not be found.', jointId);
-                        }
-                    }
-                    //Bind???? and Skeleton????
-                    //mesh.bind(new THREE.Skeleton(bones, boneInverses), mesh.matrixWorld);
-                }
-            }
+            // Todo: build skeleton here as well
             // build node hierachy
             parentObject.add(node);
             if (nodeDef.children) {
                 let children = nodeDef.children;
                 for (let i = 0, il = children.length; i < il; i++) {
                     let child = children[i];
-                    buildNodeHierachy(child, node, json, allNodes, skins);
+                    buildNodeHierachy(child, node, json, allNodes);
                 }
             }
         }
@@ -232,19 +199,17 @@ export default class GLTFParser {
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#nodes-and-hierarchy
 	 * @param {number} nodeIndex
 	 * @return {Promise<THREE.Object3D>}
-     * Dependencies: mesh、skin、camera
+     * Dependencies: mesh、skin、camera、light(需要插件支持)
 	 */
     loadNode(nodeIndex) {
-        var json = this.json;
-        var extensions = this.extensions;
-        var meshReferences = json.meshReferences;
-        var meshUses = json.meshUses;
-        var nodeDef = json.nodes[nodeIndex];
+        let json = this.json;
+        let extensions = this.extensions;
+        let meshReferences = json.meshReferences;
+        let meshUses = json.meshUses;
+        let nodeDef = json.nodes[nodeIndex];
         return this.getMultiDependencies([
             'mesh',
-            'skin',
             'camera',
-            'light'//light需要插件支持
         ]).then(function (dependencies) {
             var node;
             // .isBone isn't in glTF spec. See .markDefs
@@ -505,17 +470,17 @@ export default class GLTFParser {
                     // Use the full buffer if it's interleaved.
                     array = new TypedArray(bufferView);
                     // Integer parameters to IB/IBA are in array elements, not bytes.
-                    ib = new THREE.InterleavedBuffer(array, byteStride / elementBytes);
+                    //ib = new THREE.InterleavedBuffer(array, byteStride / elementBytes);
                     parser.cache.add(ibCacheKey, ib);
                 }
-                bufferAttribute = new THREE.InterleavedBufferAttribute(ib, itemSize, byteOffset / elementBytes, normalized);
+                //bufferAttribute = new THREE.InterleavedBufferAttribute(ib, itemSize, byteOffset / elementBytes, normalized);
             } else {
                 if (bufferView === null) {
                     array = new TypedArray(accessorDef.count * itemSize);
                 } else {
                     array = new TypedArray(bufferView, byteOffset, accessorDef.count * itemSize);
                 }
-                bufferAttribute = new THREE.BufferAttribute(array, itemSize, normalized);
+                //bufferAttribute = new THREE.BufferAttribute(array, itemSize, normalized);
             }
             // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#sparse-accessors
             if (accessorDef.sparse !== undefined) {
@@ -549,10 +514,10 @@ export default class GLTFParser {
      * Dependencies: buffer
 	 */
     loadBufferView(bufferViewIndex) {
-        var bufferViewDef = this.json.bufferViews[bufferViewIndex];
+        let bufferViewDef = this.json.bufferViews[bufferViewIndex];
         return this.getDependency('buffer', bufferViewDef.buffer).then(function (buffer) {
-            var byteLength = bufferViewDef.byteLength || 0;
-            var byteOffset = bufferViewDef.byteOffset || 0;
+            let byteLength = bufferViewDef.byteLength || 0;
+            let byteOffset = bufferViewDef.byteOffset || 0;
             return buffer.slice(byteOffset, byteOffset + byteLength);
         });
     }
@@ -562,22 +527,18 @@ export default class GLTFParser {
 	 * @param {number} bufferIndex
 	 * @return {Promise<ArrayBuffer>}
 	 */
-    loadBuffer(bufferIndex) {
-        var bufferDef = this.json.buffers[bufferIndex];
-        var loader = this.fileLoader;
+    async loadBuffer(bufferIndex) {
+        let bufferDef = this.json.buffers[bufferIndex];
+        let loader = this.fileLoader;
         if (bufferDef.type && bufferDef.type !== 'arraybuffer') {
-            throw new Error('THREE.GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.');
+            throw new Error('GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.');
         }
         // If present, GLB container is required to be the first buffer.
         if (bufferDef.uri === undefined && bufferIndex === 0) {
             return Promise.resolve(this.extensions[EXTENSIONS.KHR_BINARY_GLTF].body);
         }
-        var options = this.options;
-        return new Promise(function (resolve, reject) {
-            loader.load(resolveURL(bufferDef.uri, options.path), resolve, undefined, function () {
-                reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
-            });
-        });
+        const data = await (await fetch(bufferDef.uri)).arrayBuffer();
+        if(!data) new Error('GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".');
     }
     
     /**
@@ -1002,23 +963,4 @@ function addPrimitiveAttributes(geometry, primitiveDef, accessors) {
         addMorphTargets(geometry, primitiveDef.targets, accessors);
     }
     assignExtrasToUserData(geometry, primitiveDef);
-}
-
-/* GLTFREGISTRY */
-function GLTFRegistry() {
-    var objects = {};
-    return	{
-        get: function ( key ) {
-            return objects[ key ];
-        },
-        add: function ( key, object ) {
-            objects[ key ] = object;
-        },
-        remove: function ( key ) {
-            delete objects[ key ];
-        },
-        removeAll: function () {
-            objects = {};
-        }
-    };
 }
