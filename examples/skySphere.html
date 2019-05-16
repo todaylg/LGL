@@ -45,7 +45,7 @@
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
-            img.src = 'assets/sky.jpg';
+            img.src = 'assets/images/sky.jpg';
 
             // Use Sphere geometry to render equirectangular textures
             const geometry = new Sphere(gl, { radius: 1, widthSegments: 64 });
@@ -56,11 +56,9 @@
                 uniforms: {
                     tMap: { value: texture },
                 },
-
                 // Need inside of sphere to be visible
                 cullFace: null,
             });
-
             // A smaller sphere in the center just to help illustrate
             const mesh = new Mesh(gl, { geometry, program });
             mesh.setParent(scene);

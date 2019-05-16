@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+        content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>glTF-Loader</title>
+</head>
+
+<body>
+    <script type="module">
+        import { Renderer, Camera, Transform, Orbit, GLTFLoader } from '../src/index.js';
+        {
+            const renderer = new Renderer({ dpr: 2 });
+            const gl = renderer.gl;
+            document.body.appendChild(gl.canvas);
+            gl.clearColor(.1, .1, .1, 1);
+            const camera = new Camera(gl, { fov: 35 });
+            camera.position.set(0, 0, -7);
+            camera.lookAt([0, 0, 0]);
+
+            const controls = new Orbit(camera);
+
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({ aspect: gl.canvas.width / gl.canvas.height })
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+            let loader = new GLTFLoader(gl);
+            loader.load('/examples/assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF', {
+                envDiffuseTextureSrc: '/examples/assets/images/waterfall-diffuse-RGBM.png',
+                envSpecularTextureSrc: '/examples/assets/images/waterfall-specular-RGBM.png'
+            }, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                scene.addChild(gltf.scene);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
+
+            requestAnimationFrame(update);
+            function update() {
+                requestAnimationFrame(update);
+                controls.update();
+                renderer.render({ scene, camera });
+            }
+        }
+    </script>
+</body>
+
+</html>

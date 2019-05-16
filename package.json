@@ -5,12 +5,14 @@
     "main": "src",
     "scripts": {
         "docs": "jsdoc -c jsdoc.conf.json -R README.md",
-        "dev": "node ./node_modules/http-server/bin/http-server ./"
+        "dev": "node ./node_modules/http-server/bin/http-server ./",
+        "build-iife": "rollup ./src/index.js --format iife --name 'LGL' --file ./build/LGL.bundle.js",
+        "build-cmd": "rollup ./src/index.js --format cjs --file ./build/LGL.bundle.js",
+        "build-umd": "rollup ./src/index.js --format cjs --name 'LGL' --file ./build/LGL.bundle.js"
     },
     "license": "MIT",
     "dependencies": {},
     "devDependencies": {
-        "@pixi/jsdoc-template": "^2.4.2",
         "better-docs": "^1.1.6",
         "http-server": "^0.11.1"
     }

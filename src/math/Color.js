@@ -196,4 +196,18 @@ export class Color extends Array {
         v = Math.round(v * 100);
         return [h, s, v];
     }
+
+    /**
+     * @function
+     * @description generate Color from Array
+     * @param {Array} a
+     * @param {Number} o index offset of a
+     * @returns {Vec4} 
+     */
+    fromArray(a, o = 0) {
+		this[0] = a[o];
+		this[1] = a[o + 1];
+		this[2] = a[o + 2];
+		return this;
+	}
 }

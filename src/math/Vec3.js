@@ -313,7 +313,7 @@ export class Vec3 extends Array {
      * @function
      * @description generate vec3 from Array
      * @param {Array} a
-     * @param {Number} b index offset of a
+     * @param {Number} o index offset of a
      * @returns {Vec3}
      */
     fromArray(a, o = 0) {

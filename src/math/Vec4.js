@@ -63,7 +63,7 @@ export class Vec4 extends Array {
      * @function
      * @description generate vec4 from Array
      * @param {Array} a
-     * @param {Number} b index offset of a
+     * @param {Number} o index offset of a
      * @returns {Vec4} 
      */
     fromArray(a, o = 0) {

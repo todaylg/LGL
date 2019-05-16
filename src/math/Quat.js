@@ -218,7 +218,7 @@ export class Quat extends Array {
      * @function
      * @description generate Quat from Array
      * @param {Array} a
-     * @param {Number} b index offset of a
+     * @param {Number} o index offset of a
      * @returns {Quat} 
      */
     fromArray(a, o = 0) {
