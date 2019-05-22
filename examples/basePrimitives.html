@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>Base Primitives - Plane, Cube, Sphere</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Base Primitives</title>
     <link href="assets/main.css" rel="stylesheet">
 </head>
 <body>
     <script type="module">
         import {Renderer, Camera, Transform, Program, Mesh} from '../src/Core.js';
-        import {Plane, Sphere, Cube, Torus} from '../src/Extras.js';
+        import {Plane, Sphere, Cube, Torus, Orbit} from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
 
         {
@@ -18,9 +18,11 @@
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
-            const camera = new Camera(gl, {fov: 35});
+            const camera = new Camera();
             camera.position.set(0, 1, 7);
             camera.lookAt([0, 0, 0]);
+
+            const controls = new Orbit(camera);
 
             function resize() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -28,17 +30,18 @@
             }
             window.addEventListener('resize', resize, false);
             resize();
-
             const scene = new Transform();
 
             const planeGeometry = new Plane(gl);
-            const sphereGeometry = new Sphere(gl);
+            const sphereGeometry = new Sphere(gl, {
+                widthSegments: 64
+            });
             const cubeGeometry = new Cube(gl);
             const torusGeometry = new Torus(gl, {
                 radius: 0.5,
                 tube: 0.1,
-                radialSegments:16,
-                tubularSegments:100
+                radialSegments: 16,
+                tubularSegments: 100
             });
 
             const program = new Program(gl, {
@@ -49,29 +52,25 @@
             });
 
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
-            plane.position.set(0, 1.3, 0);
+            plane.position.set(-1, 1, 0);
             plane.setParent(scene);
-            console.log("planeMesh: ", plane);
+
             const sphere = new Mesh(gl, {geometry: sphereGeometry, program});
+            sphere.position.set(-1, -1, 0);
             sphere.setParent(scene);
 
             const cube = new Mesh(gl, {geometry: cubeGeometry, program});
-            cube.position.set(0, -1.3, 0);
+            cube.position.set(1, 1, 0);
             cube.setParent(scene);
 
             const torus = new Mesh(gl, {geometry: torusGeometry, program});
-            torus.position.set(1.5, 1.3, 0);
+            torus.position.set(1, -1, 0);
             torus.setParent(scene);
 
             requestAnimationFrame(update);
             function update() {
                 requestAnimationFrame(update);
-
-                plane.rotation.y -= 0.02;
-                sphere.rotation.y -= 0.03;
-                cube.rotation.y -= 0.04;
-                torus.rotation.y -= 0.02;
-
+                controls.update();
                 renderer.render({scene, camera});
             }
         }

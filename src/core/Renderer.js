@@ -454,7 +454,8 @@ export class Renderer {
     }
     // updates all scene graph matrices
     if (update) scene.updateMatrixWorld();
-    // Update camera separately if not in scene graph
+
+    // Update camera separately if not in scene graph (always not in)
     if (camera && camera.parent === null) camera.updateMatrixWorld();
 
     // Get render list - entails culling and sorting

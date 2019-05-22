@@ -44,7 +44,6 @@ export class Camera extends Transform {
         this.projectionMatrix = new Mat4();
         this.viewMatrix = new Mat4();
         this.projectionViewMatrix = new Mat4();
-
         // Use orthographic if values set, else default to perspective camera
         if (left || right) this.orthographic({ left, right, bottom, top });
         else this.perspective();

@@ -1,7 +1,7 @@
 export function extractUrlBase(url) {
 	let index = url.lastIndexOf('/');
 	if (index === - 1) return './';
-	return url.substr(0, index + 1);
+	return url.substr(0, index + 1); //Get assets folder url
 }
 
 export function decodeText(array) {
@@ -12,7 +12,7 @@ export function decodeText(array) {
 	}
 }
 
-//Todo: add Cache
+//Todo
 export function GLTFRegistry() {
     let objects = {};
     return	{

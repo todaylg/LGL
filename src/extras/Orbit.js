@@ -194,7 +194,7 @@ export class Orbit {
                 this.state = STATE.ROTATE;
                 break;
             // Middle scroll
-            case MOURSE_BTTON.middle:
+            case   MOURSE_BTTON.middle:
                 if (this.enableZoom === false) return;
                 dollyStart.set(e.clientX, e.clientY);
                 this.state = STATE.DOLLY;
@@ -278,26 +278,31 @@ export class Orbit {
     */
     handleMovePan(x, y) {
         tempVec2a.set(x, y);
-        tempVec2b.sub(tempVec2a, panStart).multiply(this.panSpeed);
+        tempVec2b.sub(tempVec2a, panStart).multiply(this.panSpeed); //计算变化向量
         this.pan(tempVec2b.x, tempVec2b.y);
         panStart.copy(tempVec2a);
     }
     pan(deltaX, deltaY) {
         let { element, camera } = this;
         let el = element === document ? document.body : element;
+        // perspective
         tempVec3.copy(camera.position).sub(this.target);
         let targetDistance = tempVec3.distance();
-        targetDistance *= Math.tan(((camera.fov || 45) / 2) * Math.PI / 180.0);
-        this.panLeft(2 * deltaX * targetDistance / el.clientHeight, camera.matrix);
-        this.panUp(2 * deltaY * targetDistance / el.clientHeight, camera.matrix);
+
+        // half of the fov is center to top of screen
+        targetDistance *= Math.tan(((camera.fov || 45) / 2) * Math.PI / 180.0); //投影高度
+
+        // we use only clientHeight here so aspect ratio does not distort speed
+        this.panLeft( deltaX * 2 * targetDistance / el.clientHeight, camera.matrix); //高度比值
+        this.panUp( deltaY * 2 * targetDistance / el.clientHeight, camera.matrix);
     };
     panLeft(distance, m) {
-        tempVec3.set(m[0], m[1], m[2]);
+        tempVec3.set(m[0], m[1], m[2]); //X
         tempVec3.multiply(-distance);
         this.panDelta.add(tempVec3);
     }
     panUp(distance, m) {
-        tempVec3.set(m[4], m[5], m[6]);
+        tempVec3.set(m[4], m[5], m[6]); //Y
         tempVec3.multiply(distance);
         this.panDelta.add(tempVec3);
     }
@@ -321,7 +326,7 @@ export class Orbit {
     /**
     * Handle mobile touch start event
     */
-    onTouchStart(e){
+    onTouchStart(e) {
         if (!this.enabled) return;
         e.preventDefault();
         switch (e.touches.length) {

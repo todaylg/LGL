@@ -41,8 +41,8 @@ export class Torus extends Geometry {
         // generate vertices, normals and uvs
         for (let iy = 0; iy <= radialSegments; iy++) {
             for (let ix = 0; ix <= tubularSegments; ix++ , i++) {
-                let u = ix / tubularSegments * arc;
-                let v = iy / radialSegments * Math.PI * 2;
+                let u = ix / tubularSegments * arc; //X轴圈
+                let v = iy / radialSegments * Math.PI * 2; //Z轴圈
 
                 let x = (radius + tube * Math.cos(v)) * Math.cos(u);
                 let y = (radius + tube * Math.cos(v)) * Math.sin(u);

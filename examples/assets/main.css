@@ -1,59 +1,117 @@
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
 body,
 html {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     height: 100%;
-}
-
-body,
-button,
-p,
-ul {
-    margin: 0;
-    padding: 0;
-}
-
-.blackBG {
-    background: black;
-}
-
-button,
-select {
-    border: none;
-    outline: none;
-    background: none;
-    font-family: inherit;
-}
-
-a,
-button,
-input,
-select,
-textarea {
-    -webkit-tap-highlight-color: transparent;
 }
 
 a {
     color: inherit;
-    /* blue colors for links too */
     text-decoration: inherit;
-    /* no underline */
 }
 
-:root {
-    overflow-x: hidden;
+
+/* scrollbar */
+
+::-webkit-scrollbar {
+    width: 4px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background: #EDEDED;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    height: 18px;
+    background-color: #00a5e6;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    outline: 0;
+    outline-offset: 0;
+    border: 1px solid #00a5e6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    height: 18px;
+    background-color: #00b7ff;
+}
+
+.panel {
+    width: 300px;
     height: 100%;
+    overflow: auto;
+    padding-bottom: 100px;
+    padding-left: 20px;
+    padding-right: 40px;
 }
 
-body {
-    font-family: 'Raleway', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
+.viewer {
+    position: absolute;
+    left: 300px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: calc(100% - 300px);
+    border: none;
+    margin: 0;
+}
+
+.title {
+    font-size: 22px;
+    margin: 20px 0;
+    display: block;
+    text-align: center;
+    color: #00a5e6;
+}
+
+.title:hover {
+    color: #00b7ff;
+}
+
+.subTitle {
+    font-weight: 400;
+    font-size: 18px;
+    margin: 20px 0;
+}
+
+.example {
+    margin: 10px 0;
+    padding-left: 20px;
+    display: block;
+}
+
+.todoExample {
+    margin: 10px 0;
+    padding-left: 20px;
+    display: block;
+    opacity: 0.2;
+}
+
+.sourceCodeIcon {
+    position: absolute;
+    display: block;
+    z-index: 1;
+    bottom: 0;
+    right: 0;
+    margin: 30px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    background: #fff;
+    border-radius: 100%;
+    font-size: 19px;
+    letter-spacing: -0.1em;
+    box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.1);
 }
 
 canvas {
@@ -62,20 +120,4 @@ canvas {
     height: 100%;
     top: 0;
     left: 0;
-}
-
-.canvas2D {
-    z-index: 10;
-    opacity: 1;
-    transition: opacity 1s ease-out;
-}
-.canvas2D.hide{
-    opacity: 0;
-}
-.canvas3d{
-    opacity: 0;
-    transition: opacity 1s ease-in;
-}
-.canvas3d.show{
-    opacity: 1;
 }

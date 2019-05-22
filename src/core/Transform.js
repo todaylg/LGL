@@ -39,6 +39,16 @@ export class Transform {
         this.parent = parent;
         if (notifyParent && parent) parent.addChild(this, false);
     }
+     /**
+     * Transform the matrix by input
+     *
+     * @param {Mat4} matrix - The matrix to tranform
+     */
+    applyMatrix(matrix){
+        this.matrix.multiply( this.matrix, this.matrix, matrix );
+        // Sync change
+        this.decompose();
+    }
     /**
      * Add the Transform object to parent Transform object
      *

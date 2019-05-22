@@ -55,9 +55,9 @@ export class Sphere extends Geometry {
             let v = iy / hSegs;
             for (let ix = 0; ix <= wSegs; ix++ , i++) {
                 let u = ix / wSegs;
-                let x = -radius * Math.cos(pStart + u * pLength) * Math.sin(tStart + v * tLength);
+                let x = -radius * Math.sin(tStart + v * tLength) * Math.cos(pStart + u * pLength);
                 let y = radius * Math.cos(tStart + v * tLength);
-                let z = radius * Math.sin(pStart + u * pLength) * Math.sin(tStart + v * tLength);
+                let z = radius * Math.sin(tStart + v * tLength) * Math.sin(pStart + u * pLength);
                 // vertex
                 position[i * 3] = x;
                 position[i * 3 + 1] = y;

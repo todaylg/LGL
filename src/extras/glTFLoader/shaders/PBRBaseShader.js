@@ -13,6 +13,32 @@ in vec4 tangent;
 in vec2 uv;
 #endif
 
+#ifdef USE_SKINNING
+in vec4 skinIndex;
+in vec4 skinWeight;
+
+uniform sampler2D boneTexture;
+uniform int boneTextureSize;
+
+mat4 getBoneMatrix(const in float i) {
+    float j = i * 4.0;
+    float x = mod(j, float(boneTextureSize));
+    float y = floor(j / float(boneTextureSize));
+
+    float dx = 1.0 / float(boneTextureSize);
+    float dy = 1.0 / float(boneTextureSize);
+
+    y = dy * (y + 0.5);
+
+    vec4 v1 = texture(boneTexture, vec2(dx * (x + 0.5), y));
+    vec4 v2 = texture(boneTexture, vec2(dx * (x + 1.5), y));
+    vec4 v3 = texture(boneTexture, vec2(dx * (x + 2.5), y));
+    vec4 v4 = texture(boneTexture, vec2(dx * (x + 3.5), y));
+
+    return mat4(v1, v2, v3, v4);
+}
+#endif
+
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -24,9 +50,8 @@ out vec3 vPosition;
 #ifdef HAS_NORMALS
 #ifdef HAS_TANGENTS
 out mat3 vTBN;
-#else
-out vec3 vNormal;
 #endif
+out vec3 vNormal;
 #endif
 
 void main() {
@@ -49,8 +74,34 @@ void main() {
     #else
     vUv = vec2(0.,0.);
     #endif
-    //Test
+
+    #ifdef USE_SKINNING
+    vNormal = normalize(normalMatrix * normal);
+    mat4 boneMatX = getBoneMatrix(skinIndex.x);
+    mat4 boneMatY = getBoneMatrix(skinIndex.y);
+    mat4 boneMatZ = getBoneMatrix(skinIndex.z);
+    mat4 boneMatW = getBoneMatrix(skinIndex.w);
+
+    // update normal
+    mat4 skinMatrix = mat4(0.0);
+    skinMatrix += skinWeight.x * boneMatX;
+    skinMatrix += skinWeight.y * boneMatY;
+    skinMatrix += skinWeight.z * boneMatZ;
+    skinMatrix += skinWeight.w * boneMatW;
+    vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;
+
+    // Update position
+    vec4 bindPos = vec4(position, 1.0);
+    vec4 transformed = vec4(0.0);
+    transformed += boneMatX * bindPos * skinWeight.x;
+    transformed += boneMatY * bindPos * skinWeight.y;
+    transformed += boneMatZ * bindPos * skinWeight.z;
+    transformed += boneMatW * bindPos * skinWeight.w;
+    
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed.xyz, 1.0);
+    #else
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    #endif
 }
 `;
 
@@ -69,9 +120,6 @@ void main() {
 //     https://www.cs.virginia.edu/~jdl/bib/appearance/analytic%20models/schlick94b.pdf
 
 const fragment = `
-#extension GL_EXT_shader_texture_lod: enable
-#extension GL_OES_standard_derivatives : enable
-
 precision highp float;
 precision highp int;
 

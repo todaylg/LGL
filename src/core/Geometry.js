@@ -64,7 +64,6 @@ export class Geometry {
         this.updateAttribute(attr);
 
         // Update geometry counts. If indexed, ignore regular attributes
-        // Todo:啥用？
         if (attr.divisor) {
             this.isInstanced = true;
             if (this.instancedCount && this.instancedCount !== attr.count * attr.divisor) {

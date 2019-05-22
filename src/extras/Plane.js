@@ -54,12 +54,12 @@ export class Plane extends Geometry {
         const segH = height / hSegs;
 
         for (let iy = 0; iy <= hSegs; iy++) {
-            let y = iy * segH - height / 2;//(-1/2,1/2)
-            for (let ix = 0; ix <= wSegs; ix++ , i++) {
-                let x = ix * segW - width / 2;//(-1/2,1/2)
+            let y = iy * segH - height / 2; //y = [-h/2,h/2]
+            for (let ix = 0; ix <= wSegs; ix++) {
+                let x = ix * segW - width / 2; //x = [-w/2,w/2]
 
                 position[i * 3 + u] = x * uDir;
-                position[i * 3 + v] = y * vDir;
+                position[i * 3 + v] = y * vDir; // eg:leftTopfirPos = [-w/2,h/2]
                 position[i * 3 + w] = depth / 2;
 
                 normal[i * 3 + u] = 0;
@@ -69,12 +69,16 @@ export class Plane extends Geometry {
                 uv[i * 2] = ix / wSegs;
                 uv[i * 2 + 1] = 1 - iy / hSegs;
 
+                i++;
+
                 if (iy === hSegs || ix === wSegs) continue;
-                //faces(two triangle)
-                let a = io + ix + iy * (wSegs + 1);
-                let b = io + ix + (iy + 1) * (wSegs + 1);
-                let c = io + ix + (iy + 1) * (wSegs + 1) + 1;
-                let d = io + ix + iy * (wSegs + 1) + 1;
+
+                //indices(two triangle)
+                let indicesWSegs = (wSegs + 1);
+                let a = io + ix + iy * indicesWSegs; //iy * indicesWSegs => a rows
+                let b = io + ix + (iy + 1) * indicesWSegs;
+                let c = io + (ix + 1) + (iy + 1) * indicesWSegs;
+                let d = io + (ix + 1) + iy * indicesWSegs;
 
                 index[ii * 6] = a;
                 index[ii * 6 + 1] = b;
@@ -83,6 +87,7 @@ export class Plane extends Geometry {
                 index[ii * 6 + 3] = b;
                 index[ii * 6 + 4] = c;
                 index[ii * 6 + 5] = d;
+
                 ii++;
             }
         }

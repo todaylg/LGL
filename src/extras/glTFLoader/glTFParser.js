@@ -1,12 +1,6 @@
-import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '/src/index.js';
+import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Skin, Animation } from '/src/index.js';
 import { GLTFRegistry, resolveURL, definesToString } from './Util.js';
-import {
-    WEBGL_TYPE_SIZES,
-    WEBGL_COMPONENT_TYPES,
-    ALPHA_MODES,
-    ATTRIBUTES,
-    WEBGL_CONSTANTS,
-} from './Const.js';
+import { WEBGL_TYPE_SIZES,WEBGL_COMPONENT_TYPES,ALPHA_MODES,ATTRIBUTES,WEBGL_CONSTANTS } from './Const.js';
 import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';
 
@@ -14,12 +8,12 @@ export default class GLTFParser {
     constructor(gl, json, options = {}) {
         this.gl = gl;
         this.json = json || {};
-        // loader object cache
+        // Cache
         this.cache = new GLTFRegistry();
         this.path = options.path || '';
         this.useIBL = options.useIBL == undefined ? true : options.useIBL;
-        this.envDiffuseTextureSrc = '/examples/assets/images/waterfall-diffuse-RGBM.png';
-        this.envSpecularTextureSrc = '/examples/assets/images/waterfall-specular-RGBM.png';
+        this.envDiffuseTextureSrc = options.envDiffuseTextureSrc || '/examples/assets/images/waterfall-diffuse-RGBM.png';
+        this.envSpecularTextureSrc = options.envSpecularTextureSrc || '/examples/assets/images/waterfall-specular-RGBM.png';
         this.glExtension = {
             hasSRGBExt: gl.getExtension('EXT_SRGB')
         }
@@ -28,16 +22,44 @@ export default class GLTFParser {
         let json = this.json;
         // Clear the loader cache
         this.cache.removeAll();
+        // Mark the special nodes/meshes in json for efficient parse
+        this.markDefs();
         // Load data info
         this.getMultiDependencies([
             'scene',
-            'camera'
+            'camera',
+            'animations'
         ]).then((dependencies) => {
             let scenes = dependencies.scenes || [];
             let scene = scenes[json.scene || 0];
+            let animations = dependencies.animations || [];
             let cameras = dependencies.cameras || [];
-            onLoad(scene, scenes, cameras, json);//Push callback needed args
+            onLoad(scene, scenes, cameras, animations, json);// Push callback needed args
         }).catch(onError);
+    }
+    /**
+	 * Marks the special nodes/meshes in json for efficient parse.
+	 */
+    markDefs() {
+        let nodeDefs = this.json.nodes || [];
+        let skinDefs = this.json.skins || [];
+        let meshDefs = this.json.meshes || [];
+        // Mark bones.
+        for (let skinIndex = 0, skinLength = skinDefs.length; skinIndex < skinLength; skinIndex++) {
+            let joints = skinDefs[skinIndex].joints;
+            for (let i = 0, il = joints.length; i < il; i++) {
+                nodeDefs[joints[i]].isBone = true;
+            }
+        }
+        for (let nodeIndex = 0, nodeLength = nodeDefs.length; nodeIndex < nodeLength; nodeIndex++) {
+            let nodeDef = nodeDefs[nodeIndex];
+            if (nodeDef.mesh !== undefined) {
+                // Mark SkinnedMesh if node has skin.
+                if (nodeDef.skin !== undefined) {
+                    meshDefs[nodeDef.mesh].isSkinnedMesh = true;
+                }
+            }
+        }
     }
     /**
 	 * Requests all multiple dependencies of the specified types asynchronously
@@ -108,6 +130,12 @@ export default class GLTFParser {
                 case 'texture':
                     dependency = this.loadTexture(index);
                     break;
+                case 'skin':
+                    dependency = this.loadSkin(index);
+                    break;
+                case 'animation':
+                    dependency = this.loadAnimation(index);
+                    break;
                 case 'camera':
                     dependency = this.loadCamera(index);
                     break;
@@ -118,34 +146,63 @@ export default class GLTFParser {
         return dependency;
     }
     /**
+     * Scene node hierachy builder
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#scenes
 	 * @param {number} sceneIndex
 	 */
     loadScene(sceneIndex) {
-        // scene node hierachy builder
         let json = this.json;
         let sceneDef = this.json.scenes[sceneIndex];
         return this.getMultiDependencies([
-            'node'
+            'node',
+            'skin'
         ]).then(function (dependencies) {
+            console.log('dependencies: ', dependencies);
             let scene = new Transform();
             if (sceneDef.name !== undefined) scene.name = sceneDef.name;
             let nodeIds = sceneDef.nodes || [];
             for (let i = 0, il = nodeIds.length; i < il; i++) {
-                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes);
+                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes, dependencies.skins, dependencies.animations);
             }
             return scene;
         });
-        function buildNodeHierachy(nodeId, parentObject, json, allNodes) {
+        function buildNodeHierachy(nodeId, parentObject, json, allNodes, skins, animations) {
             let node = allNodes[nodeId];
             let nodeDef = json.nodes[nodeId];
             // build node hierachy
+            if (nodeDef.skin !== undefined) {
+                let meshes = node.children.length ? node.children : [node];
+                for (let i = 0, il = meshes.length; i < il; i++) {
+                    let mesh = meshes[i];
+                    let skinEntry = skins[nodeDef.skin];
+                    let bones = [];
+                    let boneInverses = [];
+                    for (let j = 0, jl = skinEntry.joints.length; j < jl; j++) {
+                        let jointId = skinEntry.joints[j];
+                        let jointNode = allNodes[jointId];
+                        if (jointNode) {
+                            bones.push(jointNode);
+                            let mat = new Mat4();
+                            if (skinEntry.inverseBindMatrices !== undefined) {
+                                mat.fromArray(skinEntry.inverseBindMatrices.data, j * 16);
+                            }
+                            boneInverses.push(mat);
+                        } else {
+                            console.warn('Could not found jointNode', jointId);
+                        }
+                    }
+                    mesh.init({
+                        bones,
+                        boneInverses
+                    });
+                }
+            }
             parentObject.addChild(node);
             if (nodeDef.children) {
                 let children = nodeDef.children;
                 for (let i = 0, il = children.length; i < il; i++) {
                     let child = children[i];
-                    buildNodeHierachy(child, node, json, allNodes);
+                    buildNodeHierachy(child, node, json, allNodes, skins, animations);
                 }
             }
         }
@@ -159,10 +216,14 @@ export default class GLTFParser {
         let nodeDef = json.nodes[nodeIndex];
         return this.getMultiDependencies([
             'mesh',
+            'skin',
             'camera',
         ]).then(function (dependencies) {
             let node;
-            if (nodeDef.mesh !== undefined) {
+            if (nodeDef.isBone === true) {
+                node = new Transform();
+                node.isBone = true; // Mark this is a bone node
+            } else if (nodeDef.mesh !== undefined) {
                 let mesh = dependencies.meshes[nodeDef.mesh];
                 node = mesh;
             } else if (nodeDef.camera !== undefined) {
@@ -221,13 +282,16 @@ export default class GLTFParser {
                     let materialParams = originalMaterials[i];
                     let fragDefines = materialParams.glTFLoaderDefines || {};
                     let vexDefines = geometry.glTFLoaderDefines || {};
-                    let defines = Object.assign(
-                        parser.useIBL ? {
-                            'USE_IBL': 1
-                        } : {}, fragDefines, vexDefines);
+                    let defines = Object.assign({}, fragDefines, vexDefines);
                     let shaderDefines = '#version 300 es\n' + definesToString(defines);
+                    if (parser.useIBL){
+                        shaderDefines += '#define USE_IBL 1\n';
+                    }
                     if (parser.glExtension.hasSRGBExt) {
                         shaderDefines += '#define MANUAL_SRGB 1\n';
+                    }
+                    if (meshDef.isSkinnedMesh) {
+                        shaderDefines += '#define USE_SKINNING 1\n';
                     }
                     let program = new Program(parser.gl, {
                         vertex: shaderDefines + PBRBaseShader.vertex,
@@ -235,19 +299,20 @@ export default class GLTFParser {
                         uniforms: materialParams.uniforms,
                         ...materialParams.options
                     })
-                    program.glTFLoaderDefines = defines;
                     if (primitive.mode === WEBGL_CONSTANTS.TRIANGLES ||
                         primitive.mode === WEBGL_CONSTANTS.TRIANGLE_STRIP ||
                         primitive.mode === WEBGL_CONSTANTS.TRIANGLE_FAN ||
                         primitive.mode === undefined) {
-                        mesh = new Mesh(parser.gl, { geometry, program });
+                        mesh = meshDef.isSkinnedMesh === true
+                            ? new Skin(parser.gl, { geometry, program })
+                            : new Mesh(parser.gl, { geometry, program });
                         if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_STRIP) {
                             mesh.mode = parser.gl.TRIANGLE_STRIP;
                         } else if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_FAN) {
-                            mesh.drawMode = parser.gl.TRIANGLE_FAN;
+                            mesh.mode = parser.gl.TRIANGLE_FAN;
                         }
                     } else {
-                        throw new Error('GLTFLoader: Primitive mode unsupported: ' + primitive.mode);
+                        throw new Error('Primitive mode unsupported: ' + primitive.mode);
                     }
                     mesh.name = meshDef.name || ('mesh_' + meshIndex);
                     if (geometries.length > 1) mesh.name += '_' + i;
@@ -270,7 +335,7 @@ export default class GLTFParser {
 	 */
     loadAccessor(accessorIndex) {
         let json = this.json;
-        let accessorDef = this.json.accessors[accessorIndex];
+        let accessorDef = json.accessors[accessorIndex];
         if (accessorDef.bufferView === undefined && accessorDef.sparse === undefined) {
             // Ignore empty accessors, which may be used to declare runtime
             return null;
@@ -299,6 +364,7 @@ export default class GLTFParser {
             // The buffer is not interleaved if the stride is the item size in bytes.
             if (byteStride && byteStride !== itemBytes) {
                 // Todo: InterleavedBuffer
+                console.err("InterleavedBuffer no supported yet");
             } else {
                 if (bufferView === null) {
                     array = new TypedArray(accessorDef.count * itemSize);
@@ -325,7 +391,7 @@ export default class GLTFParser {
                     if (itemSize >= 2) bufferAttribute.setY(index, sparseValues[i * itemSize + 1]);
                     if (itemSize >= 3) bufferAttribute.setZ(index, sparseValues[i * itemSize + 2]);
                     if (itemSize >= 4) bufferAttribute.setW(index, sparseValues[i * itemSize + 3]);
-                    if (itemSize >= 5) throw new Error('GLTFLoader: Unsupported itemSize in sparse BufferAttribute.');
+                    if (itemSize >= 5) throw new Error('Unsupported itemSize in sparse BufferAttribute');
                 }
             }
             return bufferAttribute;
@@ -354,7 +420,7 @@ export default class GLTFParser {
     loadBuffer(bufferIndex) {
         let bufferDef = this.json.buffers[bufferIndex];
         if (bufferDef.type && bufferDef.type !== 'arraybuffer') {
-            throw new Error('GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.');
+            throw new Error( bufferDef.type + ' buffer type is not supported yet');
         }
         let path = this.path;
         return fetch(resolveURL(bufferDef.uri, path)).then(response => {
@@ -498,6 +564,7 @@ export default class GLTFParser {
             };
             image.src = src;
         }).then(function (texture) {
+            console.log("texture", texture);
             // Clean up resources and configure Texture.
             if (textureDef.name !== undefined) texture.name = textureDef.name;
             // Ignore unknown mime types, like DDS files.
@@ -585,7 +652,6 @@ export default class GLTFParser {
             if (lglAttributeName in geometry.attributes) continue;
             geometry.addAttribute(lglAttributeName, bufferAttribute);
         }
-        console.log(geometry);
         if (primitiveDef.indices !== undefined && !geometry.index) {
             geometry.setIndex(accessors[primitiveDef.indices]);
         }
@@ -621,5 +687,86 @@ export default class GLTFParser {
         }
         if (cameraDef.name !== undefined) camera.name = cameraDef.name;
         return Promise.resolve(camera);
+    };
+
+    /**
+	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins
+	 * @param {number} skinIndex
+	 */
+    loadSkin(skinIndex) {
+        let skinDef = this.json.skins[skinIndex];
+        let skinEntry = { joints: skinDef.joints };
+        if (skinDef.inverseBindMatrices === undefined) {
+            return Promise.resolve(skinEntry);
+        }
+        return this.getDependency('accessor', skinDef.inverseBindMatrices).then(function (accessor) {
+            skinEntry.inverseBindMatrices = accessor;
+            return skinEntry;
+        });
+    };
+
+    /**
+	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#animations
+	 * @param {number} animationIndex
+	 */
+    loadAnimation(animationIndex) {
+        let json = this.json;
+        let animationDef = json.animations[animationIndex];
+        return this.getMultiDependencies([
+            'accessor',
+            'node'
+        ]).then(function (dependencies) {
+            let tracks = [];
+            for (let i = 0, il = animationDef.channels.length; i < il; i++) {
+                let channel = animationDef.channels[i];
+                let sampler = animationDef.samplers[channel.sampler];
+                if (sampler) {
+                    let target = channel.target;
+                    let name = target.node !== undefined ? target.node : target.id; // NOTE: target.id is deprecated.
+                    let input = animationDef.parameters !== undefined ? animationDef.parameters[sampler.input] : sampler.input;
+                    let output = animationDef.parameters !== undefined ? animationDef.parameters[sampler.output] : sampler.output;
+                    let inputAccessor = dependencies.accessors[input];
+                    let outputAccessor = dependencies.accessors[output].data;
+                    let node = dependencies.nodes[name];
+                    if (node) {// 先只处理骨骼动画
+                        let keyCount = inputAccessor.count;
+                        for (let i = 0; i < keyCount; i++) {
+                            let keyTime = inputAccessor.data[i];
+                            if (!tracks[keyTime]) {
+                                tracks[keyTime] = {
+                                    position: [],
+                                    quaternion: [],
+                                    scale: []
+                                };
+                            }
+                            switch (target.path) {
+                                case "weights":
+                                    console.error("Not support weight now.");
+                                    break;
+                                case "rotation":
+                                    tracks[keyTime].quaternion.push(outputAccessor[i * 4], outputAccessor[i * 4 + 1], outputAccessor[i * 4 + 2], outputAccessor[i * 4 + 3]);
+                                    tracks[keyTime].position.push(0, 0, 0);
+                                    tracks[keyTime].scale.push(0, 0, 0);
+                                    break;
+                                case "translation":
+                                    tracks[keyTime].position.push(outputAccessor[i * 3], outputAccessor[i * 3 + 1], outputAccessor[i * 3 + 2]);
+                                    tracks[keyTime].quaternion.push(0, 0, 0, 0);
+                                    tracks[keyTime].scale.push(0, 0, 0);
+                                    break;
+                                case "scale":
+                                    tracks[keyTime].scale.push(outputAccessor[i * 3], outputAccessor[i * 3 + 1], outputAccessor[i * 3 + 2]);
+                                    tracks[keyTime].quaternion.push(0, 0, 0, 0);
+                                    tracks[keyTime].position.push(0, 0, 0);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            tracks = Object.values(tracks);
+            return tracks;
+        });
     };
 };

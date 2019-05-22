@@ -63,6 +63,12 @@ export const WEBGL_CONSTANTS = {
     UNSIGNED_SHORT: 5123
 };
 
+export const PATH_PROPERTIES = {
+    scale: 'scale',
+    translation: 'position',
+    rotation: 'quaternion',
+    weights: 'morphTargetInfluences'
+};
 
 export const MIME_TYPE_FORMATS = {
     'image/png': 1023,

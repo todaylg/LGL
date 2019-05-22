@@ -11,7 +11,7 @@
 
 <body>
     <script type="module">
-        import { Renderer, Camera, Transform, Orbit, GLTFLoader } from '../src/index.js';
+        import { Renderer, Camera, Transform, Orbit, GLTFLoader, Vec3 } from '../src/index.js';
         {
             const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
@@ -32,12 +32,17 @@
 
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
-            loader.load('/examples/assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF', {
+            let skinModel = '/examples/assets/models/Animation_Model/ajcheering/scene.glTF';
+            let defaultModel = '/examples/assets/models/BRDFModel/kizuna_ai/scene.glTF';
+            loader.load( skinModel, {
+                useIBL: true,
                 envDiffuseTextureSrc: '/examples/assets/images/waterfall-diffuse-RGBM.png',
                 envSpecularTextureSrc: '/examples/assets/images/waterfall-specular-RGBM.png'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
-                scene.addChild(gltf.scene);
+                let glTF = gltf.scene;
+                glTF.scale = new Vec3(0.1);
+                scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);
             });
