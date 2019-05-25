@@ -1,6 +1,7 @@
-import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Skin, Animation } from '/src/index.js';
+import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '../../Core.js';
+import { Skin } from '../Skin.js';
 import { GLTFRegistry, resolveURL, definesToString } from './Util.js';
-import { WEBGL_TYPE_SIZES,WEBGL_COMPONENT_TYPES,ALPHA_MODES,ATTRIBUTES,WEBGL_CONSTANTS } from './Const.js';
+import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS } from './Const.js';
 import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';
 
@@ -12,10 +13,11 @@ export default class GLTFParser {
         this.cache = new GLTFRegistry();
         this.path = options.path || '';
         this.useIBL = options.useIBL == undefined ? true : options.useIBL;
-        this.envDiffuseTextureSrc = options.envDiffuseTextureSrc || '/examples/assets/images/waterfall-diffuse-RGBM.png';
-        this.envSpecularTextureSrc = options.envSpecularTextureSrc || '/examples/assets/images/waterfall-specular-RGBM.png';
+        this.envDiffuseCubeMapSrc = options.envDiffuseCubeMapSrc;
+        this.envSpecularCubeMapSrc = options.envSpecularCubeMapSrc;
         this.glExtension = {
-            hasSRGBExt: gl.getExtension('EXT_SRGB')
+            hasSRGBExt: gl.getExtension('EXT_SRGB'),
+            hasLODExtension: gl.getExtension('EXT_shader_texture_lod'),
         }
     }
     parse(onLoad, onError) {
@@ -284,11 +286,14 @@ export default class GLTFParser {
                     let vexDefines = geometry.glTFLoaderDefines || {};
                     let defines = Object.assign({}, fragDefines, vexDefines);
                     let shaderDefines = '#version 300 es\n' + definesToString(defines);
-                    if (parser.useIBL){
+                    if (parser.useIBL) {
                         shaderDefines += '#define USE_IBL 1\n';
                     }
                     if (parser.glExtension.hasSRGBExt) {
                         shaderDefines += '#define MANUAL_SRGB 1\n';
+                    }
+                    if (parser.glExtension.hasLODExtension) {
+                        shaderDefines += '#define USE_TEX_LOD 1\n';
                     }
                     if (meshDef.isSkinnedMesh) {
                         shaderDefines += '#define USE_SKINNING 1\n';
@@ -420,7 +425,7 @@ export default class GLTFParser {
     loadBuffer(bufferIndex) {
         let bufferDef = this.json.buffers[bufferIndex];
         if (bufferDef.type && bufferDef.type !== 'arraybuffer') {
-            throw new Error( bufferDef.type + ' buffer type is not supported yet');
+            throw new Error(bufferDef.type + ' buffer type is not supported yet');
         }
         let path = this.path;
         return fetch(resolveURL(bufferDef.uri, path)).then(response => {
@@ -475,8 +480,8 @@ export default class GLTFParser {
         }
         // BRDFLUT
         pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', '/examples/assets/images/brdfLUT.png', false));
-        pending.push(parser.loadTextureFromSrc(materialParams, 'tEnvDiffuse', parser.envDiffuseTextureSrc, false));
-        pending.push(parser.loadTextureFromSrc(materialParams, 'tEnvSpecular', parser.envSpecularTextureSrc, false));
+        if (parser.envDiffuseCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvDiffuse', parser.envDiffuseCubeMapSrc, false));
+        if (parser.envSpecularCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvSpecular', parser.envSpecularCubeMapSrc, false));
         // This is a multiplier to the amount of specular. Especially useful if you don't have an HDR map.
         materialParams.uEnvSpecular = { value: 2 };
 
@@ -564,7 +569,6 @@ export default class GLTFParser {
             };
             image.src = src;
         }).then(function (texture) {
-            console.log("texture", texture);
             // Clean up resources and configure Texture.
             if (textureDef.name !== undefined) texture.name = textureDef.name;
             // Ignore unknown mime types, like DDS files.
@@ -605,6 +609,38 @@ export default class GLTFParser {
                 resolve(texture);
             };
             image.src = src;
+        })
+    }
+
+    loadCubeMapFromSrc(materialParams, key, src) {
+        let parser = this;
+        let path = src;
+        let paths = [
+            path + "px.jpg",
+            path + "nx.jpg",
+            path + "py.jpg",
+            path + "ny.jpg",
+            path + "pz.jpg",
+            path + "nz.jpg"
+        ];
+        let pendings = [];
+        for (let i = 0; i < paths.length; i++) {
+            let pending = new Promise(function (resolve) {
+                let image = new Image();
+                image.onload = () => resolve(image);
+                image.src = paths[i];
+            })
+            pendings.push(pending)
+        }
+        return Promise.all(pendings).then(function (obj) {
+            const texture = new Texture(parser.gl, {
+                target: parser.gl.TEXTURE_CUBE_MAP,
+                image: obj[0],
+                images: obj,
+                flipY: false,
+                generateMipmaps: false
+            });
+            materialParams[key] = { value: texture };
         })
     }
 

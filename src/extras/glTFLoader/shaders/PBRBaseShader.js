@@ -139,8 +139,8 @@ in vec3 vNormal;
 // uniform samplerCube u_DiffuseEnvSampler;
 // uniform samplerCube u_SpecularEnvSampler;
 uniform sampler2D tLUT;
-uniform sampler2D tEnvDiffuse;
-uniform sampler2D tEnvSpecular;
+uniform samplerCube tEnvDiffuse;
+uniform samplerCube tEnvSpecular;
 #endif
 
 #ifdef HAS_BASECOLORMAP
@@ -278,36 +278,16 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     float lod = (pbrInputs.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
     vec3 brdf = SRGBtoLINEAR(texture(tLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
-    // vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
-    vec3 diffuseLight = RGBMToLinear(texture(tEnvDiffuse, cartesianToPolar(n))).rgb;
+    // CubeMap
+    vec3 diffuseLight = SRGBtoLINEAR(texture(tEnvDiffuse, n)).rgb;
+    // RGBM Texture
+    // vec3 diffuseLight = RGBMToLinear(texture(tEnvDiffuse, cartesianToPolar(n))).rgb;
 
-    // #ifdef USE_TEX_LOD
-    // vec3 specularLight = SRGBtoLINEAR(textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod)).rgb;
-    // #else
-    // vec3 specularLight = SRGBtoLINEAR(textureCube(u_SpecularEnvSampler, reflection)).rgb;
-    // #endif
-
-    // Sample 2 levels and mix between to get smoother degradation
-    float blend = pbrInputs.perceptualRoughness * ENV_LODS;
-    float level0 = floor(blend);
-    float level1 = min(ENV_LODS, level0 + 1.0);
-    blend -= level0;
-
-    vec2 uvSpec = cartesianToPolar(reflection);
-    uvSpec.y /= 2.0;
-
-    vec2 uv0 = uvSpec;
-    vec2 uv1 = uvSpec;
-
-    uv0 /= pow(2.0, level0);
-    uv0.y += 1.0 - exp(-LN2 * level0);
-
-    uv1 /= pow(2.0, level1);
-    uv1.y += 1.0 - exp(-LN2 * level1);
-
-    vec3 specular0 = RGBMToLinear(texture(tEnvSpecular, uv0)).rgb;
-    vec3 specular1 = RGBMToLinear(texture(tEnvSpecular, uv1)).rgb;
-    vec3 specularLight = mix(specular0, specular1, blend);
+    #ifdef USE_TEX_LOD
+    vec3 specularLight = SRGBtoLINEAR(textureCubeLodEXT(tEnvSpecular, reflection, lod)).rgb;
+    #else
+    vec3 specularLight = SRGBtoLINEAR(texture(tEnvSpecular, reflection)).rgb;
+    #endif
 
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
     vec3 specular = specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
@@ -370,11 +350,11 @@ void main()
     float perceptualRoughness = u_MetallicRoughnessValues.y;
     float metallic = u_MetallicRoughnessValues.x;
     #ifdef HAS_METALROUGHNESSMAP
-    // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
-    // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture(u_MetallicRoughnessSampler, vUv);
-    perceptualRoughness = mrSample.g * perceptualRoughness;
-    metallic = mrSample.b * metallic;
+        // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
+        // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
+        vec4 mrSample = texture(u_MetallicRoughnessSampler, vUv);
+        perceptualRoughness = mrSample.g * perceptualRoughness;
+        metallic = mrSample.b * metallic;
     #endif
     perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
@@ -384,9 +364,9 @@ void main()
 
     // The albedo may be defined from a base texture or a flat color
     #ifdef HAS_BASECOLORMAP
-    vec4 baseColor = SRGBtoLINEAR(texture(u_BaseColorSampler, vUv)) * u_BaseColorFactor;
+        vec4 baseColor = SRGBtoLINEAR(texture(u_BaseColorSampler, vUv)) * u_BaseColorFactor;
     #else
-    vec4 baseColor = u_BaseColorFactor;
+        vec4 baseColor = u_BaseColorFactor;
     #endif
 
     vec3 f0 = vec3(0.04);
@@ -404,7 +384,7 @@ void main()
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
     vec3 n = getNormal();                             // normal at surface point
-    vec3 v = normalize(cameraPosition - vPosition);        // Vector from surface point to camera
+    vec3 v = normalize(cameraPosition - vPosition);   // Vector from surface point to camera
     vec3 l = normalize(u_LightDirection);             // Vector from surface point to light
     vec3 h = normalize(l+v);                          // Half vector between both l and v
     vec3 reflection = -normalize(reflect(v, n));
@@ -443,33 +423,35 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
     #ifdef USE_IBL
-    color += getIBLContribution(pbrInputs, n, reflection);
+        color += getIBLContribution(pbrInputs, n, reflection);
     #endif
 
     // Apply optional PBR terms for additional (optional) shading
     #ifdef HAS_OCCLUSIONMAP
-    float ao = texture(u_OcclusionSampler, vUv).r;
-    color = mix(color, color * ao, u_OcclusionStrength);
+        float ao = texture(u_OcclusionSampler, vUv).r;
+        color = mix(color, color * ao, u_OcclusionStrength);
     #endif
 
     #ifdef HAS_EMISSIVEMAP
-    vec3 emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, vUv)).rgb * u_EmissiveFactor;
-    color += emissive;
+        vec3 emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, vUv)).rgb * u_EmissiveFactor;
+        color += emissive;
     #endif
 
     // This section uses mix to override final color for reference app visualization
     // of various parameters in the lighting equation.
-    color = mix(color, F, u_ScaleFGDSpec.x);
-    color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-    color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-    color = mix(color, specContrib, u_ScaleFGDSpec.w);
+    // color = mix(color, F, u_ScaleFGDSpec.x);
+    // color = mix(color, vec3(G), u_ScaleFGDSpec.y);
+    // color = mix(color, vec3(D), u_ScaleFGDSpec.z);
+    // color = mix(color, specContrib, u_ScaleFGDSpec.w);
 
-    color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-    color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-    color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-    color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+    // color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
+    // color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
+    // color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
+    // color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
 
-    FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
+    // FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
+
+    FragColor = vec4(color, baseColor.a);
 }
 
 `;

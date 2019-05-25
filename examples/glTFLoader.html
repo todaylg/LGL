@@ -7,6 +7,7 @@
     <meta name="viewport"
         content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>glTF-Loader</title>
+    <link rel="stylesheet" href="./assets/main.css">
 </head>
 
 <body>
@@ -32,16 +33,15 @@
 
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
-            let skinModel = '/examples/assets/models/Animation_Model/ajcheering/scene.glTF';
-            let defaultModel = '/examples/assets/models/BRDFModel/kizuna_ai/scene.glTF';
-            loader.load( skinModel, {
+            let testModel = '/examples/assets/models/gltfAllModel/nierautomata__2b/scene.glTF';
+            let defaultModel = '/examples/assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF';
+            loader.load( testModel, {
                 useIBL: true,
-                envDiffuseTextureSrc: '/examples/assets/images/waterfall-diffuse-RGBM.png',
-                envSpecularTextureSrc: '/examples/assets/images/waterfall-specular-RGBM.png'
+                envDiffuseCubeMapSrc: '/examples/assets/images/cube/papermill/diffuse/',
+                envSpecularCubeMapSrc: '/examples/assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
-                glTF.scale = new Vec3(0.1);
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);

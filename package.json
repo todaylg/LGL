@@ -7,6 +7,7 @@
         "docs": "jsdoc -c jsdoc.conf.json -R README.md",
         "dev": "node ./node_modules/http-server/bin/http-server ./",
         "build-iife": "rollup ./src/index.js --format iife --name 'LGL' --file ./build/LGL.bundle.js",
+        "build-glTF-iife": "rollup ./src/extras/glTFLoader/GLTFLoader.js --format iife --name 'GLTFLoader' --file ./build/LGL.glTFLoader.bundle.js",
         "build-cmd": "rollup ./src/index.js --format cjs --file ./build/LGL.bundle.js",
         "build-umd": "rollup ./src/index.js --format cjs --name 'LGL' --file ./build/LGL.bundle.js"
     },

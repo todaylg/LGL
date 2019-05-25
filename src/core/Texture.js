@@ -31,6 +31,7 @@ let ID = 0;
 export class Texture {
     constructor(gl, {
         image,
+        images,
         target = gl.TEXTURE_2D,
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
@@ -51,6 +52,7 @@ export class Texture {
         // Assign texture unit spread over max available units to avoid frequent binding
         this.textureUnit = this.gl.renderer.state.textureUnitIndex++ % this.gl.renderer.parameters.maxTextureUnits;
         this.image = image;
+        this.images = images;
         this.target = target;
         this.type = type;
         this.format = format;
@@ -149,17 +151,20 @@ export class Texture {
                 this.width = this.image.width;
                 this.height = this.image.height;
             }
-
-            // TODO: all sides if cubemap
-            // gl.TEXTURE_CUBE_MAP_POSITIVE_X
-
-            // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
-            if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
-                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+            // CubeMap
+            if (this.images && this.images.length === 6) {
+                for (let i = 0; i < this.images.length; i++) {
+                    let imageEle = this.images[i];
+                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, imageEle);
+                }
             } else {
-                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
+                // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
+                if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
+                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+                } else {
+                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
+                }
             }
-
             // TODO: support everything
             // WebGL1:
             // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);

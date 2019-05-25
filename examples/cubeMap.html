@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cube Map</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <script type="module">
+        import { Renderer, Geometry, Program, Mesh, Camera, Transform, Texture } from '../src/Core.js';
+        import { Orbit, Cube } from '../src/Extras.js';
+        import CubeMapShader from './shaders/CubeMapShader.js';
+
+        {
+            const renderer = new Renderer({ dpr: 2 });
+            const gl = renderer.gl;
+            document.body.appendChild(gl.canvas);
+            gl.clearColor(1, 1, 1, 1);
+            const camera = new Camera({ fov: 45 });
+            camera.position.set(0, 0, 1);
+
+            const controls = new Orbit(camera);
+
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+
+            // Texture is equirectangular
+            let path = '/examples/assets/images/cube/skybox/';
+            let paths = [
+                path + "px.jpg",
+                path + "nx.jpg",
+                path + "py.jpg",
+                path + "ny.jpg",
+                path + "pz.jpg",
+                path + "nz.jpg"
+            ];
+            
+            let pendings = [];
+            for (let i = 0; i < paths.length; i++) {
+                let pending = new Promise(function (resolve) {
+                    let image = new Image();
+                    image.onload = () => resolve(image);
+                    image.src = paths[i];
+                })
+                pendings.push(pending)
+            }
+            Promise.all(pendings).then(function (obj) {
+                console.log("obj", obj);
+                const texture = new Texture(gl, {
+                    target: gl.TEXTURE_CUBE_MAP,
+                    image: obj[0],
+                    images: obj,
+                    flipY: false
+                });
+                const geometry = new Cube(gl);
+                const program = new Program(gl, {
+                    vertex: CubeMapShader.vertex,
+                    fragment: CubeMapShader.fragment,
+                    uniforms: {
+                        cubeMap: { value: texture },
+                    },
+                    cullFace: null,
+                });
+                const skybox = new Mesh(gl, { geometry, program });
+                skybox.scale.set(30);
+                skybox.setParent(scene);
+
+                requestAnimationFrame(update);
+                function update() {
+                    requestAnimationFrame(update);
+
+                    controls.update();
+                    renderer.render({ scene, camera });
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
