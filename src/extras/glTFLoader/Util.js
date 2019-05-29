@@ -51,3 +51,13 @@ export function definesToString(defines) {
     }
     return outStr;
 };
+
+export function sliceBlockData(frameData) {
+    let blocks = [];
+    let { count, size, data } = frameData;
+    for (let i = 0; i < count; i++) {
+        let offset = i * size;
+        blocks.push(data.slice(offset, offset + size));
+    }
+    return blocks;
+}

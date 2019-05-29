@@ -204,14 +204,13 @@ export class Quat extends Array {
     /**
      * @function
      * @description Performs a spherical linear interpolation with two control points
-     *  @param {Quat} b the second operand
-     * @param {Quat} c the third operand
-     * @param {Quat} d the fourth operand
+     * @param {Quat} a the first operand
+     * @param {Quat} b the second operand(first is this)
      * @param {Number} t interpolation amount
      * @returns {Quat} 
      */
-    slerp(q, t) {
-        QuatFunc.slerp(this, this, b, c, d, t);
+    slerp(a, b, t) {
+        QuatFunc.slerp(this, a, b, t);
         return this;
     }
     /**

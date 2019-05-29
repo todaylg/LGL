@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
         content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>glTF-Loader</title>
+    <title>glTF-Loader-Animation</title>
     <link rel="stylesheet" href="./assets/main.css">
 </head>
 
@@ -20,7 +20,6 @@
             gl.clearColor(.1, .1, .1, 1);
             const camera = new Camera(gl, { fov: 35 });
             camera.position.set(0, 0, -7);
-            camera.lookAt([0, 0, 0]);
 
             const controls = new Orbit(camera);
 
@@ -33,21 +32,34 @@
 
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
-            let defaultModel = '/examples/assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF';
-            loader.load( defaultModel, {
+            let animationSys;
+
+            let skinAnimationModel = '/examples/assets/models/CesiumMan/glTF/CesiumMan.glTF';
+            loader.load( skinAnimationModel, {
                 useIBL: true,
                 envDiffuseCubeMapSrc: '/examples/assets/images/cube/papermill/diffuse/',
                 envSpecularCubeMapSrc: '/examples/assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
+                // Animation
+                let animations = gltf.animations;
+                if ( animations ){
+                    animationSys = animations;
+                    animationSys.speed = 0.5;
+                }
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);
             });
 
             requestAnimationFrame(update);
+            let deltaTime = 0;
+            let lastTime = Date.now();
             function update() {
+                deltaTime = (Date.now() - lastTime)/1000;
+                lastTime = Date.now();
+                if(animationSys) animationSys.update(deltaTime);
                 controls.update();
                 renderer.render({ scene, camera });
                 requestAnimationFrame(update);

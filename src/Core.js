@@ -18,4 +18,3 @@ export {Mat3} from './math/Mat3.js';
 export {Mat4} from './math/Mat4.js';
 export {Quat} from './math/Quat.js';
 
-export {Orbit} from './extras/Orbit.js';

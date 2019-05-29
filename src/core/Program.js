@@ -122,6 +122,15 @@ export class Program {
      */
     checkTextureUnits() {
         const assignedTextureUnits = [];
+        let checkDuplicate = (value) => {
+            if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
+                // If reused, set flag to true to assign sequential units when drawn
+                this.assignTextureUnits = true;
+                return false;
+            }
+            assignedTextureUnits.push(value.textureUnit);
+            return true;
+        }
         [...this.uniformLocations.keys()].every((activeUniform) => {
             let uniform = this.uniforms[activeUniform.uniformName];
 
@@ -147,16 +156,6 @@ export class Program {
 
             return true;
         });
-
-        function checkDuplicate(value) {
-            if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
-                // If reused, set flag to true to assign sequential units when drawn
-                this.assignTextureUnits = true;
-                return false;
-            }
-            assignedTextureUnits.push(value.textureUnit);
-            return true;
-        }
     }
     /**
      * Defines which function is used for blending pixel arithmetic.

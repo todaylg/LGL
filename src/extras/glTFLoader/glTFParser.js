@@ -1,9 +1,10 @@
 import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '../../Core.js';
 import { Skin } from '../Skin.js';
-import { GLTFRegistry, resolveURL, definesToString } from './Util.js';
-import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS } from './Const.js';
+import { GLTFRegistry, resolveURL, definesToString, sliceBlockData } from './Util.js';
+import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
 import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';
+import { AnimationSystem, AnimationChannel, Animation } from '../Animation.js';
 
 export default class GLTFParser {
     constructor(gl, json, options = {}) {
@@ -18,10 +19,12 @@ export default class GLTFParser {
         this.glExtension = {
             hasSRGBExt: gl.getExtension('EXT_SRGB'),
             hasLODExtension: gl.getExtension('EXT_shader_texture_lod'),
-        }
+        };
+        this.animationSys = json.animations ? new AnimationSystem() : null;
     }
     parse(onLoad, onError) {
         let json = this.json;
+        let parser = this;
         // Clear the loader cache
         this.cache.removeAll();
         // Mark the special nodes/meshes in json for efficient parse
@@ -30,11 +33,11 @@ export default class GLTFParser {
         this.getMultiDependencies([
             'scene',
             'camera',
-            'animations'
+            'animation'
         ]).then((dependencies) => {
             let scenes = dependencies.scenes || [];
             let scene = scenes[json.scene || 0];
-            let animations = dependencies.animations || [];
+            let animations = parser.animationSys;
             let cameras = dependencies.cameras || [];
             onLoad(scene, scenes, cameras, animations, json);// Push callback needed args
         }).catch(onError);
@@ -157,18 +160,18 @@ export default class GLTFParser {
         let sceneDef = this.json.scenes[sceneIndex];
         return this.getMultiDependencies([
             'node',
-            'skin'
+            'skin',
         ]).then(function (dependencies) {
             console.log('dependencies: ', dependencies);
             let scene = new Transform();
             if (sceneDef.name !== undefined) scene.name = sceneDef.name;
             let nodeIds = sceneDef.nodes || [];
             for (let i = 0, il = nodeIds.length; i < il; i++) {
-                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes, dependencies.skins, dependencies.animations);
+                buildNodeHierachy(nodeIds[i], scene, json, dependencies.nodes, dependencies.skins);
             }
             return scene;
         });
-        function buildNodeHierachy(nodeId, parentObject, json, allNodes, skins, animations) {
+        function buildNodeHierachy(nodeId, parentObject, json, allNodes, skins) {
             let node = allNodes[nodeId];
             let nodeDef = json.nodes[nodeId];
             // build node hierachy
@@ -199,12 +202,13 @@ export default class GLTFParser {
                     });
                 }
             }
+            
             parentObject.addChild(node);
             if (nodeDef.children) {
                 let children = nodeDef.children;
                 for (let i = 0, il = children.length; i < il; i++) {
                     let child = children[i];
-                    buildNodeHierachy(child, node, json, allNodes, skins, animations);
+                    buildNodeHierachy(child, node, json, allNodes, skins);
                 }
             }
         }
@@ -479,7 +483,7 @@ export default class GLTFParser {
             defines.HAS_NORMALMAP = 1;
         }
         // BRDFLUT
-        pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', '/examples/assets/images/brdfLUT.png', false));
+        pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', BRDF_LUT_URL, false));
         if (parser.envDiffuseCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvDiffuse', parser.envDiffuseCubeMapSrc, false));
         if (parser.envSpecularCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvSpecular', parser.envSpecularCubeMapSrc, false));
         // This is a multiplier to the amount of specular. Especially useful if you don't have an HDR map.
@@ -603,6 +607,7 @@ export default class GLTFParser {
                 generateMipmaps
             });
             const image = new Image();
+            image.crossOrigin = "anonymous";
             image.onload = () => {
                 texture.image = image;
                 materialParams[key] = { value: texture };
@@ -747,12 +752,13 @@ export default class GLTFParser {
 	 */
     loadAnimation(animationIndex) {
         let json = this.json;
+        let parser = this;
         let animationDef = json.animations[animationIndex];
         return this.getMultiDependencies([
             'accessor',
             'node'
         ]).then(function (dependencies) {
-            let tracks = [];
+            let group = parser.animationSys.group;
             for (let i = 0, il = animationDef.channels.length; i < il; i++) {
                 let channel = animationDef.channels[i];
                 let sampler = animationDef.samplers[channel.sampler];
@@ -761,48 +767,51 @@ export default class GLTFParser {
                     let name = target.node !== undefined ? target.node : target.id; // NOTE: target.id is deprecated.
                     let input = animationDef.parameters !== undefined ? animationDef.parameters[sampler.input] : sampler.input;
                     let output = animationDef.parameters !== undefined ? animationDef.parameters[sampler.output] : sampler.output;
-                    let inputAccessor = dependencies.accessors[input];
-                    let outputAccessor = dependencies.accessors[output].data;
+                    let timeLine = dependencies.accessors[input]; //timeAccessor
+                    let keyFrame = dependencies.accessors[output]; //transformAccessor
                     let node = dependencies.nodes[name];
-                    if (node) {// 先只处理骨骼动画
-                        let keyCount = inputAccessor.count;
-                        for (let i = 0; i < keyCount; i++) {
-                            let keyTime = inputAccessor.data[i];
-                            if (!tracks[keyTime]) {
-                                tracks[keyTime] = {
-                                    position: [],
-                                    quaternion: [],
-                                    scale: []
-                                };
+                    if (node) {
+                        //Key Frame Animation
+                        //Skeleton Animation
+                        node.updateMatrix();
+                        node.matrixAutoUpdate = true;
+                        
+                        let controlChannel;
+                        //Check track format
+                        switch (target.path) {
+                            case "weights":
+                                //Morph target
+                                console.error("Unsupport Morph target weights animation now!", node);
+                                break;
+                            case "rotation":
+                                controlChannel = node.quaternion; //对象引用,直接改就行
+                                break;
+                            case "translation":
+                                controlChannel = node.position;
+                                break;
+                            case "scale":
+                                controlChannel = node.scale;
+                                break;
+                            default:
+                                break;
+                        }
+                        if(controlChannel){
+                            let anim;
+                            if(node.Animation){
+                                anim = node.Animation;
+                            }else{
+                                anim = new Animation();
+                                node.Animation = anim;
                             }
-                            switch (target.path) {
-                                case "weights":
-                                    console.error("Not support weight now.");
-                                    break;
-                                case "rotation":
-                                    tracks[keyTime].quaternion.push(outputAccessor[i * 4], outputAccessor[i * 4 + 1], outputAccessor[i * 4 + 2], outputAccessor[i * 4 + 3]);
-                                    tracks[keyTime].position.push(0, 0, 0);
-                                    tracks[keyTime].scale.push(0, 0, 0);
-                                    break;
-                                case "translation":
-                                    tracks[keyTime].position.push(outputAccessor[i * 3], outputAccessor[i * 3 + 1], outputAccessor[i * 3 + 2]);
-                                    tracks[keyTime].quaternion.push(0, 0, 0, 0);
-                                    tracks[keyTime].scale.push(0, 0, 0);
-                                    break;
-                                case "scale":
-                                    tracks[keyTime].scale.push(outputAccessor[i * 3], outputAccessor[i * 3 + 1], outputAccessor[i * 3 + 2]);
-                                    tracks[keyTime].quaternion.push(0, 0, 0, 0);
-                                    tracks[keyTime].position.push(0, 0, 0);
-                                    break;
-                                default:
-                                    break;
-                            }
+                            let keyFrameData = sliceBlockData(keyFrame);
+                            let animationChannel = new AnimationChannel(controlChannel, timeLine.data, keyFrameData);
+                            anim.attachChannel(animationChannel);
+                            group.push(anim);
                         }
                     }
                 }
             }
-            tracks = Object.values(tracks);
-            return tracks;
+			return group;
         });
     };
 };

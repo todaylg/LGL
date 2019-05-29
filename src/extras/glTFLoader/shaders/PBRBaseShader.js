@@ -40,6 +40,7 @@ mat4 getBoneMatrix(const in float i) {
 #endif
 
 uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
@@ -92,13 +93,15 @@ void main() {
 
     // Update position
     vec4 bindPos = vec4(position, 1.0);
-    vec4 transformed = vec4(0.0);
-    transformed += boneMatX * bindPos * skinWeight.x;
-    transformed += boneMatY * bindPos * skinWeight.y;
-    transformed += boneMatZ * bindPos * skinWeight.z;
-    transformed += boneMatW * bindPos * skinWeight.w;
+    vec4 transformed = skinMatrix * bindPos;
+
+    // vec4 transformed = vec4(0.0);
+    // transformed += boneMatX * bindPos * skinWeight.x;
+    // transformed += boneMatY * bindPos * skinWeight.y;
+    // transformed += boneMatZ * bindPos * skinWeight.z;
+    // transformed += boneMatW * bindPos * skinWeight.w;
     
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed.xyz, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * transformed; //model already calculate in boneMatrix
     #else
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     #endif
@@ -135,9 +138,6 @@ in vec3 vNormal;
 #endif
 
 #ifdef USE_IBL
-// uniform sampler2D u_brdfLUT;
-// uniform samplerCube u_DiffuseEnvSampler;
-// uniform samplerCube u_SpecularEnvSampler;
 uniform sampler2D tLUT;
 uniform samplerCube tEnvDiffuse;
 uniform samplerCube tEnvSpecular;
@@ -165,11 +165,6 @@ uniform float u_OcclusionStrength;
 uniform vec2 u_MetallicRoughnessValues;
 uniform vec4 u_BaseColorFactor;
 uniform vec3 cameraPosition;
-
-// debugging flags used for shader output of intermediate PBR variables
-vec4 u_ScaleDiffBaseMR = vec4(0.0, 0.0, 0.0, 0.0);
-vec4 u_ScaleFGDSpec = vec4(0.0, 0.0, 0.0, 0.0);
-vec4 u_ScaleIBLAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 
 // Light(Test)
 vec3 lightPos = vec3(0.0,5.0,0.0);
@@ -291,10 +286,6 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
 
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
     vec3 specular = specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
-
-    // For presentation, this allows us to disable IBL terms
-    diffuse *= u_ScaleIBLAmbient.x;
-    specular *= u_ScaleIBLAmbient.y;
 
     return diffuse + specular;
 }
@@ -436,20 +427,6 @@ void main()
         vec3 emissive = SRGBtoLINEAR(texture(u_EmissiveSampler, vUv)).rgb * u_EmissiveFactor;
         color += emissive;
     #endif
-
-    // This section uses mix to override final color for reference app visualization
-    // of various parameters in the lighting equation.
-    // color = mix(color, F, u_ScaleFGDSpec.x);
-    // color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-    // color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-    // color = mix(color, specContrib, u_ScaleFGDSpec.w);
-
-    // color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-    // color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-    // color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-    // color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
-
-    // FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 
     FragColor = vec4(color, baseColor.a);
 }

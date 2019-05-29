@@ -185,7 +185,9 @@ export class Geometry {
         // Check if any attributes need updating
         program.attributeLocations.forEach((location, name) => {
             const attr = this.attributes[name];
-            if (attr && attr.needsUpdate) this.updateAttribute(attr);
+            if (attr && attr.needsUpdate){
+                this.updateAttribute(attr);
+            }
         });
 
         if (this.isInstanced) {

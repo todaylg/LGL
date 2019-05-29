@@ -219,12 +219,13 @@ export class Vec3 extends Array {
      * @function
      * @description Performs a linear interpolation between two vec3's
      * i.e.,[x+t×(v[0]-x),y+t×(v[1]-x),z+t×(v[2]-z)];
-     * @param {vec3} v the operand
+     * @param {vec3} a the first operand
+     * @param {vec3} b the second operand
      * @param {Number} t interpolation amount between the two inputs
      * @returns {Vec3}
      */
-    lerp(v, t) {
-        Vec3Func.lerp(this, this, v, t);
+    lerp(a, b, t) {
+        Vec3Func.lerp(this, a, b, t);
         return this;
     }
     /**

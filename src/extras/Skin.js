@@ -2,7 +2,6 @@ import {Mesh} from '../core/Mesh.js';
 import {Transform} from '../core/Transform.js';
 import {Mat4} from '../math/Mat4.js';
 import {Texture} from '../core/Texture.js';
-import {Animation} from './Animation.js';
 
 const tempMat4 = new Mat4();
 
@@ -13,7 +12,7 @@ export class Skin extends Mesh {
         mode = gl.TRIANGLES,
     } = {}) {
         super(gl, {geometry, program, mode});
-        this.animations = [];
+        this.meshType = 'skinnedMesh';
     }
 
     init(rig = {}){
@@ -34,7 +33,7 @@ export class Skin extends Mesh {
         }else{
             console.warn('No input boneInverses or boneInverses is the wrong length.');
             this.bones.forEach(bone => {
-                bone.bindInverse = new Mat4(bone.worldMatrix).inverse();
+                bone.bindInverse = new Mat4();
             });
         }
     }
@@ -57,6 +56,8 @@ export class Skin extends Mesh {
             image: this.boneMatrices,
             generateMipmaps: false,
             type: this.gl.FLOAT,
+            wrapS: this.gl.GL_REPEAT,
+            wrapT: this.gl.GL_REPEAT,
             internalFormat: this.gl.renderer.isWebgl2 ? this.gl.RGBA16F : this.gl.RGBA,
             flipY: false,
             width: size,
@@ -65,32 +66,13 @@ export class Skin extends Mesh {
         Object.assign(this.program.uniforms, {
             boneTexture: {value: this.boneTexture},
             boneTextureSize: {value: this.boneTextureSize},
-        });
-    }
-
-    addAnimation(data) {
-        const animation = new Animation({objects: this.bones, data});
-        this.animations.push(animation);
-        return animation;
-    }
-
-    update() {
-        // Calculate combined animation weight
-        let total = 0;
-        if(!this.animations.length) return;
-        this.animations.forEach(animation => total += animation.weight);
-        this.animations.forEach((animation, i) => {
-            // force first animation to set in order to reset frame
-            animation.update(total, i === 0);
+            boneMatrices: {value: this.boneMatrices}
         });
     }
 
     draw({
         camera,
     } = {}) {
-        // Calling 'update' updates the bones with all of the
-        // attached animations based on their weights.
-        this.update();
         // Update world matrices manually, as not part of scene graph
         this.root.updateMatrixWorld(true);
 

@@ -109,6 +109,7 @@ export class Post {
                     i == enabledPasses.length - 1 ? target : 
                     i % 2 ? this.pong : 
                     this.ping,
+                    clear: false,
             });
         });
     }

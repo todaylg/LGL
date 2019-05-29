@@ -313,7 +313,7 @@ export class Orbit {
     onMouseWheel(e) {
         const { enabled, enableZoom, state } = this;
         if (!enabled || !enableZoom || (state !== STATE.NONE && state !== STATE.ROTATE)) return;
-        e.preventDefault();//Warning passive
+        // e.preventDefault(); //Warning passive
         e.stopPropagation();
 
         if (e.deltaY < 0) {

@@ -97,11 +97,15 @@ export class Renderer {
     // store requested extensions
     this.extensions = {};
 
-    if (!this.isWebgl2) {
+    if (this.isWebgl2) {
+      this.getExtension('EXT_color_buffer_float');
+      this.getExtension('OES_texture_float_linear');
+    } else {
       // Initialise extra format types
-      this.getExtension("OES_texture_float"); //Todo:插件介绍
+      this.getExtension("OES_texture_float");
       this.getExtension("OES_texture_float_linear");
       this.getExtension("OES_texture_half_float");
+      this.getExtension('OES_texture_half_float_linear');
       this.getExtension("OES_element_index_uint");
       this.getExtension("OES_standard_derivatives");
       this.getExtension("EXT_sRGB");

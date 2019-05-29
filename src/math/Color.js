@@ -46,6 +46,7 @@ export class Color extends Array {
      * @returns {Color} 
      */
     set(r, g, b) {
+        if (typeof r === 'string') [r, g, b] = Color.hexToRGB(r);
         this[0] = r;
         this[1] = g;
         this[2] = b;
