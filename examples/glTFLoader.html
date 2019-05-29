@@ -33,11 +33,11 @@
 
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
-            let defaultModel = '/examples/assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF';
+            let defaultModel = './assets/models/DamagedHelmet/glTF/DamagedHelmet.glTF';
             loader.load( defaultModel, {
                 useIBL: true,
-                envDiffuseCubeMapSrc: '/examples/assets/images/cube/papermill/diffuse/',
-                envSpecularCubeMapSrc: '/examples/assets/images/cube/papermill/specular/'
+                envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
+                envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;

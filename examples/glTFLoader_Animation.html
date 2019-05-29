@@ -34,11 +34,11 @@
             let loader = new GLTFLoader(gl);
             let animationSys;
 
-            let skinAnimationModel = '/examples/assets/models/CesiumMan/glTF/CesiumMan.glTF';
+            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.glTF';
             loader.load( skinAnimationModel, {
                 useIBL: true,
-                envDiffuseCubeMapSrc: '/examples/assets/images/cube/papermill/diffuse/',
-                envSpecularCubeMapSrc: '/examples/assets/images/cube/papermill/specular/'
+                envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
+                envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
