@@ -43,9 +43,8 @@
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 // Animation
-                let animations = gltf.animations;
-                if ( animations ){
-                    animationSys = animations;
+                animationSys = gltf.animations;
+                if ( animationSys ){
                     animationSys.speed = 0.5;
                 }
                 scene.addChild(glTF);

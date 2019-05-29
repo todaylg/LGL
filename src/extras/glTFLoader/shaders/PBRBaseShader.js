@@ -92,8 +92,8 @@ void main() {
     vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;
 
     // Update position
-    vec4 bindPos = vec4(position, 1.0);
-    vec4 transformed = skinMatrix * bindPos;
+    vec4 Pos = vec4(position, 1.0);
+    vec4 transformed = skinMatrix * Pos;
 
     // vec4 transformed = vec4(0.0);
     // transformed += boneMatX * bindPos * skinWeight.x;
