@@ -6,7 +6,7 @@ import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';
 import { AnimationSystem, AnimationChannel, Animation } from '../Animation.js';
 
-export class GLTFParser {
+export default class GLTFParser {
     constructor(gl, json, options = {}) {
         this.gl = gl;
         this.json = json || {};
