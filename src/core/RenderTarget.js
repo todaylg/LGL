@@ -22,7 +22,7 @@ export class RenderTarget {
         width = gl.canvas.width,
         height = gl.canvas.height,
         target = gl.FRAMEBUFFER,
-        color = 1, // number of color attachments
+        color = 1,
         depth = true,
         stencil = false,
         depthTexture = false, // note - stencil breaks
@@ -41,8 +41,8 @@ export class RenderTarget {
         this.target = target;
         this.gl.bindFramebuffer(this.target, this.buffer);
         this.textures = [];
-        // TODO: multi target rendering
         // create and attach required num of color textures
+        // framebufferTexture2D / framebufferRenderbuffer
         for (let i = 0; i < color; i++) {
             this.textures.push(new Texture(gl, {
                 width, height, wrapS, wrapT, minFilter, magFilter, type, format, internalFormat,
@@ -73,7 +73,7 @@ export class RenderTarget {
             this.depthTexture.update();
             this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0 /* level */);
         } else {
-            // Render buffers (attaches a WebGLRenderbuffer object to a WebGLFramebuffer object)
+            // Renderbuffer Object
             if (depth && !stencil) {
                 this.depthBuffer = this.gl.createRenderbuffer();
                 this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
@@ -95,10 +95,13 @@ export class RenderTarget {
                 this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, this.depthStencilBuffer);
             }
         }
+        if (this.gl.checkFramebufferStatus(this.target) != this.gl.FRAMEBUFFER_COMPLETE){
+            console.error("checkFramebufferStatus no complete");
+        }
+        // 解绑，在renderer中再进行绑定
         this.gl.bindFramebuffer(this.target, null);
     }
     clone() {
-        // deep clone
         return new RenderTarget(this.gl, this);
     }
 }
