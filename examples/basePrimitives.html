@@ -9,9 +9,10 @@
 </head>
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Program, Mesh} from '../src/Core.js';
+        import {Renderer, Camera, Transform, Program, Mesh, Vec3, Color} from '../src/Core.js';
         import {Plane, Sphere, Cube, Torus, Orbit} from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
+        import Noise from './assets/js/perlin.js';
 
         {
             const renderer = new Renderer({dpr: 2});
@@ -19,8 +20,7 @@
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
             const camera = new Camera();
-            camera.position.set(0, 1, 7);
-            camera.lookAt([0, 0, 0]);
+            camera.position.set(0, 0, 12);
 
             const controls = new Orbit(camera);
 
@@ -30,48 +30,116 @@
             }
             window.addEventListener('resize', resize, false);
             resize();
+
+            let noise = new Noise();
+            noise.seed(0);
+
             const scene = new Transform();
+            const cubeGroup = new Transform();
+            const sphereGroup = new Transform();
+            const torusGroup = new Transform();
+            const planeGroup = new Transform();
 
-            const planeGeometry = new Plane(gl);
-            const sphereGeometry = new Sphere(gl, {
-                widthSegments: 64
-            });
-            const cubeGeometry = new Cube(gl);
-            const torusGeometry = new Torus(gl, {
-                radius: 0.5,
-                tube: 0.1,
-                radialSegments: 16,
-                tubularSegments: 100
-            });
+            const SIZE = 3;
+            const cubes = [];
+            const spheres = [];
+            const planes = [];
+            const toruses = [];
 
-            const program = new Program(gl, {
-                vertex: BasePrimitivesShader.vertex,
-                fragment: BasePrimitivesShader.fragment,
-                // Don't cull faces so that plane is double sided
-                cullFace: null,
-            });
+            for (let y = 0; y < SIZE; y++) {
+                for (let x = 0; x < SIZE; x++) {
+                    const cubeGeometry = new Cube(gl);
+                    const planeGeometry = new Plane(gl);
+                    const sphereGeometry = new Sphere(gl, {
+                        widthSegments: 64
+                    });
+                    const torusGeometry = new Torus(gl, {
+                        radius: 0.5,
+                        tube: 0.1,
+                        radialSegments: 16,
+                        tubularSegments: 100
+                    });
+                    const program = new Program(gl, {
+                        vertex: BasePrimitivesShader.vertex,
+                        fragment: BasePrimitivesShader.fragment,
+                        cullFace: null,
+                        uniforms: {
+                            baseColor: { value: new Color(1) }
+                        }
+                    });
+                    const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
+                    const sphereMesh = new Mesh(gl, { geometry: sphereGeometry, program });
+                    const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
+                    const torusMesh = new Mesh(gl, { geometry: torusGeometry, program });
 
-            const plane = new Mesh(gl, {geometry: planeGeometry, program});
-            plane.position.set(-1, 1, 0);
-            plane.setParent(scene);
+                    cubeMesh.position.set(-.5 * SIZE, .5 * SIZE, x -.5 * SIZE);
+                    cubeMesh.position.z += 1;
+                    cubes.push({ mesh:cubeMesh, offset: Math.random() });
+                    cubeGroup.addChild(cubeMesh);
 
-            const sphere = new Mesh(gl, {geometry: sphereGeometry, program});
-            sphere.position.set(-1, -1, 0);
-            sphere.setParent(scene);
+                    sphereMesh.position.set(-.5 * SIZE, .5 * SIZE, x  -.5 * SIZE);
+                    sphereMesh.position.z += 1;
+                    spheres.push({ mesh:sphereMesh, offset: Math.random()});
+                    sphereGroup.addChild(sphereMesh);
 
-            const cube = new Mesh(gl, {geometry: cubeGeometry, program});
-            cube.position.set(1, 1, 0);
-            cube.setParent(scene);
+                    planeMesh.position.set(-.5 * SIZE, .5 * SIZE, x -.5 * SIZE);
+                    planeMesh.position.z += 1;
+                    planes.push({ mesh:planeMesh, offset: Math.random()});
+                    planeGroup.addChild(planeMesh);
 
-            const torus = new Mesh(gl, {geometry: torusGeometry, program});
-            torus.position.set(1, -1, 0);
-            torus.setParent(scene);
+                    torusMesh.position.set(-.5 * SIZE, .5 * SIZE, x -.5 * SIZE);
+                    torusMesh.position.z += 1;
+                    toruses.push({ mesh:torusMesh, offset: Math.random() });
+                    torusGroup.addChild(torusMesh);
+                }
+            }
+
+            scene.addChild(cubeGroup);
+            cubeGroup.rotation.z = Math.PI / 2;
+            cubeGroup.position.x = SIZE/2 - 3;
+
+            scene.addChild(sphereGroup);
+            sphereGroup.rotation.z = Math.PI / 2;
+            sphereGroup.position.x = SIZE/2 - 1;
+
+            scene.addChild(planeGroup);
+            planeGroup.rotation.z = Math.PI / 2;
+            planeGroup.position.x = SIZE/2 + 1;
+
+            scene.addChild(torusGroup);
+            torusGroup.rotation.z = Math.PI / 2;
+            torusGroup.position.x = SIZE/2 + 3;
+
+            const loopDuration = 2;
+            //抛物线
+            function parabola(x, k) {
+                return Math.pow(4 * x * (1 - x), k);
+            }
+            const s = 3;
+            const HEIGHT = 10;
+            let startTime = performance.now();
+            function updateGroup(t) {
+                const time = (.001 * (t - startTime)) % loopDuration;
+                [cubes, spheres, planes, toruses].forEach(meshs => {
+                    meshs.forEach(c => {
+                        const t = ((time + c.offset * loopDuration) % loopDuration) / loopDuration;
+                        c.mesh.position.x = .5 - .5 * HEIGHT + t * HEIGHT;
+                        const n = .25 + .25 * (noise.perlin3(s * t, s * c.mesh.position.y, s * c.mesh.position.z));
+                        const finalScale = 1.5 * parabola(t, 1) * n;
+                        const tz = (c.mesh.position.z + .5 * SIZE) / SIZE;
+                        let rgb = Color.hslToRGB(.5 + .5 * finalScale, .4 + .2 * tz, .4 + .2 * tz);
+                        c.mesh.program.uniforms.baseColor.value.fromArray(rgb);
+                        c.mesh.scale.set(finalScale);
+                    })
+                })
+            }
 
             requestAnimationFrame(update);
-            function update() {
-                requestAnimationFrame(update);
+            function update(t) {
+                updateGroup(t);
                 controls.update();
                 renderer.render({scene, camera});
+                requestAnimationFrame(update);
             }
         }
     </script>

@@ -1,32 +1,47 @@
-// TODO: Destroy render targets if size changed and exists
+import { Geometry } from '../core/Geometry.js';
+import { Program } from '../core/Program.js';
+import { Mesh } from '../core/Mesh.js';
+import { RenderTarget } from '../core/RenderTarget.js';
 
-import {Geometry} from '../core/Geometry.js';
-import {Program} from '../core/Program.js';
-import {Mesh} from '../core/Mesh.js';
-import {RenderTarget} from '../core/RenderTarget.js';
-
+/**
+ * Create a Post Progressing
+ * 
+ * @class
+ * @param {WebGLContext} gl
+ * @param {Object} [options] -  The optional post parameters
+ * @param {Number} [options.width] - The width of the canvas
+ * @param {Number} [options.height] - The height of the canvas
+ * @param {Number} [options.dpr] - The device pixel ratio of the post renderer, retina would be 2.
+ * @param {Number} [options.wrapS = gl.REPEAT] - Param of TEXTURE_WRAP_S. (RenderTarget)
+ * @param {Object} [options.wrapT = wrapS] - Param of TEXTURE_WRAP_T. (RenderTarget)
+ * @param {Object} [options.minFilter = gl.LINEAR] - Param of  TEXTURE_MIN_FILTER. (RenderTarget)
+ * @param {Object} [options.magFilter = minFilter] - Param of TEXTURE_MAG_FILTER. (RenderTarget)
+ * @param {GLenum} [options.type] - A GLenum specifying the data type of the texel(纹素) data. (RenderTarget)
+ * @param {GLenum} [options.format]  -A GLenum specifying the format of the texel data（In WebGL 1, this must be the same as internalformat）(RenderTarget)
+ * @param {GLenum} [options.internalFormat] - A GLenum specifying the color components in the texture. (RenderTarget)
+ */
 export class Post {
     constructor(gl, {
         width,
         height,
         dpr,
-        wrapS = gl.CLAMP_TO_EDGE,
-        wrapT = gl.CLAMP_TO_EDGE,
+        wrapS = gl.REPEAT,
+        wrapT = wrapS,
         minFilter = gl.LINEAR,
-        magFilter = gl.LINEAR,
+        magFilter = minFilter,
+        type,
+        format,
+        internalFormat
     } = {}) {
         this.gl = gl;
-
-        this.options = {wrapS, wrapT, minFilter, magFilter};
-
+        this.options = { wrapS, wrapT, minFilter, magFilter, type, format, internalFormat };
         this.passes = [];
-
+        // Triangle that covers viewport, with UVs that still span 0 > 1 across viewport
         this.geometry = new Geometry(gl, {
-            position: {size: 3, data: new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0])},
-            uv: {size: 2, data: new Float32Array([0, 0, 2, 0, 0, 2])},
+            position: { size: 3, data: new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]) },
+            uv: { size: 2, data: new Float32Array([0, 0, 2, 0, 0, 2]) },
         });
-
-        this.resize({width, height, dpr});
+        this.resize({ width, height, dpr });
     }
 
     addPass({
@@ -36,13 +51,13 @@ export class Post {
         textureUniform = 'tMap',
         enabled = true,
     } = {}) {
-        uniforms[textureUniform] = {value: this.target.texture};
+        uniforms[textureUniform] = { value: this.target.texture };
 
-        const program = new Program(this.gl, {vertex, fragment, uniforms});
-        const mesh = new Mesh(this.gl, {geometry: this.geometry, program});
+        const program = new Program(this.gl, { vertex, fragment, uniforms });
+        const mesh = new Mesh(this.gl, { geometry: this.geometry, program });
 
         const pass = {
-            mesh, 
+            mesh,
             program,
             uniforms,
             enabled,
@@ -53,20 +68,16 @@ export class Post {
         return pass;
     }
 
-    resize({width, height, dpr} = {}) {
+    resize({ width, height, dpr } = {}) {
         if (dpr) this.dpr = dpr;
         if (width) {
             this.width = width;
             this.height = height || width;
         }
-
         dpr = this.dpr || this.gl.renderer.dpr;
         width = (this.width || this.gl.renderer.width) * dpr;
         height = (this.height || this.gl.renderer.height) * dpr;
-
         // TODO: Destroy render targets if size changed and exists
-
-        //create 
         this.options.width = width;
         this.options.height = height;
         this.target = new RenderTarget(this.gl, this.options);
@@ -84,7 +95,7 @@ export class Post {
         frustumCull = true,
     }) {
         const enabledPasses = this.passes.filter(pass => pass.enabled);
-
+        // Render target first
         this.gl.renderer.render({
             scene,
             camera,
@@ -93,33 +104,48 @@ export class Post {
             sort,
             frustumCull
         });
-
+        if(!enabledPasses.length) return;
+        // Render Pass
         enabledPasses.forEach((pass, i) => {
+            // Set Pass's texture uniform
+            // Means: 
+            // i = 0 : input texture : target
+            // i = 1 : input texture : ping
+            // i = 2 : input texture : pong
+            // i = 3 : input texture : ping , loop
+            pass.mesh.program.uniforms[pass.textureUniform].value =
+                !i ? this.target.texture :
+                    i % 2 ? this.ping.texture :
+                        this.pong.texture;
 
-            // Set texture uniform to: 0 = target, 1 = ping, 2 = pong, 3 = ping, etc
-            pass.mesh.program.uniforms[pass.textureUniform].value = 
-                !i ? this.target.texture : 
-                i % 2 ? this.ping.texture : 
-                this.pong.texture;
-
-            // Render to: 0 = ping, 1 = pong, etc, last = screen
+            // Set Pass Render to: 
+            // Means: 
+            // enabledPasses.length = 1 => output renderTarget : target
+            // enabledPasses.length > 1 => 
+            // i = 1 => output renderTarget : pong
+            // i = 2 => output renderTarget : ping
+            // i = 3 => output renderTarget : pong, loop
+            // 最后一个Render (i == enabledPasses.length - 1) 需要render回到main FrameBuffer
             this.gl.renderer.render({
-                scene: pass.mesh, 
-                target: 
-                    i == enabledPasses.length - 1 ? target : 
-                    i % 2 ? this.pong : 
-                    this.ping,
-                    clear: false,
+                scene: pass.mesh,
+                target:
+                    i == enabledPasses.length - 1 ? target :
+                        i % 2 ? this.pong :
+                            this.ping,
+                clear: false,
             });
         });
     }
 }
 
-const defaultVertex = `
-attribute vec2 uv;
-attribute vec3 position;
+const defaultVertex = `#version 300 es
+precision highp float;
+precision highp int;
 
-varying vec2 vUv;
+in vec2 uv;
+in vec3 position;
+
+out vec2 vUv;
 
 void main() {
     vUv = uv;
@@ -127,13 +153,15 @@ void main() {
 }
 `;
 
-const defaultFragment = `
+const defaultFragment = `#version 300 es
 precision highp float;
+precision highp int;
 
 uniform sampler2D tMap;
-varying vec2 vUv;
+in vec2 vUv;
+out vec4 FragColor;
 
 void main() {
-    gl_FragColor = texture2D(tMap, vUv);
+    FragColor = texture(tMap, vUv);
 }
 `;

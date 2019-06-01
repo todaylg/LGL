@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Post Processing</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture} from '../src/Core.js';
+        import {Orbit, Post, Plane} from '../src/Extras.js';
+        import TextureShader from './shaders/TextureShader.js';
+        import blurFragmentShader from './shaders/pass/blurFragmentShader.js';
+        import fxaaFragmentShader from './shaders/pass/fxaaFragmentShader.js';
+        {
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            document.body.appendChild(gl.canvas);
+            gl.clearColor(1, 1, 1, 1);
+            const camera = new Camera();
+            camera.position.set(7, 7, 17);
+
+            const controls = new Orbit(camera);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const post = new Post(gl);
+            let w = gl.canvas.width;
+            let h = gl.canvas.height;
+            post.addPass({
+                fragment: blurFragmentShader,
+                uniforms: {
+                    resolution: { value: new Vec2(w, h) },
+                    direction: { value: new Vec2(0, 1) }
+                }
+            });
+            post.addPass({
+                fragment: blurFragmentShader,
+                uniforms: {
+                    resolution: { value: new Vec2(w, h) },
+                    direction: { value: new Vec2(1, 0) }
+                }
+            });
+            post.addPass({
+                fragment: fxaaFragmentShader,
+                uniforms: {
+                    resolution: { value: new Vec2(w, h) },
+                }
+            });
+            const scene = new Transform();
+
+             // Texture is equirectangular
+            const texture = new Texture(gl);
+            const img = new Image();
+            img.onload = () => texture.image = img;
+            img.src = './assets/images/bg.jpg';
+
+            const planeGeometry = new Plane(gl,{
+                width:10,
+                height:10
+            });
+            const program = new Program(gl, {
+                vertex: TextureShader.vertex,
+                fragment: TextureShader.fragment,
+                cullFace: false,
+                uniforms: {
+                    tMap: { value: texture }
+                },
+            });
+            const plane = new Mesh(gl, {geometry: planeGeometry, program});
+            plane.setParent(scene);
+
+            let target = post.target;
+            requestAnimationFrame(update);
+            function update(t) {
+                controls.update();
+                post.render({scene, camera})
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

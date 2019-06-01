@@ -24,7 +24,7 @@ const fragment = `#version 300 es
 precision highp float;
 precision highp int;
 
-const vec3 baseColor = vec3(0.0,0.6,0.9);
+uniform vec3 baseColor;
 const vec3 ambientLightColor = vec3(1.0,1.0,1.0);
 const float ambientStrength = 0.3;
 const vec3 lightColor = vec3(1.0,1.0,1.0);
