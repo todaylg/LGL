@@ -9,18 +9,18 @@
 </head>
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture} from '../src/Core.js';
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget} from '../src/Core.js';
         import {Orbit, Post, Plane} from '../src/Extras.js';
         import TextureShader from './shaders/TextureShader.js';
         import blurFragmentShader from './shaders/pass/blurFragmentShader.js';
         import fxaaFragmentShader from './shaders/pass/fxaaFragmentShader.js';
+        import transitionShader from './shaders/pass/transitionShader.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
-            gl.clearColor(1, 1, 1, 1);
             const camera = new Camera();
-            camera.position.set(7, 7, 17);
+            camera.position.set(0, 0, 20);
 
             const controls = new Orbit(camera);
             function resize() {
@@ -54,17 +54,23 @@
                     resolution: { value: new Vec2(w, h) },
                 }
             });
+           
             const scene = new Transform();
-
+            const preScene = new Transform();
              // Texture is equirectangular
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
             img.src = './assets/images/bg.jpg';
 
+            const mixTexture = new Texture(gl);
+            const mixImg = new Image();
+            mixImg.onload = () => mixTexture.image = mixImg;
+            mixImg.src = './assets/images/transition/transition5.png';
+
             const planeGeometry = new Plane(gl,{
-                width:10,
-                height:10
+                width: 20,
+                height: 11
             });
             const program = new Program(gl, {
                 vertex: TextureShader.vertex,
@@ -76,11 +82,30 @@
             });
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
-
-            let target = post.target;
+            const prePlane = new Mesh(gl, {geometry: planeGeometry, program});
+            prePlane.setParent(preScene);
+            const preScenetarget = new RenderTarget(gl);
+            let mixRatio = { value: 0 };
+            post.addPass({
+                fragment: transitionShader,
+                uniforms: {
+                    tPreMap:{ value: preScenetarget.texture},
+                    mixRatio, // 0 => 1
+                    threshold: { value: 0.2 },
+                    useTexture: { value: 1 },
+                    tMixTexture: {value: mixTexture}
+                }
+            });
+            const loopDuration = 6;
+            let startTime = performance.now();
             requestAnimationFrame(update);
             function update(t) {
+                const time = (.001 * (t - startTime)) % loopDuration; // 0 => loopDuration
+                mixRatio.value = Math.abs(time - loopDuration/2) / (loopDuration/2) ; // 1 => 0 => 1
                 controls.update();
+                gl.clearColor(1, 1, 1, 1);
+                renderer.render({scene: preScene, camera, target: preScenetarget});
+                gl.clearColor(0, 0, 0, 0);
                 post.render({scene, camera})
                 requestAnimationFrame(update);
             }

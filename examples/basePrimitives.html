@@ -13,7 +13,7 @@
         import {Plane, Sphere, Cube, Torus, Orbit} from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
         import Noise from './assets/js/perlin.js';
-
+        import { parabola } from './assets/js/Util.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
@@ -111,10 +111,6 @@
             torusGroup.position.x = SIZE/2 + 3;
 
             const loopDuration = 2;
-            //抛物线
-            function parabola(x, k) {
-                return Math.pow(4 * x * (1 - x), k);
-            }
             const s = 3;
             const HEIGHT = 10;
             let startTime = performance.now();
