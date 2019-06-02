@@ -51,11 +51,9 @@ export class Post {
         textureUniform = 'tMap',
         enabled = true,
     } = {}) {
-        uniforms[textureUniform] = { value: this.target.texture };
-
+        uniforms[textureUniform] = { value: this.fbos[this.currentFBO] };
         const program = new Program(this.gl, { vertex, fragment, uniforms });
         const mesh = new Mesh(this.gl, { geometry: this.geometry, program });
-
         const pass = {
             mesh,
             program,
@@ -63,7 +61,6 @@ export class Post {
             enabled,
             textureUniform,
         };
-
         this.passes.push(pass);
         return pass;
     }
@@ -80,9 +77,9 @@ export class Post {
         // TODO: Destroy render targets if size changed and exists
         this.options.width = width;
         this.options.height = height;
-        this.target = new RenderTarget(this.gl, this.options);
-        this.ping = new RenderTarget(this.gl, this.options);
-        this.pong = new RenderTarget(this.gl, this.options);
+        this.fbo = new RenderTarget(this.gl, this.options);
+        this.fbos = [this.fbo, this.fbo.clone()];
+        this.currentFBO = 0;
     }
 
     // Uses same arguments as renderer.render
@@ -99,42 +96,22 @@ export class Post {
         this.gl.renderer.render({
             scene,
             camera,
-            target: enabledPasses.length ? this.target : target,
-            update,
-            sort,
-            frustumCull
+            target: enabledPasses.length ? this.fbos[this.currentFBO] : target,
+            update, sort, frustumCull
         });
         if(!enabledPasses.length) return;
         // Render Pass
         enabledPasses.forEach((pass, i) => {
-            // Set Pass's texture uniform
-            // Means: 
-            // i = 0 : input texture : target
-            // i = 1 : input texture : ping
-            // i = 2 : input texture : pong
-            // i = 3 : input texture : ping , loop
-            pass.mesh.program.uniforms[pass.textureUniform].value =
-                !i ? this.target.texture :
-                    i % 2 ? this.ping.texture :
-                        this.pong.texture;
-
-            // Set Pass Render to: 
-            // Means: 
-            // enabledPasses.length = 1 => output renderTarget : target
-            // enabledPasses.length > 1 => 
-            // i = 1 => output renderTarget : pong
-            // i = 2 => output renderTarget : ping
-            // i = 3 => output renderTarget : pong, loop
+            pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
             // 最后一个Render (i == enabledPasses.length - 1) 需要render回到main FrameBuffer
             this.gl.renderer.render({
                 scene: pass.mesh,
-                target:
-                    i == enabledPasses.length - 1 ? target :
-                        i % 2 ? this.pong :
-                            this.ping,
+                target: i === enabledPasses.length - 1 ? target : this.fbos[1 - this.currentFBO],
                 clear: false,
             });
+            this.currentFBO = 1 - this.currentFBO;
         });
+       
     }
 }
 

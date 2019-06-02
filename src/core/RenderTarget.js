@@ -36,6 +36,8 @@ export class RenderTarget {
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
         internalFormat = format,
+        unpackAlignment,
+        premultiplyAlpha,
     } = {}) {
         this.gl = gl;
         this.width = width;
@@ -48,7 +50,7 @@ export class RenderTarget {
         // framebufferTexture2D / framebufferRenderbuffer
         for (let i = 0; i < color; i++) {
             this.textures.push(new Texture(gl, {
-                width, height, wrapS, wrapT, minFilter, magFilter, type, format, internalFormat,
+                width, height, wrapS, wrapT, minFilter, magFilter, type, format, internalFormat, unpackAlignment, premultiplyAlpha,
                 flipY: false,
                 generateMipmaps: false,
             }));

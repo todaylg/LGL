@@ -88,6 +88,7 @@ export class Renderer {
     this.state.depthFunc = this.gl.LESS;
     this.state.premultiplyAlpha = false;
     this.state.flipY = false;
+    this.state.unpackAlignment = 4;
     this.state.framebuffer = null;
     this.state.viewport = { width: null, height: null };
     this.state.textureUnits = [];
