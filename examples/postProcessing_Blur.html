@@ -12,9 +12,9 @@
         import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget} from '../src/Core.js';
         import {Orbit, Post, Plane} from '../src/Extras.js';
         import TextureShader from './shaders/TextureShader.js';
-        import blurFragmentShader from './shaders/pass/blurFragmentShader.js';
-        import fxaaFragmentShader from './shaders/pass/fxaaFragmentShader.js';
-        import transitionShader from './shaders/pass/transitionShader.js';
+        import blurPassShader from './shaders/pass/blurPassShader.js';
+        import fxaaPassShader from './shaders/pass/fxaaPassShader.js';
+        import transitionPassShader from './shaders/pass/transitionPassShader.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
@@ -35,21 +35,21 @@
             let w = gl.canvas.width;
             let h = gl.canvas.height;
             post.addPass({
-                fragment: blurFragmentShader,
+                fragment: blurPassShader,
                 uniforms: {
                     resolution: { value: new Vec2(w, h) },
                     direction: { value: new Vec2(0, 1) }
                 }
             });
             post.addPass({
-                fragment: blurFragmentShader,
+                fragment: blurPassShader,
                 uniforms: {
                     resolution: { value: new Vec2(w, h) },
                     direction: { value: new Vec2(1, 0) }
                 }
             });
             post.addPass({
-                fragment: fxaaFragmentShader,
+                fragment: fxaaPassShader,
                 uniforms: {
                     resolution: { value: new Vec2(w, h) },
                 }
@@ -57,7 +57,6 @@
            
             const scene = new Transform();
             const preScene = new Transform();
-             // Texture is equirectangular
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
@@ -87,7 +86,7 @@
             const preScenetarget = new RenderTarget(gl);
             let mixRatio = { value: 0 };
             post.addPass({
-                fragment: transitionShader,
+                fragment: transitionPassShader,
                 uniforms: {
                     tPreMap:{ value: preScenetarget.texture},
                     mixRatio, // 0 => 1

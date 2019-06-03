@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 .cache/
+examples/assets/models/
 package-lock.json
 
 # Editor directories and files

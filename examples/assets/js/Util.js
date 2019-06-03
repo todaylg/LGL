@@ -2,6 +2,15 @@ export const TAU = 2 * Math.PI;
 export function randomInRange(min, max) {
     return min + Math.random() * (max - min);
 }
+
+export function randInt( low, high ) {
+    return low + Math.floor( Math.random() * ( high - low + 1 ) );
+}
+
+export function randFloat( low, high ) {
+    return low + Math.random() * ( high - low );
+}
+
 export function parabola(x, k) {
     return Math.pow(4 * x * (1 - x), k);
 }

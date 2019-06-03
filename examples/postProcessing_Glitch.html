@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Post Processing - Glitch</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget} from '../src/Core.js';
+        import {Orbit, Post, Plane} from '../src/Extras.js';
+        import TextureShader from './shaders/TextureShader.js';
+        import glitchPassShader from './shaders/pass/glitchPassShader.js';
+        import transitionPassShader from './shaders/pass/transitionPassShader.js';
+        import { randFloat, randInt } from './assets/js/Util.js';
+        {
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera();
+            camera.position.set(0, 0, 20);
+
+            const controls = new Orbit(camera);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const dtSize = 64;
+            let dataArr = new Float32Array( dtSize * dtSize * 3 );
+		    let dataLength = dtSize * dtSize;
+            for ( let i = 0; i < dataLength; i ++ ) {
+                let val = randFloat( 0, 1 );
+                dataArr[ i * 3 + 0 ] = val;
+                dataArr[ i * 3 + 1 ] = val;
+                dataArr[ i * 3 + 2 ] = val;
+            }
+
+            const dataTexture = new Texture(gl, {
+                image: dataArr,
+                generateMipmaps: false,
+                type: gl.FLOAT,
+                magFilter:gl.LINEAR,
+                minFilter:gl.LINEAR,
+                wrapS: gl.GL_REPEAT,
+                wrapT: gl.GL_REPEAT,
+                format: gl.RGB,
+                internalFormat: gl.renderer.isWebgl2 ? gl.RGB16F : gl.RGBA,
+                flipY: false,
+                width: dtSize,
+            });
+            const post = new Post(gl);
+            let w = gl.canvas.width;
+            let h = gl.canvas.height;
+            let uniformsProp = {
+                tDisp: { value: dataTexture },
+                byp: { value: 0 }, //apply the glitch ?
+                amount: { value: 0.08 },
+                angle: { value: 0.02 },
+                seed: { value: 0.02 },
+                seed_x: { value: 0.02 },//-1,1
+                seed_y: { value: 0.02 },//-1,1
+                distortion_x: { value: 0.5 },
+                distortion_y: { value: 0.6 },
+                col_s: { value: 0.05 }
+            }
+            post.addPass({
+                fragment: glitchPassShader,
+                uniforms: uniformsProp
+            });
+           
+            const scene = new Transform();
+            const preScene = new Transform();
+            const texture = new Texture(gl);
+            const img = new Image();
+            img.onload = () => texture.image = img;
+            img.src = './assets/images/bg.jpg';
+            const mixTexture = new Texture(gl);
+            const mixImg = new Image();
+            mixImg.onload = () => mixTexture.image = mixImg;
+            mixImg.src = './assets/images/transition/transition5.png';
+            const planeGeometry = new Plane(gl,{
+                width: 20,
+                height: 11
+            });
+            const program = new Program(gl, {
+                vertex: TextureShader.vertex,
+                fragment: TextureShader.fragment,
+                cullFace: false,
+                uniforms: {
+                    tMap: { value: texture }
+                },
+            });
+            const plane = new Mesh(gl, {geometry: planeGeometry, program});
+            plane.setParent(scene);
+            const prePlane = new Mesh(gl, {geometry: planeGeometry, program});
+            prePlane.setParent(preScene);
+            const preScenetarget = new RenderTarget(gl);
+            let mixRatio = { value: 0 };
+            post.addPass({
+                fragment: transitionPassShader,
+                uniforms: {
+                    tPreMap:{ value: preScenetarget.texture},
+                    mixRatio, // 0 => 1
+                    threshold: { value: 0.2 },
+                    useTexture: { value: 1 },
+                    tMixTexture: {value: mixTexture}
+                }
+            });
+         
+            let randX = randInt( 120, 240 );
+            let curF = 0;
+            function renderPass(){
+                uniformsProp['seed'].value = Math.random();
+                if ( curF % randX == 0){
+                    uniformsProp['amount'].value = Math.random() / 30;
+                    uniformsProp['angle'].value = randFloat( - Math.PI, Math.PI );
+                    uniformsProp['seed_x'].value = randFloat( - 1, 1 );
+                    uniformsProp['seed_y'].value = randFloat( - 1, 1 );
+                    uniformsProp['distortion_x'].value = randFloat( 0, 1 );
+                    uniformsProp['distortion_y'].value = randFloat( 0, 1 );
+                    curF = 0;
+                    randX = randInt( 120, 240 );
+                } else if ( curF % randX < randX ) {
+                    uniformsProp['amount'].value = Math.random() / 90;
+                    uniformsProp['angle'].value = randFloat( - Math.PI, Math.PI );
+                    uniformsProp['seed_x'].value = randFloat( - 0.3, 0.3 );
+                    uniformsProp['seed_y'].value = randFloat( - 0.3, 0.3 );
+                    uniformsProp['distortion_x'].value = randFloat( 0, 1 );
+                    uniformsProp['distortion_y'].value = randFloat( 0, 1 );
+                }
+                curF ++;
+            }
+            const loopDuration = 4;
+            let startTime = performance.now();
+            requestAnimationFrame(update);
+            function update(t) {
+                const time = (.001 * (t - startTime)) % loopDuration; // 0 => loopDuration
+                mixRatio.value = Math.abs(time - loopDuration/2) / (loopDuration/2) ; // 1 => 0 => 1
+                controls.update();
+                gl.clearColor(1, 1, 1, 1);
+                renderer.render({scene: preScene, camera, target: preScenetarget});
+                gl.clearColor(0, 0, 0, 0);
+                renderPass();
+                post.render({scene, camera});
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>
