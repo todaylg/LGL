@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Multiple Render Target</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Orbit, Post, GLTFLoader} from '../src/Extras.js';
+        import { randomInRange } from './assets/js/Util.js'; 
+        import PetalShader from './shaders/PetalShader.js';
+        {
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera();
+            camera.position.set(0, 0, 20);
+            const controls = new Orbit(camera);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+            let defaultUniform = {
+                color: {value: new Color(1)},
+                opacity: {value: 1},
+                time: {value: 0}
+            };
+            let petalProgram = new Program(gl, {
+                vertex: PetalShader.vertex,
+                fragment: PetalShader.fragment,
+                uniforms: defaultUniform,
+                cullFace:false
+            });
+            let loader = new GLTFLoader(gl);
+            let petalModelURL = './assets/models/petal/petal.gltf';
+            loader.load( petalModelURL, null, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                let glTF = gltf.scene;
+                let petalGeometry = glTF.children[0].geometry;
+                initPetalMesh(petalGeometry, petalProgram);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
+            let petalMeshArr = [];
+            function initPetalMesh(petalGeometry, petalProgram){
+                const num = 100;
+                for (let i = 0; i < num; i++) {
+                    const petalMesh = new Mesh(gl, { geometry: petalGeometry, program: petalProgram });
+                    petalMeshArr.push(petalMesh);
+                    petalMesh.position.set(randomInRange(-1,1)*10, randomInRange(-1,1)*10 + 5, Math.random()*10);
+                    petalMesh.rotation.set(Math.random(), Math.random(), Math.random());
+                    petalMesh.scale.set(Math.random()*1.25);
+                    scene.addChild(petalMesh);
+                }
+            }
+            let time = 0;
+            const loopDuration = 10;
+            let startTime = performance.now();
+            requestAnimationFrame(update);
+            function update(t) {
+                time = (.001 * (t - startTime)) % loopDuration;
+                time -= loopDuration/2;
+                controls.update();
+                petalMeshArr.forEach(petal => {
+                    petal.position.add([0,0.05*time,0]);
+                    petal.rotation.x += 0.002*time;
+                    petal.rotation.y += 0.004*time;
+                    petal.rotation.z += 0.006*time;
+                })
+                renderer.render({scene, camera})
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

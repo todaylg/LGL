@@ -2,6 +2,9 @@ const fs = `#version 300 es
 precision highp float;
 
 #define NUM_MIPS 5
+#ifndef saturate
+	#define saturate(a) clamp( a, 0.0, 1.0 )
+#endif
 
 uniform sampler2D tMap;
 uniform sampler2D blurTexture1;
@@ -14,11 +17,19 @@ uniform float bloomStrength;
 uniform float bloomRadius;
 uniform float bloomFactors[NUM_MIPS];
 uniform vec3 bloomTintColors[NUM_MIPS];
+uniform float exposure;
 
 float lerpBloomFactor(const in float factor) {
    float mirrorFactor = 1.2 - factor;
    return mix(factor, mirrorFactor, bloomRadius);
 }
+
+// source: https://www.cs.utah.edu/~reinhard/cdrom/
+vec3 ReinhardToneMapping( vec3 color ) {
+	color *= exposure;
+	return saturate( color / ( vec3( 1.0 ) + color ) );
+}
+
 
 in vec2 vUv;
 out vec4 FragColor;
@@ -31,7 +42,7 @@ void main() {
    bloom += lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture(blurTexture4, vUv);
    bloom += lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture(blurTexture5, vUv);
    bloom *= bloomStrength;
-   FragColor = bloom;
+   FragColor = vec4(ReinhardToneMapping(bloom.rgb), bloom.a);
 }`;
 
 export default fs;

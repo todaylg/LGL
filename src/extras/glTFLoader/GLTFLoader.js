@@ -6,6 +6,11 @@ import { extractUrlBase, decodeText } from './Util.js';
 export class GLTFLoader {
     constructor(gl) {
         this.gl = gl;
+        this.glExtension = {
+            hasGLBExt: gl.getExtension('KHR_binary_glTF'),
+            hasSRGBExt: gl.getExtension('EXT_SRGB'),
+            hasLODExtension: gl.getExtension('EXT_shader_texture_lod'),
+        };
     }
     async load(url, options = {}, onLoad, onError) {
         let resourcesPath = extractUrlBase(url);;
@@ -16,10 +21,17 @@ export class GLTFLoader {
     }
     parse(data, path, options, onLoad, onError) {
         let content;
+        let glExtension = this.glExtension;
         if (typeof data === 'string') {
             content = data;
         } else {
-            content = decodeText(new Uint8Array(data));
+            let magic = decodeText( new Uint8Array( data, 0, 4 ) );
+            if ( magic === 'glTF' ) {
+                onError('Unsupported .glb file!');
+                return;
+            }else{
+                content = decodeText(new Uint8Array(data));
+            }   
         }
         let json = JSON.parse(content);
         console.log("JSON.parse result: ", json);
@@ -31,7 +43,7 @@ export class GLTFLoader {
         if (json.extensionsUsed) {
             console.error("No support extension now");
         }
-        let parser = new GLTFParser(this.gl, json, { path, ...options });
+        let parser = new GLTFParser(this.gl, json, { glExtension, path, ...options });
         parser.parse((scene, scenes, cameras, animations, json) => {
             let glTF = {
                 scene,

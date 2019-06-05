@@ -9,7 +9,7 @@
  * new Color();
  */
 export class Color extends Array {
-    constructor(r = 0, g = 0, b = 0) {
+    constructor(r = 0, g = r, b = g) {
         if (typeof r === 'string') [r, g, b] = Color.hexToRGB(r);
         super(r, g, b);
         return this;

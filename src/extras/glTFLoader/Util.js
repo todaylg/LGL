@@ -61,3 +61,44 @@ export function sliceBlockData(frameData) {
     }
     return blocks;
 }
+
+//Load .glb (Todo)
+export class GLTFBinaryExtension{
+    constructor(data){
+        this.content = null;
+        this.body = null;
+        let headerLength = 12;
+        let headerView = new DataView( data, 0, headerLength );
+        this.header = {
+            magic: decodeText( new Uint8Array( data.slice( 0, 4 ) ) ),
+            version: headerView.getUint32( 4, true ),
+            length: headerView.getUint32( 8, true )
+        };
+        if ( this.header.magic !== 'glTF' ) {
+			throw new Error( 'Unsupported glTF-Binary header.' );
+		} else if ( this.header.version < 2.0 ) {
+			throw new Error( 'Unsupported version below 2.0.' );
+        }
+        let chunkView = new DataView( data, headerLength );
+        let chunkIndex = 0;
+        let chunkTypeDef = { JSON: 0x4E4F534A, BIN: 0x004E4942 };
+		while ( chunkIndex < chunkView.byteLength ) {
+			let chunkLength = chunkView.getUint32( chunkIndex, true );
+			chunkIndex += 4;
+			let chunkType = chunkView.getUint32( chunkIndex, true );
+			chunkIndex += 4;
+			if ( chunkType === chunkTypeDef.JSON ) {
+				let contentArray = new Uint8Array( data, headerLength + chunkIndex, chunkLength );
+				this.content = decodeText( contentArray );
+			} else if ( chunkType === chunkTypeDef.BIN ) {
+				let byteOffset = headerLength + chunkIndex;
+				this.body = data.slice( byteOffset, byteOffset + chunkLength );
+			}
+			// Clients must ignore chunks with unknown types.
+			chunkIndex += chunkLength;
+		}
+		if ( this.content === null ) {
+			throw new Error( 'JSON content not found.' );
+		}
+    }
+}

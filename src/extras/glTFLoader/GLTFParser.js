@@ -13,13 +13,10 @@ export default class GLTFParser {
         // Cache
         this.cache = new GLTFRegistry();
         this.path = options.path || '';
-        this.useIBL = options.useIBL == undefined ? true : options.useIBL;
+        this.useIBL = options.useIBL == undefined ? false : options.useIBL;
         this.envDiffuseCubeMapSrc = options.envDiffuseCubeMapSrc;
         this.envSpecularCubeMapSrc = options.envSpecularCubeMapSrc;
-        this.glExtension = {
-            hasSRGBExt: gl.getExtension('EXT_SRGB'),
-            hasLODExtension: gl.getExtension('EXT_shader_texture_lod'),
-        };
+        this.glExtension = options.glExtension || {};
         this.animationSys = json.animations ? new AnimationSystem() : null;
     }
     parse(onLoad, onError) {
