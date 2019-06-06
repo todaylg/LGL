@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,9 +10,10 @@
 </head>
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Vec3, Texture, RenderTarget} from '../src/Core.js';
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Vec3, Texture, RenderTarget, Color} from '../src/Core.js';
         import {Orbit, Post, Plane, Cube} from '../src/Extras.js';
         import TextureShader from './shaders/TextureShader.js';
+        import thresholdPassShader from './shaders/pass/thresholdPassShader.js';
         import bloomPassShader from './shaders/pass/bloomPassShader.js';
         import blurPassShader from './shaders/pass/blurPassShader.js';
         import fxaaPassShader from './shaders/pass/fxaaPassShader.js';
@@ -19,6 +21,7 @@
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
             document.body.appendChild(gl.canvas);
             const camera = new Camera();
             camera.position.set(0, 0, 20);
@@ -31,6 +34,21 @@
 
             window.addEventListener('resize', resize, false);
             resize();
+            
+            
+            const thresholdPass = new Post(gl);
+            let thresholdPassTarget = new RenderTarget(gl);
+            //Step.1: thresholdPass the light area
+            thresholdPass.addPass({
+                fragment: thresholdPassShader,
+                uniforms: {
+                    luminosityThreshold: { value: 0.8 },
+                    smoothWidth: { value: 0.01 },
+                    defaultOpacity: { value : 0 },
+                    defaultColor: { value : new Color(0,0,0) }
+                }
+            })
+            //Step.2: multiple blur the light area
             let w = gl.canvas.width;
             let h = gl.canvas.height;
             let tw = w;
@@ -44,6 +62,7 @@
                 blurPass.addPass({
                 fragment: blurPassShader,
                     uniforms: {
+                        tMap: { value : thresholdPassTarget},
                         resolution: { value: new Vec2(tw, th) },
                         direction: { value: new Vec2(0, 1) }
                     }
@@ -51,6 +70,7 @@
                 blurPass.addPass({
                 fragment: blurPassShader,
                     uniforms: {
+                        tMap: { value : thresholdPassTarget},
                         resolution: { value: new Vec2(tw, th) },
                         direction: { value: new Vec2(1, 0) }
                     }
@@ -58,7 +78,7 @@
                 let blurPassTarget = new RenderTarget(gl);
                 blurPasses.push({blurPass,blurPassTarget});
             }
-            
+            //Step.3: combine orign scene and light area
             const post = new Post(gl);
             post.addPass({
                 fragment: bloomPassShader,
@@ -68,8 +88,8 @@
                     blurTexture3: { value: blurPasses[2].blurPassTarget.texture},
                     blurTexture4: { value: blurPasses[3].blurPassTarget.texture},
                     blurTexture5: { value: blurPasses[4].blurPassTarget.texture},
-                    bloomStrength: { value: 0.5 },
-                    bloomRadius: { value: 0.1 },
+                    bloomStrength: { value: 0.6 },
+                    bloomRadius: { value: 1 },
                     bloomFactors: { value: [ 1.0, 0.8, 0.6, 0.4, 0.2 ] },
                     bloomTintColors: { value: [ new Vec3(1), new Vec3(1), new Vec3(1),new  Vec3(1), new Vec3(1) ]}
                 }
@@ -81,15 +101,10 @@
                 }
             });
             const scene = new Transform();
-            const preScene = new Transform();
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
             img.src = './assets/images/bg.jpg';
-            const mixTexture = new Texture(gl);
-            const mixImg = new Image();
-            mixImg.onload = () => mixTexture.image = mixImg;
-            mixImg.src = './assets/images/transition/transition5.png';
             const planeGeometry = new Plane(gl,{
                 width: 20,
                 height: 11
@@ -104,22 +119,9 @@
             });
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
-            const prePlane = new Mesh(gl, {geometry: planeGeometry, program});
-            prePlane.setParent(preScene);
-            const preScenetarget = new RenderTarget(gl);
-            let mixRatio = { value: 0 };
-            post.addPass({
-                fragment: transitionPassShader,
-                uniforms: {
-                    tPreMap:{ value: preScenetarget.texture},
-                    mixRatio, // 0 => 1
-                    threshold: { value: 0.2 },
-                    useTexture: { value: 1 },
-                    tMixTexture: {value: mixTexture}
-                }
-            });
 
             function renderPass(){
+                renderer.render({ scene, camera, target: thresholdPassTarget});
                 for (let j = 0; j < levels; j++) {
                     let { blurPass, blurPassTarget } = blurPasses[j];
                     renderer.render({ scene, camera, target: blurPassTarget});
@@ -132,11 +134,7 @@
             requestAnimationFrame(update);
             function update(t) {
                 const time = (.001 * (t - startTime)) % loopDuration;
-                mixRatio.value = Math.abs(time - loopDuration/2) / (loopDuration/2);
                 controls.update();
-                gl.clearColor(1, 1, 1, 1);
-                renderer.render({scene: preScene, camera, target: preScenetarget});
-                gl.clearColor(0, 0, 0, 0);
                 renderPass();
                 requestAnimationFrame(update);
             }

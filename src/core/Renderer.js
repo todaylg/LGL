@@ -112,7 +112,7 @@ export class Renderer {
       this.getExtension("EXT_sRGB");
       this.getExtension("WEBGL_depth_texture");
     }
-
+    this.drawBuffersExt = this.getExtension('WEBGL_draw_buffers');//drawBuffers is Editor's Draft status in WebGL2
     // Create method aliases using extension (WebGL1) or native if available (WebGL2)
     this.vertexAttribDivisor = this.getExtension(
       "ANGLE_instanced_arrays",
@@ -298,10 +298,19 @@ export class Renderer {
    * @param {GLenum} [options.target] - A GLenum specifying the binding point (target)
    * @param {WebGLFramebuffer} [options.buffer] - A WebGLFramebuffer object to bind
    */
-  bindFramebuffer({ target = this.gl.FRAMEBUFFER, buffer = null } = {}) {
+  bindFramebuffer({ target = this.gl.FRAMEBUFFER, buffer = null, textures = [] } = {}) {
     if (this.state.framebuffer === buffer) return;
     this.state.framebuffer = buffer;
     this.gl.bindFramebuffer(target, buffer);
+    let length = textures.length;
+    if(length>1){//MTR
+      let drawBuffersExt = this.drawBuffersExt;
+      let drawBuffersArray = [];
+      for(let i=0;i<length;i++){
+        drawBuffersArray.push(drawBuffersExt[`COLOR_ATTACHMENT${i}_WEBGL`]);//gl_FragData[i]
+      }
+      drawBuffersExt.drawBuffersWEBGL(drawBuffersArray);
+    }
   }
   /**
    * Get a WebGL extension

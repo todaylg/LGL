@@ -24,13 +24,6 @@ float lerpBloomFactor(const in float factor) {
    return mix(factor, mirrorFactor, bloomRadius);
 }
 
-// source: https://www.cs.utah.edu/~reinhard/cdrom/
-vec3 ReinhardToneMapping( vec3 color ) {
-	color *= exposure;
-	return saturate( color / ( vec3( 1.0 ) + color ) );
-}
-
-
 in vec2 vUv;
 out vec4 FragColor;
 
@@ -42,7 +35,8 @@ void main() {
    bloom += lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture(blurTexture4, vUv);
    bloom += lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture(blurTexture5, vUv);
    bloom *= bloomStrength;
-   FragColor = vec4(ReinhardToneMapping(bloom.rgb), bloom.a);
+   // vec4 orignColor = texture(tMap, vUv);
+   FragColor = bloom;
 }`;
 
 export default fs;
