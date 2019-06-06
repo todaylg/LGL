@@ -51,7 +51,11 @@ export class Post {
         textureUniform = 'tMap',
         enabled = true,
     } = {}) {
-        uniforms[textureUniform] = { value: this.fbos[this.currentFBO] };
+        let useOtherBufferFlag = true;
+        if(!uniforms[textureUniform]){
+            uniforms[textureUniform] = { value: this.fbos[this.currentFBO] };
+            useOtherBufferFlag = false;
+        }
         const program = new Program(this.gl, { vertex, fragment, uniforms });
         const mesh = new Mesh(this.gl, { geometry: this.geometry, program });
         const pass = {
@@ -60,6 +64,7 @@ export class Post {
             uniforms,
             enabled,
             textureUniform,
+            useOtherBufferFlag
         };
         this.passes.push(pass);
         return pass;
@@ -102,7 +107,9 @@ export class Post {
         if(!enabledPasses.length) return;
         // Render Pass
         enabledPasses.forEach((pass, i) => {
-            pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
+            if(!pass.useOtherBufferFlag && i!=0){ //队列只允许首个pass自定义input frameBuffer
+                pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
+            }
             // 最后一个Render (i == enabledPasses.length - 1) 需要render回到main FrameBuffer
             this.gl.renderer.render({
                 scene: pass.mesh,

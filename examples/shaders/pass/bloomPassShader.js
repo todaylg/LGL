@@ -35,8 +35,9 @@ void main() {
    bloom += lerpBloomFactor(bloomFactors[3]) * vec4(bloomTintColors[3], 1.0) * texture(blurTexture4, vUv);
    bloom += lerpBloomFactor(bloomFactors[4]) * vec4(bloomTintColors[4], 1.0) * texture(blurTexture5, vUv);
    bloom *= bloomStrength;
-   // vec4 orignColor = texture(tMap, vUv);
-   FragColor = bloom;
+   vec4 orignColor = texture(tMap, vUv);
+   // FragColor = texture(blurTexture1, vUv);
+   FragColor = orignColor+bloom;
 }`;
 
 export default fs;

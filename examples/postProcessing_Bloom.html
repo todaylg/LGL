@@ -13,6 +13,7 @@
         import {Renderer, Camera, Transform, Program, Mesh, Vec2, Vec3, Texture, RenderTarget, Color} from '../src/Core.js';
         import {Orbit, Post, Plane, Cube} from '../src/Extras.js';
         import TextureShader from './shaders/TextureShader.js';
+        import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
         import thresholdPassShader from './shaders/pass/thresholdPassShader.js';
         import bloomPassShader from './shaders/pass/bloomPassShader.js';
         import blurPassShader from './shaders/pass/blurPassShader.js';
@@ -49,8 +50,8 @@
                 }
             })
             //Step.2: multiple blur the light area
-            let w = gl.canvas.width;
-            let h = gl.canvas.height;
+            let w = gl.canvas.width * renderer.dpr;
+            let h = gl.canvas.height * renderer.dpr;
             let tw = w;
             let th = h;
             let blurPasses = [];
@@ -62,7 +63,7 @@
                 blurPass.addPass({
                 fragment: blurPassShader,
                     uniforms: {
-                        tMap: { value : thresholdPassTarget},
+                        tMap: { value: thresholdPassTarget },
                         resolution: { value: new Vec2(tw, th) },
                         direction: { value: new Vec2(0, 1) }
                     }
@@ -70,13 +71,12 @@
                 blurPass.addPass({
                 fragment: blurPassShader,
                     uniforms: {
-                        tMap: { value : thresholdPassTarget},
                         resolution: { value: new Vec2(tw, th) },
                         direction: { value: new Vec2(1, 0) }
                     }
                 });
                 let blurPassTarget = new RenderTarget(gl);
-                blurPasses.push({blurPass,blurPassTarget});
+                blurPasses.push({ blurPass, blurPassTarget });
             }
             //Step.3: combine orign scene and light area
             const post = new Post(gl);
@@ -88,8 +88,8 @@
                     blurTexture3: { value: blurPasses[2].blurPassTarget.texture},
                     blurTexture4: { value: blurPasses[3].blurPassTarget.texture},
                     blurTexture5: { value: blurPasses[4].blurPassTarget.texture},
-                    bloomStrength: { value: 0.6 },
-                    bloomRadius: { value: 1 },
+                    bloomStrength: { value: 0.4 },
+                    bloomRadius: { value: 0.5 },
                     bloomFactors: { value: [ 1.0, 0.8, 0.6, 0.4, 0.2 ] },
                     bloomTintColors: { value: [ new Vec3(1), new Vec3(1), new Vec3(1),new  Vec3(1), new Vec3(1) ]}
                 }
@@ -120,11 +120,23 @@
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
 
+            // const cubeGeometry = new Cube(gl);
+            // const program = new Program(gl, {
+            //     vertex: BasePrimitivesShader.vertex,
+            //     fragment: BasePrimitivesShader.fragment,
+            //     cullFace: null,
+            //     uniforms: {
+            //         baseColor: { value: new Color(1) }
+            //     }
+            // });
+            // const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
+            // cubeMesh.setParent(scene);
+
             function renderPass(){
-                renderer.render({ scene, camera, target: thresholdPassTarget});
+                thresholdPass.render({ scene, camera, target: thresholdPassTarget});
                 for (let j = 0; j < levels; j++) {
                     let { blurPass, blurPassTarget } = blurPasses[j];
-                    renderer.render({ scene, camera, target: blurPassTarget});
+                    blurPass.render({ scene, camera, target: blurPassTarget});
                 }
                 post.render({ scene, camera });
             }
