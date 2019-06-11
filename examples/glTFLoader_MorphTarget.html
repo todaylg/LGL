@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
         content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>glTF-Loader-Animation</title>
+    <title>glTF-Loader-Morph</title>
     <link rel="stylesheet" href="./assets/main.css">
 </head>
 
@@ -20,6 +20,7 @@
             gl.clearColor(.1, .1, .1, 1);
             const camera = new Camera(gl, { fov: 35 });
             camera.position.set(0, 0, -7);
+            camera.lookAt([0, 0, 0]);
 
             const controls = new Orbit(camera);
 
@@ -33,10 +34,8 @@
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
             let animationSys;
-
-            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
-            // let mikuModel = './assets/models/Miku/blender_outPut/Miku.gltf';
-            loader.load( skinAnimationModel, {
+            let defaultModel = './assets/models/glTF-Sample-Models-master/2.0/AnimatedMorphSphere/gltf/AnimatedMorphSphere.glTF';
+            loader.load( defaultModel, {
                 useIBL: true,
                 envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
                 envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
@@ -45,9 +44,6 @@
                 let glTF = gltf.scene;
                 // Animation
                 animationSys = gltf.animations;
-                if ( animationSys ){
-                    animationSys.speed = 0.5;
-                }
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);

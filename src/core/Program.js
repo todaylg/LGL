@@ -245,7 +245,6 @@ export class Program {
             }
 
             if (uniform.value.texture) {
-                //Todo => Fix RenderTarget
                 if (!uniform.value.update) uniform.value = uniform.value.texture;
                 // if texture units overlapped, will sequential unit assignment
                 textureUnit = this.assignTextureUnits ? textureUnit + 1 : uniform.value.textureUnit;

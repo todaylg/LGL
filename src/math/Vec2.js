@@ -208,12 +208,13 @@ export class Vec2 extends Array {
      * @function
      * @description Performs a linear interpolation between two vec2's
      * i.e.,[x+a×(v[0]-x),y+a×(v[1]-x)];
-     * @param {Vec2} v the operand
-     * @param {Number} a interpolation amount between the two inputs
+    * @param {vec3} a the first operand
+     * @param {vec3} b the second operand
+     * @param {Number} t interpolation amount between the two inputs
      * @returns {Vec2} 
      */
-    lerp(v, a) {
-        Vec2Func.lerp(this, this, v, a);
+    lerp(a, b, t) {
+        Vec2Func.lerp(this, a, b, t);
     }
     /**
      * @function

@@ -302,15 +302,15 @@ export class Renderer {
     if (this.state.framebuffer === buffer) return;
     this.state.framebuffer = buffer;
     this.gl.bindFramebuffer(target, buffer);
-    let length = textures.length;
-    if(length>1){//MTR
-      let drawBuffersExt = this.drawBuffersExt;
-      let drawBuffersArray = [];
-      for(let i=0;i<length;i++){
-        drawBuffersArray.push(drawBuffersExt[`COLOR_ATTACHMENT${i}_WEBGL`]);//gl_FragData[i]
-      }
-      drawBuffersExt.drawBuffersWEBGL(drawBuffersArray);
-    }
+    // let length = textures.length;
+    // let drawBuffersExt = this.drawBuffersExt;
+    // if(length>1){//MTR
+    //   let drawBuffersArray = [];
+    //   for(let i=0;i<length;i++){
+    //     drawBuffersArray.push(drawBuffersExt[`COLOR_ATTACHMENT${i}_WEBGL`]);//gl_FragData[i]
+    //   }
+    //   drawBuffersExt.drawBuffersWEBGL(drawBuffersArray);
+    // }
   }
   /**
    * Get a WebGL extension

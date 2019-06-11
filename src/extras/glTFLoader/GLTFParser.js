@@ -1,4 +1,4 @@
-import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '../../Core.js';
+import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Vec2 } from '../../Core.js';
 import { Skin } from '../Skin.js';
 import { GLTFRegistry, resolveURL, definesToString, sliceBlockData } from './Util.js';
 import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
@@ -199,7 +199,7 @@ export default class GLTFParser {
                     });
                 }
             }
-            
+
             parentObject.addChild(node);
             if (nodeDef.children) {
                 let children = nodeDef.children;
@@ -298,6 +298,9 @@ export default class GLTFParser {
                     }
                     if (meshDef.isSkinnedMesh) {
                         shaderDefines += '#define USE_SKINNING 1\n';
+                    }
+                    materialParams.uniforms.TAR_WEIGHT = {
+                        value: meshDef.weights ? new Vec2().fromArray(meshDef.weights) : new Vec2(0)
                     }
                     let program = new Program(parser.gl, {
                         vertex: shaderDefines + PBRBaseShader.vertex,
@@ -657,7 +660,7 @@ export default class GLTFParser {
             for (let i = 0, il = primitives.length; i < il; i++) {
                 let primitive = primitives[i];
                 let geometry = new Geometry(parser.gl);
-                parser.addPrimitiveAttributes(geometry, primitive, accessors);
+                addPrimitiveAttributes(geometry, primitive, accessors);
                 var geometryPromise = Promise.resolve(geometry);
                 pending.push(geometryPromise);
             }
@@ -667,33 +670,7 @@ export default class GLTFParser {
         });
     };
 
-    addPrimitiveAttributes(geometry, primitiveDef, accessors) {
-        let attributes = primitiveDef.attributes;
-        let defines = {};
-        for (let gltfAttributeName in attributes) {
-            // Record the defines
-            switch (gltfAttributeName) {
-                case "NORMAL":
-                    defines.HAS_NORMALS = 1;
-                    break;
-                case "TANGENT":
-                    defines.HAS_TANGENTS = 1;
-                    break;
-                case "TEXCOORD_0":
-                    defines.HAS_UV = 1;
-                    break;
-            }
-            geometry.glTFLoaderDefines = defines;
-            let lglAttributeName = ATTRIBUTES[gltfAttributeName];
-            let bufferAttribute = accessors[attributes[gltfAttributeName]];
-            if (!lglAttributeName) continue;
-            if (lglAttributeName in geometry.attributes) continue;
-            geometry.addAttribute(lglAttributeName, bufferAttribute);
-        }
-        if (primitiveDef.indices !== undefined && !geometry.index) {
-            geometry.setIndex(accessors[primitiveDef.indices]);
-        }
-    }
+
     /**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#cameras
 	 * @param {number} cameraIndex
@@ -772,14 +749,9 @@ export default class GLTFParser {
                         //Skeleton Animation
                         node.updateMatrix();
                         node.matrixAutoUpdate = true;
-                        
                         let controlChannel;
                         //Check track format
                         switch (target.path) {
-                            case "weights":
-                                //Morph target
-                                console.error("Unsupport Morph target weights animation now!", node);
-                                break;
                             case "rotation":
                                 controlChannel = node.quaternion; //对象引用,直接改就行
                                 break;
@@ -789,16 +761,21 @@ export default class GLTFParser {
                             case "scale":
                                 controlChannel = node.scale;
                                 break;
-                            default:
+                            case "weights":
+                                //Morph target weights animation
+                                controlChannel = node.program.uniforms.TAR_WEIGHT.value;
                                 break;
                         }
-                        if(controlChannel){
+                        if (controlChannel) {
                             let anim;
-                            if(node.Animation){
+                            if (node.Animation) {
                                 anim = node.Animation;
-                            }else{
+                            } else {
                                 anim = new Animation();
                                 node.Animation = anim;
+                            }
+                            if(target.path === "weights"){
+                                keyFrame.size = 2;
                             }
                             let keyFrameData = sliceBlockData(keyFrame);
                             let animationChannel = new AnimationChannel(controlChannel, timeLine.data, keyFrameData);
@@ -808,7 +785,64 @@ export default class GLTFParser {
                     }
                 }
             }
-			return group;
+            return group;
         });
     };
 };
+
+/**
+ * Specification: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#morph-targets
+ *
+ */
+function addMorphTargets(geometry, targets, accessors) {
+    let length = targets.length;
+    if (length > 2) console.warn('Unsupport length > 2 targets');
+    for (let i = 0; i < length; i++) {
+        let target = targets[i]
+        for (let key in target) {
+            let bufferAttribute = accessors[target[key]];
+            //Postion
+            if (key === 'POSITION') {
+                let attributeName = `TAR_POSITION_${i}`;
+                geometry.addAttribute(attributeName, bufferAttribute);
+            }
+            //Normal
+            if (key === 'NORMAL') {
+                let attributeName = `TAR_NORMAL_${i}`;
+                geometry.addAttribute(attributeName, bufferAttribute);
+            }
+        }
+    }
+}
+function addPrimitiveAttributes(geometry, primitiveDef, accessors) {
+    let attributes = primitiveDef.attributes;
+    let defines = {};
+    for (let gltfAttributeName in attributes) {
+        // Record the defines
+        switch (gltfAttributeName) {
+            case "NORMAL":
+                defines.HAS_NORMALS = 1;
+                break;
+            case "TANGENT":
+                defines.HAS_TANGENTS = 1;
+                break;
+            case "TEXCOORD_0":
+                defines.HAS_UV = 1;
+                break;
+        }
+        let lglAttributeName = ATTRIBUTES[gltfAttributeName];
+        let bufferAttribute = accessors[attributes[gltfAttributeName]];
+        if (!lglAttributeName) continue;
+        if (lglAttributeName in geometry.attributes) continue;
+        geometry.addAttribute(lglAttributeName, bufferAttribute);
+    }
+    if (primitiveDef.indices !== undefined && !geometry.index) {
+        geometry.setIndex(accessors[primitiveDef.indices]);
+    }
+    if (primitiveDef.targets !== undefined) {
+        defines.HAS_MORPH_TARGETS = 1;
+        addMorphTargets(geometry, primitiveDef.targets, accessors);
+    }
+    geometry.glTFLoaderDefines = defines;
+}
+

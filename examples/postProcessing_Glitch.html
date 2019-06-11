@@ -21,16 +21,15 @@
             document.body.appendChild(gl.canvas);
             const camera = new Camera();
             camera.position.set(0, 0, 20);
-
             const controls = new Orbit(camera);
             function resize() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
             }
-
             window.addEventListener('resize', resize, false);
             resize();
 
+            // Step1: Generates a perturbation map
             const dtSize = 64;
             let dataArr = new Float32Array( dtSize * dtSize * 3 );
 		    let dataLength = dtSize * dtSize;
@@ -40,34 +39,29 @@
                 dataArr[ i * 3 + 1 ] = val;
                 dataArr[ i * 3 + 2 ] = val;
             }
-
             const dataTexture = new Texture(gl, {
                 image: dataArr,
                 generateMipmaps: false,
                 type: gl.FLOAT,
-                magFilter:gl.LINEAR,
-                minFilter:gl.LINEAR,
-                wrapS: gl.GL_REPEAT,
-                wrapT: gl.GL_REPEAT,
                 format: gl.RGB,
-                internalFormat: gl.renderer.isWebgl2 ? gl.RGB16F : gl.RGBA,
+                internalFormat: gl.renderer.isWebgl2 ? gl.RGB16F : gl.RGB,
                 flipY: false,
                 width: dtSize,
             });
+            // Step1: Generates a perturbation map
             const post = new Post(gl);
             let w = gl.canvas.width;
             let h = gl.canvas.height;
             let uniformsProp = {
-                tDisp: { value: dataTexture },
-                byp: { value: 0 }, //apply the glitch ?
+                perturbationMap: { value: dataTexture },
                 amount: { value: 0.08 },
                 angle: { value: 0.02 },
-                seed: { value: 0.02 },
+                random: { value: 0.02 },
                 seed_x: { value: 0.02 },//-1,1
                 seed_y: { value: 0.02 },//-1,1
                 distortion_x: { value: 0.5 },
                 distortion_y: { value: 0.6 },
-                col_s: { value: 0.05 }
+                col_s: { value: 0.02 }
             }
             post.addPass({
                 fragment: glitchPassShader,
@@ -116,7 +110,7 @@
             let randX = randInt( 120, 240 );
             let curF = 0;
             function renderPass(){
-                uniformsProp['seed'].value = Math.random();
+                uniformsProp['random'].value = Math.random();
                 if ( curF % randX == 0){
                     uniformsProp['amount'].value = Math.random() / 30;
                     uniformsProp['angle'].value = randFloat( - Math.PI, Math.PI );
