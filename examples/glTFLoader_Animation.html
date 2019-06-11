@@ -18,8 +18,8 @@
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
             gl.clearColor(.1, .1, .1, 1);
-            const camera = new Camera(gl, { fov: 35 });
-            camera.position.set(0, 0, -7);
+            const camera = new Camera(gl, { fov: 45 });
+            camera.position.set(0, 0, -5);
 
             const controls = new Orbit(camera);
 

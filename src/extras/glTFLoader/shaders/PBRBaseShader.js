@@ -189,8 +189,6 @@ vec3 u_LightColor = vec3(1.0,1.0,1.0);
 const float PI = 3.14159265359;
 const float RECIPROCAL_PI = 0.31830988618;
 const float RECIPROCAL_PI2 = 0.15915494;
-const float LN2 = 0.6931472;
-const float ENV_LODS = 6.0;
 
 out vec4 FragColor;
 

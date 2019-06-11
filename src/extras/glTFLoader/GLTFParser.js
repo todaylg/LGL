@@ -1,6 +1,6 @@
 import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Vec2 } from '../../Core.js';
 import { Skin } from '../Skin.js';
-import { GLTFRegistry, resolveURL, definesToString, sliceBlockData } from './Util.js';
+import { GLTFRegistry, resolveURL, definesToString, sliceBlockData, isPrimitiveEqual } from './Util.js';
 import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
 import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';
@@ -10,14 +10,16 @@ export default class GLTFParser {
     constructor(gl, json, options = {}) {
         this.gl = gl;
         this.json = json || {};
-        // Cache
-        this.cache = new GLTFRegistry();
         this.path = options.path || '';
         this.useIBL = options.useIBL == undefined ? false : options.useIBL;
         this.envDiffuseCubeMapSrc = options.envDiffuseCubeMapSrc;
         this.envSpecularCubeMapSrc = options.envSpecularCubeMapSrc;
         this.glExtension = options.glExtension || {};
+        this.defaultShader;
         this.animationSys = json.animations ? new AnimationSystem() : null;
+        // Cache
+        this.cache = new GLTFRegistry();
+        this.primitiveCache = [];
     }
     parse(onLoad, onError) {
         let json = this.json;
@@ -106,6 +108,7 @@ export default class GLTFParser {
     getDependency(type, index) {
         let cacheKey = type + ':' + index;
         let dependency = this.cache.get(cacheKey);
+        let res = this.cache.getAll();
         if (!dependency) {
             switch (type) {
                 case 'scene':
@@ -144,6 +147,7 @@ export default class GLTFParser {
                 default:
                     throw new Error('Unknown type: ' + type);
             }
+            this.cache.add(cacheKey, dependency);
         }
         return dependency;
     }
@@ -486,8 +490,6 @@ export default class GLTFParser {
         pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', BRDF_LUT_URL, false));
         if (parser.envDiffuseCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvDiffuse', parser.envDiffuseCubeMapSrc, false));
         if (parser.envSpecularCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvSpecular', parser.envSpecularCubeMapSrc, false));
-        // This is a multiplier to the amount of specular. Especially useful if you don't have an HDR map.
-        materialParams.uEnvSpecular = { value: 2 };
 
         // Emissive
         if (materialDef.emissiveTexture !== undefined) {
@@ -655,21 +657,36 @@ export default class GLTFParser {
 	 */
     loadGeometries(primitives) {
         let parser = this;
+        let cache = this.primitiveCache;
         return this.getDependencies('accessor').then(function (accessors) {
             let pending = [];
             for (let i = 0, il = primitives.length; i < il; i++) {
                 let primitive = primitives[i];
-                let geometry = new Geometry(parser.gl);
-                addPrimitiveAttributes(geometry, primitive, accessors);
-                var geometryPromise = Promise.resolve(geometry);
-                pending.push(geometryPromise);
+                // Check Cache
+                let cached = parser.getCachedGeometry(cache, primitive);
+                if (cached) {
+                    pending.push(cached);
+                } else {
+                    //Todo: Extension
+                    let geometry = new Geometry(parser.gl);
+                    addPrimitiveAttributes(geometry, primitive, accessors);
+                    var geometryPromise = Promise.resolve(geometry);
+                    pending.push(geometryPromise);
+                    cache.push({ primitive: primitive, promise: geometryPromise });
+                }
             }
             return Promise.all(pending).then(function (geometries) {
                 return geometries;
             });
         });
     };
-
+    getCachedGeometry(cache, newPrimitive) {
+        for (let i = 0, il = cache.length; i < il; i++) {
+            let cached = cache[i];
+            if (isPrimitiveEqual(cached.primitive, newPrimitive)) return cached.promise;
+        }
+        return null;
+    }
 
     /**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#cameras
@@ -774,7 +791,7 @@ export default class GLTFParser {
                                 anim = new Animation();
                                 node.Animation = anim;
                             }
-                            if(target.path === "weights"){
+                            if (target.path === "weights") {
                                 keyFrame.size = 2;
                             }
                             let keyFrameData = sliceBlockData(keyFrame);

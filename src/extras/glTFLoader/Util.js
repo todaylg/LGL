@@ -27,7 +27,10 @@ export function GLTFRegistry() {
         },
         removeAll: function () {
             objects = {};
-        }
+        },
+        getAll:function () {
+            return objects;
+        },
     };
 }
 
@@ -45,8 +48,8 @@ export function resolveURL( url, path ) {
 }
 
 export function definesToString(defines) {
-    var outStr = '';
-    for (var def in defines) {
+    let outStr = '';
+    for (let def in defines) {
         outStr += '#define ' + def + ' ' + defines[def] + '\n';
     }
     return outStr;
@@ -101,4 +104,27 @@ export class GLTFBinaryExtension{
 			throw new Error( 'JSON content not found.' );
 		}
     }
+}
+
+export function isPrimitiveEqual( a, b ) {
+    if ( a.indices !== b.indices ) {
+        return false;
+    }
+    return isObjectEqual( a.attributes, b.attributes );
+}
+
+export function isObjectEqual( a, b ) {
+    if ( Object.keys( a ).length !== Object.keys( b ).length ) return false;
+    for ( let key in a ) {
+        if ( a[ key ] !== b[ key ] ) return false;
+    }
+    return true;
+}
+
+export function isArrayEqual( a, b ) {
+    if ( a.length !== b.length ) return false;
+    for ( let i = 0, il = a.length; i < il; i ++ ) {
+        if ( a[ i ] !== b[ i ] ) return false;
+    }
+    return true;
 }
