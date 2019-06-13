@@ -18,6 +18,7 @@ const arrayCacheF32 = {};
  * @param {Boolean} [options.depthTest] - Whether enable depth test
  * @param {Boolean} [options.depthWrite] -Whether enable depth write
  * @param {GLenum} [options.depthFunc] - Specifies a function that compares incoming pixel depth to the current depth buffer value.
+ * @param {String} [options.blendMode] - Blend Mode (Normal/Add/Subtract/Multiply)
  */
 export class Program {
     constructor(gl, {
@@ -30,6 +31,7 @@ export class Program {
         depthTest = true,
         depthWrite = true,
         depthFunc = gl.LESS,
+        blendMode = 'Normal',
     } = {}) {
         this.gl = gl;
         this.uniforms = uniforms;
@@ -45,14 +47,12 @@ export class Program {
         this.depthTest = depthTest;
         this.depthWrite = depthWrite;
         this.depthFunc = depthFunc;
+        this.blendMode = blendMode;
         this.blendFunc = {};
         this.blendEquation = {};
-
-        // Set default blendFunc if transparent flagged
-        if (this.transparent && !this.blendFunc.src) {
-            if (this.gl.renderer.premultipliedAlpha) this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
-            else this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-        }
+        
+        // blend
+        this.setBlendMode(blendMode);
 
         // compile vertex shader and log errors
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -156,6 +156,50 @@ export class Program {
 
             return true;
         });
+    }
+    /**
+     * Defines which BlendMode from input options
+     * 
+     * @param {String} mode - 
+     */
+    setBlendMode(mode) {
+        if (this.gl.renderer.premultipliedAlpha){
+            switch(mode){
+                case 'Normal':
+                        this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Add':
+                        this.setBlendFunc(this.gl.ONE, this.gl.ONE);
+                    break;
+                case 'Subtract':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.ZERO, this.gl.ONE_MINUS_SRC_COLOR, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Multiply':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR, this.gl.ZERO, this.gl.SRC_ALPHA);
+                    break;
+                default:
+                    console.error('Invalid blending mode: ', mode);
+                    break;
+            }
+        }else{
+            switch(mode){
+                case 'Normal':
+                        this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Add':
+                        this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+                    break;
+                case 'Subtract':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_COLOR);
+                    break;
+                case 'Multiply':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR);
+                    break;
+                default:
+                    console.error('Invalid blending mode: ', mode);
+                    break;
+            }
+        }
     }
     /**
      * Defines which function is used for blending pixel arithmetic.

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Particle</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Program, Mesh, Vec3, Texture, Color} from '../src/Core.js';
+        import { ParticleSystem } from '../src/extras/paticleSystem/ParticleSystem.js';
+        {
+            const renderer = new Renderer({dpr: 2, depth: false});
+            const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera();
+            camera.position.set(0, 0, 50);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+
+            const containerCount = 200;
+            let containerCountRandom = [];
+            for(let i=0;i<containerCount;i++){
+                containerCountRandom.push(2 * (Math.random() - 0.5));// -1 => 1
+            }
+            let particleSystem = new ParticleSystem(gl, {
+                maxParticles: 300000,
+                containerCount,
+            });
+            let particleContainers = particleSystem.particleContainers;
+
+            scene.addChild(particleSystem);
+            // options passed during each spawned
+			let options = {
+				position: new Vec3(),
+				positionRandomness: .3,
+				velocity: new Vec3(),
+				velocityRandomness: .5,
+				color: new Color(0.6,0.54,1.),
+				colorRandomness: .0,
+				turbulence: .5,
+				lifetime: 2,
+				size: 5,
+				sizeRandomness: 1
+			};
+			let spawnerOptions = {
+				spawnRate: 20000,
+				horizontalSpeed: 2,
+				verticalSpeed: 5,
+				timeScale: 2
+			};
+            console.log("ParticleSystem Init: ", particleSystem);
+            let originTime = performance.now();
+            let startTime = performance.now();
+            let tick = 0;
+            const loopDuration = 2;
+            requestAnimationFrame(update);
+            function update(t) {
+                let now = performance.now();
+                let delta = .001 * (now - startTime);
+                startTime = now;
+                tick += delta;
+                let loopTime = (.001 * (t - originTime)) % loopDuration - loopDuration/2;
+                loopTime/=-loopDuration; // -1 => 1
+                if ( delta > 0 ) {
+                    for(let i=0, length = particleContainers.length; i<length; i++){
+                        let container = particleContainers[i];
+                        options.position.x = loopTime * spawnerOptions.horizontalSpeed * 20 + 20 * containerCountRandom[i];
+                        options.position.y = loopTime * spawnerOptions.verticalSpeed * 10 ;
+                        options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
+                        for ( var x = 0; x < spawnerOptions.spawnRate/ length* delta; x++ ) {
+                            container.spawnParticle( options );
+                        }
+                    }
+                }
+                particleSystem.update(tick);
+                renderer.render({scene, camera});
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

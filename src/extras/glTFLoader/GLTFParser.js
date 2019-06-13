@@ -453,7 +453,7 @@ export default class GLTFParser {
         let materialParams = {};
         let pending = [];
         let defines = {};
-        let programeOpt = {};
+        let programOpt = {};
 
         // Specification:
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#metallic-roughness-material
@@ -513,16 +513,16 @@ export default class GLTFParser {
         // Alpha
         let alphaMode = materialDef.alphaMode || ALPHA_MODES.OPAQUE;
         if (alphaMode === ALPHA_MODES.BLEND) {
-            programeOpt.transparent = true;
+            programOpt.transparent = true;
         } else {
-            programeOpt.transparent = false;
+            programOpt.transparent = false;
         }
 
         return Promise.all(pending).then(function () {
             let material = {
                 uniforms: materialParams,
                 glTFLoaderDefines: defines,
-                options: programeOpt
+                options: programOpt
             };
             return material;
         });
