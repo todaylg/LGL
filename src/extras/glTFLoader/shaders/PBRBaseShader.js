@@ -429,6 +429,8 @@ void main()
     // Calculate lighting contribution from image based lighting source (IBL)
     #ifdef USE_IBL
         color += getIBLContribution(pbrInputs, n, reflection);
+    #else
+        color += 2. * (diffuseContrib + specContrib); //Test
     #endif
 
     // Apply optional PBR terms for additional (optional) shading

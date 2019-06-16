@@ -108,12 +108,15 @@ export class Program {
 
         // Get active attribute locations
         this.attributeLocations = new Map();
+        let locations = []; 
         let numAttribs = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
         for (let aIndex = 0; aIndex < numAttribs; aIndex++) {
             let attribute = gl.getActiveAttrib(this.program, aIndex);
+            let location = gl.getAttribLocation(this.program, attribute.name);
+            locations[location] = attribute.name;
             this.attributeLocations.set(attribute.name, gl.getAttribLocation(this.program, attribute.name));
         }
-
+        this.attributeOrder = locations.join('');
         this.checkTextureUnits();
     }
 

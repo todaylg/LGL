@@ -27,14 +27,14 @@ export default class ParticleContainer extends Transform {
         this.lifeTimeAttr = new Float32Array(this.particleCount);
 
         this.particleGeo = new Geometry(this.gl, {
-            position: { size: 3, data: this.positionAttr },
-            positionStart: { size: 3, data: this.positionStartAttr },
-            startTime: { size: 1, data: this.startTimeAttr },
-            velocity: { size: 3, data: this.velocityAttr },
-            turbulence: { size: 1, data: this.turbulenceAttr },
-            color: { size: 3, data: this.colorAttr },
-            size: { size: 1, data: this.sizeAttr },
-            lifeTime: { size: 1, data: this.lifeTimeAttr },
+            position: { size: 3, data: this.positionAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            positionStart: { size: 3, data: this.positionStartAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            startTime: { size: 1, data: this.startTimeAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            velocity: { size: 3, data: this.velocityAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            turbulence: { size: 1, data: this.turbulenceAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            color: { size: 3, data: this.colorAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            size: { size: 1, data: this.sizeAttr, dataMode: this.gl.DYNAMIC_DRAW },
+            lifeTime: { size: 1, data: this.lifeTimeAttr, dataMode: this.gl.DYNAMIC_DRAW },
         });
         this.program = particleSystem.program;
         this.init();
@@ -44,6 +44,7 @@ export default class ParticleContainer extends Transform {
             mode: this.gl.POINTS, 
             geometry: this.particleGeo, 
             program: this.program,
+            frustumCulled: false
         });
 		this.addChild( this.particleSystemMesh );
     }

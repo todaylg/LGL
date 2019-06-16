@@ -13,7 +13,7 @@ let ATTR_ID = 0;
  * @param {Object} [attribute] -  The attribute of geometry parameters
  * @param {Array} [attribute.data] - Typed array eg UInt16Array for indices, Float32Array
  * @param {Number} [attribute.size=1]
- * @param {Boolean} [attribute.instanced=false] - Boolean default false. can pass true or divisor amount
+ * @param {Boolean/Number} [attribute.instanced=null] - Boolean default null. can pass divisor amount
  * @param {GLenum} [attribute.type] - Default gl.UNSIGNED_SHORT for 'index', gl.FLOAT for others
  * @param {Boolean} [attribute.normalize=false] - Boolean default false
  * 
@@ -26,7 +26,7 @@ export class Geometry {
         this.attributes = attributes;
         this.id = ID++;
 
-        this.drawRange = { start: 0, count: 0 };
+        this.drawRange = { start: 0, count: 0 }; // start offset and total data count
         this.instancedCount = 0;
 
         // Unbind current VAO so that new buffers don't get added to active mesh
@@ -35,7 +35,6 @@ export class Geometry {
 
         // Alias for state store to avoid redundant calls for global state
         this.glState = this.gl.renderer.state;
-
         // create the buffers
         for (let key in attributes) {
             this.addAttribute(key, attributes[key]);
@@ -55,9 +54,10 @@ export class Geometry {
                     this.gl.UNSIGNED_INT); // Uint32Array
         attr.target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
         attr.normalize = attr.normalize || false;
-        attr.buffer = this.gl.createBuffer();
+        attr.buffer = this.gl.createBuffer();//Vertex Buffer Objects(VBO)
         attr.count = attr.data.length / attr.size;
-        attr.divisor = !attr.instanced ? 0 : typeof attr.instanced === 'number' ? attr.instanced : 1;
+        attr.divisor = attr.instanced || 0;
+        attr.dataMode = attr.dataMode || this.gl.STATIC_DRAW;
         attr.needsUpdate = false;
 
         // Push data to buffer
@@ -86,7 +86,7 @@ export class Geometry {
             this.gl.bindBuffer(attr.target, attr.buffer);
             this.glState.boundBuffer = attr.id;
         }
-        this.gl.bufferData(attr.target, attr.data, this.gl.STATIC_DRAW);
+        this.gl.bufferData(attr.target, attr.data, attr.dataMode);//STATIC_DRAW、DYNAMIC_DRAW、STREAM_DRAW
         attr.needsUpdate = false;
     }
     /**
@@ -121,6 +121,7 @@ export class Geometry {
     * @param {Program} program - The program to bind new vao
     */
     createVAO(program) {
+        //Todo:cache the VAO
         this.vao = this.gl.renderer.createVertexArray();
         this.gl.renderer.bindVertexArray(this.vao);
         this.bindAttributes(program);
@@ -131,7 +132,7 @@ export class Geometry {
     * @param {Program} program - The program to bind attribute
     */
     bindAttributes(program) {
-        // Link all attributes to program using gl.vertexAttribPointer
+        // Link all program attributes using gl.vertexAttribPointer
         program.attributeLocations.forEach((location, name) => {
             // If geometry missing a required shader attribute
             if (!this.attributes[name]) {
@@ -154,8 +155,8 @@ export class Geometry {
             // For firefox, need to set back to 0 if non-instanced drawn after instanced. Else won't render
             this.gl.renderer.vertexAttribDivisor(location, attr.divisor);
         });
-        // Bind indices if geometry indexed
-        if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer);
+        // Bind indices if geometry indexed (VAO will save IBO state)
+        if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer); //Index Buffer Object(IBO)
     }
     /**
     * Draw the Geometry

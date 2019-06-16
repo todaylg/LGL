@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Instance</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Orbit, Post, GLTFLoader} from '../src/Extras.js';
+        import { randomInRange } from './assets/js/Util.js'; 
+        import PetalShader from './shaders/PetalShader.js';
+        {
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            gl.clearColor(1, 1, 1, 1);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera();
+            camera.position.set(0, 0, 20);
+            const controls = new Orbit(camera);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+            let loader = new GLTFLoader(gl);
+            let petalModelURL = './assets/models/petal/petal.gltf';
+            loader.load( petalModelURL, null, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                let glTF = gltf.scene;
+                let petalGeometry = glTF.children[0].geometry;
+                initSence(petalGeometry);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
+
+            const num = 100;
+            let offset = new Float32Array(num * 3);
+            let random = new Float32Array(num * 3);
+            for (let i = 0; i < num; i++) {
+                offset.set([
+                    20*(Math.random() * 2 - 1),
+                    20*(Math.random() * 2 - 1),
+                    20*(Math.random() * 2 - 1)
+                ], i * 3);
+                // unique random values are always handy for instances.
+                // Here they will be used for rotation, scale and movement.
+                random.set([Math.random(), Math.random(), Math.random()], i * 3);
+            }
+            let petalProgram = new Program(gl, {
+                vertex: PetalShader.vertex,
+                fragment: PetalShader.fragment,
+                uniforms: {
+                    color: {value: new Color(1)},
+                    opacity: {value: 1},
+                    uTime: {value: 0}
+                },
+                cullFace:false
+            });
+            let mesh;
+            function initSence(geometry){
+                geometry.addAttribute('offset', {instanced: true, size: 3, data: offset});
+                geometry.addAttribute('random', {instanced: true, size: 3, data: random});
+                mesh = new Mesh(gl, {geometry, program: petalProgram});
+                mesh.setParent(scene);
+            }
+
+            requestAnimationFrame(update);
+            function update(t) {
+                if (mesh) mesh.rotation.y -= 0.005;
+                petalProgram.uniforms.uTime.value = t * 0.001;
+                controls.update();
+                renderer.render({scene, camera})
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

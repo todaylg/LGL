@@ -35,11 +35,7 @@
             let loader = new GLTFLoader(gl);
             let animationSys;
             let defaultModel = './assets/models/glTF-Sample-Models-master/2.0/AnimatedMorphSphere/gltf/AnimatedMorphSphere.glTF';
-            loader.load( defaultModel, {
-                // useIBL: true,
-                // envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
-                // envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
-            }, gltf => {
+            loader.load( defaultModel, null, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 // Animation

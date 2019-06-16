@@ -1,4 +1,4 @@
-export const BRDF_LUT_URL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
+export const BRDF_LUT_URL = 'https://raw.githubusercontent.com/todaylg/LGL/master/examples/assets/images/brdfLUT.png';
 export const WEBGL_TYPE_SIZES = {
     'SCALAR': 1,
     'VEC2': 2,
