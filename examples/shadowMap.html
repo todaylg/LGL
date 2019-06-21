@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ShadowMap</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Orbit, Post, Plane, Sphere, Cube } from '../src/Extras.js';
+        import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
+        import simpleDepthShader from './shaders/shadowMap/simpleDepthShader.js';
+        import showDepthShader from './shaders/shadowMap/showDepthShader.js';
+        import shadowMapShader from './shaders/shadowMap/shadowMapShader.js';
+        {
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            gl.clearColor(1, 1, 1, 1);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera();
+            camera.position.set(20, 30, -20);
+            const controls = new Orbit(camera);
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            //1.Render scene then generate Depth Map
+            const sceneDepth = new Transform();
+            let depthMap = new RenderTarget(gl, {
+                width:1024,
+                height:1024,
+                depthTexture: true
+            });
+            let lightProjection = new Camera({
+                left: -100,
+                right: 100,
+                bottom: -100,
+                top: 100,
+                near: 0.1,
+                far: 100,
+            });//Directional light
+            let lightPos = new Vec3(0, 20.0, -10);
+            lightProjection.position.fromArray(lightPos);
+            let lightView = new Mat4();
+            let center = new  Vec3(0, 0, 0);
+            let up = new Vec3(0, 1, 0);
+            lightView.lookAt(lightPos, center, up);
+            let lightSpaceMatrix = lightProjection.projectionMatrix.multiply(lightView) ;
+            const cubeGeometry = new Cube(gl);
+            const planeGeometry = new Plane(gl, {
+                width:20,
+                height:20
+            });
+            const depthProgram = new Program(gl, {
+                vertex: simpleDepthShader.vertex,
+                fragment: simpleDepthShader.fragment,
+                // cullFace: gl.FRONT,
+                uniforms: {
+                    lightSpaceMatrix: {value: lightSpaceMatrix}
+                }
+            });
+            const cubeDepthMesh = new Mesh(gl, { geometry: cubeGeometry, program: depthProgram });
+            const planeDepthMesh = new Mesh(gl, { geometry: planeGeometry, program: depthProgram });
+            planeDepthMesh.rotation.x = Math.PI / 2;
+            planeDepthMesh.setParent(sceneDepth);
+            cubeDepthMesh.position.y = 5;
+            cubeDepthMesh.setParent(sceneDepth);
+            
+            //2.(option)Post to Show depthMap
+            const post = new Post(gl);
+            post.addPass({
+                fragment: showDepthShader.fragment,
+                uniforms: {
+                    tMap: { value: depthMap.depthTexture },
+                }
+            });
+
+            //3.Render scene then generate ShadowMap
+            const scene = new Transform();
+            const cubeGeometry1 = new Cube(gl);
+            const planeGeometry1 = new Plane(gl, {
+                width:20,
+                height:20
+            });
+            const program = new Program(gl, {
+                vertex: shadowMapShader.vertex,
+                fragment: shadowMapShader.fragment,
+                cullFace: null,
+                uniforms: {
+                    baseColor: { value: new Color(1) },
+                    ambientLightColor: { value: new Color(1) },
+                    ambientStrength: { value: 0.3 },
+                    lightColor: { value: new Color(1) },
+                    lightPos: { value: lightPos },
+                    lightSpaceMatrix: {value: lightSpaceMatrix},
+                    shadowMap: { value: depthMap.depthTexture }
+                }
+            });
+            const cubeMesh = new Mesh(gl, { geometry: cubeGeometry1, program });
+            const planeMesh = new Mesh(gl, { geometry: planeGeometry1, program });
+            planeMesh.rotation.x = Math.PI / 2;
+            planeMesh.setParent(scene);
+            cubeMesh.position.y = 5;
+            cubeMesh.setParent(scene);
+
+            requestAnimationFrame(update);
+            function update(t) {
+                controls.update();
+                renderer.render({scene: sceneDepth, camera: lightProjection, target: depthMap});
+                // post.render({scene: sceneDepth, camera}); //See The Depth Texture
+                renderer.render({scene, camera});
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

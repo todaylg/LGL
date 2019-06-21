@@ -172,6 +172,8 @@ export class Geometry {
     }) {
         if (!geometryBound) {
             // Create VAO on first draw. Needs to wait for program to get attribute locations
+            
+            //Todo: support reuse VAO => reuse geometry
             if (!this.vao) this.createVAO(program);
 
             // TODO: add fallback for non vao support (ie)

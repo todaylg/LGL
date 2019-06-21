@@ -95,14 +95,13 @@ export class Post {
         update = true,
         sort = true,
         frustumCull = true,
+        clear = true
     }) {
         const enabledPasses = this.passes.filter(pass => pass.enabled);
         // Render target first
         this.gl.renderer.render({
-            scene,
-            camera,
+            scene, camera, update, sort, frustumCull, clear,
             target: enabledPasses.length ? this.fbos[this.currentFBO] : target,
-            update, sort, frustumCull
         });
         if(!enabledPasses.length) return;
         // Render Pass
@@ -110,11 +109,10 @@ export class Post {
             if(!pass.useOtherBufferFlag && i!=0){ //队列只允许首个pass自定义input frameBuffer
                 pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
             }
-            // 最后一个Render (i == enabledPasses.length - 1) 需要render回到main FrameBuffer
+            // 最后一次Render (i == enabledPasses.length - 1) render回到target(默认即回到main FrameBuffer)
             this.gl.renderer.render({
                 scene: pass.mesh,
                 target: i === enabledPasses.length - 1 ? target : this.fbos[1 - this.currentFBO],
-                clear: false,
             });
             this.currentFBO = 1 - this.currentFBO;
         });

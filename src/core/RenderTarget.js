@@ -55,7 +55,6 @@ export class RenderTarget {
                 generateMipmaps: false,
             }));
             this.textures[i].update();
-            // color, alpha
             // Todo : Mutiple Render Target
             this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
         }

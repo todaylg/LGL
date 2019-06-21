@@ -24,15 +24,17 @@ const fragment = `#version 300 es
 precision highp float;
 precision highp int;
 
+uniform vec3 cameraPosition;
+
 uniform vec3 baseColor;
-const vec3 ambientLightColor = vec3(1.0,1.0,1.0);
-const float ambientStrength = 0.3;
-const vec3 lightColor = vec3(1.0,1.0,1.0);
+uniform vec3 ambientLightColor;
+uniform float ambientStrength;
+uniform vec3 lightColor;
+uniform vec3 lightPos;
 
 in vec3 vNormal;
 in vec3 FragPos;
 out vec4 FragColor;
-const vec3 lightPos = vec3(0.0, 10.0, 10.0);
 
 void main() {
      vec3 ambient = ambientStrength * ambientLightColor;
@@ -43,7 +45,7 @@ void main() {
     
     // specular
     float specularStrength = 0.5;
-    vec3 viewDir = normalize(-FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir is (0,0,0) - Position => -Position
+    vec3 viewDir = normalize(cameraPosition-FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
 
     float spec = pow(max(dot(viewDir, halfwayDir), 0.0), 32.0);

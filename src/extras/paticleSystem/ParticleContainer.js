@@ -1,4 +1,4 @@
-import { Transform, Geometry, Mesh, Vec3, Color } from "../../core.js";
+import { Transform, Geometry, Mesh, Vec3, Color } from "../../Core.js";
 
 let tempPosition = new Vec3();
 let tempVelocity = new Vec3();
@@ -55,7 +55,6 @@ export default class ParticleContainer extends Transform {
     }
     geometryUpdate(){
         let geo = this.particleGeo;
-        //Postion为啥不用更新也行？
         geo.attributes['positionStart'].needsUpdate = true;
         geo.attributes['startTime'].needsUpdate = true;
         geo.attributes['velocity'].needsUpdate = true;

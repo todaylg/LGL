@@ -43,7 +43,7 @@
             thresholdPass.addPass({
                 fragment: thresholdPassShader,
                 uniforms: {
-                    luminosityThreshold: { value: 0.8 },
+                    luminosityThreshold: { value: 0.7 },
                     smoothWidth: { value: 0.01 },
                     defaultOpacity: { value : 0 },
                     defaultColor: { value : new Color(0,0,0) }
@@ -119,18 +119,6 @@
             });
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
-
-            // const cubeGeometry = new Cube(gl);
-            // const program = new Program(gl, {
-            //     vertex: BasePrimitivesShader.vertex,
-            //     fragment: BasePrimitivesShader.fragment,
-            //     cullFace: null,
-            //     uniforms: {
-            //         baseColor: { value: new Color(1) }
-            //     }
-            // });
-            // const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
-            // cubeMesh.setParent(scene);
 
             function renderPass(){
                 thresholdPass.render({ scene, camera, target: thresholdPassTarget});

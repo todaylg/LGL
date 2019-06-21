@@ -41,7 +41,7 @@
             let particleContainers = particleSystem.particleContainers;
 
             scene.addChild(particleSystem);
-            // options passed during each spawned
+            // particle options 
 			let options = {
 				position: new Vec3(),
 				positionRandomness: 15,
@@ -53,7 +53,8 @@
 				lifetime: 2,
 				size: 5,
 				sizeRandomness: 1
-			};
+            };
+            //spawned options
 			let spawnerOptions = {
 				spawnRate: 20000,
 				horizontalSpeed: 2,

@@ -302,6 +302,7 @@ export class Renderer {
     if (this.state.framebuffer === buffer) return;
     this.state.framebuffer = buffer;
     this.gl.bindFramebuffer(target, buffer);
+    // Todo: Multiple Render Target(WebGL 1.0/2.0)
     // let length = textures.length;
     // let drawBuffersExt = this.drawBuffersExt;
     // if(length>1){//MTR
@@ -443,7 +444,8 @@ export class Renderer {
     target = null,
     update = true,
     sort = true,
-    frustumCull = true
+    frustumCull = true,
+    clear = null,
   }) {
     if (target === null) {
       // make sure no render target bound so draws to canvas
@@ -454,7 +456,7 @@ export class Renderer {
       this.bindFramebuffer(target);
       this.setViewport(target.width, target.height);
     }
-    if (this.autoClear) {
+    if (clear || (this.autoClear && clear !== false)) {
       // Ensure depth buffer writing is enabled so it can be cleared
       if (this.depth) {
         this.enable(this.gl.DEPTH_TEST); //Depth Buffer
