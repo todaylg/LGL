@@ -83,11 +83,6 @@
 
             //3.Render scene then generate ShadowMap
             const scene = new Transform();
-            const cubeGeometry1 = new Cube(gl);
-            const planeGeometry1 = new Plane(gl, {
-                width:20,
-                height:20
-            });
             const program = new Program(gl, {
                 vertex: shadowMapShader.vertex,
                 fragment: shadowMapShader.fragment,
@@ -102,8 +97,8 @@
                     shadowMap: { value: depthMap.depthTexture }
                 }
             });
-            const cubeMesh = new Mesh(gl, { geometry: cubeGeometry1, program });
-            const planeMesh = new Mesh(gl, { geometry: planeGeometry1, program });
+            const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
+            const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
             planeMesh.rotation.x = Math.PI / 2;
             planeMesh.setParent(scene);
             cubeMesh.position.y = 5;

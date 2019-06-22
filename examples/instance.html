@@ -65,8 +65,8 @@
             });
             let mesh;
             function initSence(geometry){
-                geometry.addAttribute('offset', {instanced: true, size: 3, data: offset});
-                geometry.addAttribute('random', {instanced: true, size: 3, data: random});
+                geometry.addAttribute('offset', {instanced: 1, size: 3, data: offset});
+                geometry.addAttribute('random', {instanced: 1, size: 3, data: random});
                 mesh = new Mesh(gl, {geometry, program: petalProgram});
                 mesh.setParent(scene);
             }

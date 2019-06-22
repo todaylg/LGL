@@ -26,6 +26,9 @@ export class Geometry {
         this.attributes = attributes;
         this.id = ID++;
 
+        //Store one VAO per program
+        this.VAOs = {};
+
         this.drawRange = { start: 0, count: 0 }; // start offset and total data count
         this.instancedCount = 0;
 
@@ -121,9 +124,9 @@ export class Geometry {
     * @param {Program} program - The program to bind new vao
     */
     createVAO(program) {
-        //Todo:cache the VAO
-        this.vao = this.gl.renderer.createVertexArray();
-        this.gl.renderer.bindVertexArray(this.vao);
+        // Cache the VAO
+        this.VAOs[program.attributeOrder] = this.gl.renderer.createVertexArray();
+        this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
         this.bindAttributes(program);
     }
     /**
@@ -168,21 +171,11 @@ export class Geometry {
     draw({
         program,
         mode = this.gl.TRIANGLES,
-        geometryBound = false,
     }) {
-        if (!geometryBound) {
-            // Create VAO on first draw. Needs to wait for program to get attribute locations
-            
-            //Todo: support reuse VAO => reuse geometry
-            if (!this.vao) this.createVAO(program);
-
-            // TODO: add fallback for non vao support (ie)
-
-            // Bind if not already bound to program
-            this.gl.renderer.bindVertexArray(this.vao);
-
-            // Store so doesn't bind redundantly
-            this.gl.renderer.currentGeometry = this.id;
+        if (this.gl.renderer.currentGeometry !== `${this.id}_${program.attributeOrder}`) {   
+            if (!this.VAOs[program.attributeOrder]) this.createVAO(program);// Create VAO on first draw.
+            this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
+            this.gl.renderer.currentGeometry = `${this.id}_${program.attributeOrder}`;
         }
 
         // Check if any attributes need updating

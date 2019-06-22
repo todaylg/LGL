@@ -40,16 +40,29 @@ export class Color extends Array {
     /**
      * @function
      * @description Set the components of Color to the given values
-     * @param {Number} r
+     * @param {Number/String/Array} r
      * @param {Number} g
      * @param {Number} b
      * @returns {Color} 
      */
     set(r, g, b) {
         if (typeof r === 'string') [r, g, b] = Color.hexToRGB(r);
+        if (r.length) return this.copy(r);
         this[0] = r;
         this[1] = g;
         this[2] = b;
+        return this;
+    }
+    /**
+     * @function
+     * @description copy a Color from Array
+     * @param {Array} v
+     * @returns {Color} 
+     */
+    copy(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
         return this;
     }
     /**
@@ -210,5 +223,5 @@ export class Color extends Array {
 		this[1] = a[o + 1];
 		this[2] = a[o + 2];
 		return this;
-	}
+    }
 }

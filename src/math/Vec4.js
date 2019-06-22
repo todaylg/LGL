@@ -56,6 +56,7 @@ export class Vec4 extends Array {
      * @param {Number} [w=x]
      */
     set(x, y=x, z=x, w=x) {
+        if (x.length) return this.copy(x);
         Vec4Func.set(this, x, y, z, w);
         return this;
     }
@@ -72,5 +73,15 @@ export class Vec4 extends Array {
 		this[2] = a[o + 2];
 		this[3] = a[o + 3];
 		return this;
-	}
+    }
+    /**
+     * @function
+     * @description copy a Vec4 from Array
+     * @param {Array} v
+     * @returns {Vec4} 
+     */
+    copy(v) {
+        Vec4Func.copy(this, v);
+        return this;
+    }
 }

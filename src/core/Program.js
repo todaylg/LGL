@@ -114,7 +114,7 @@ export class Program {
             let attribute = gl.getActiveAttrib(this.program, aIndex);
             let location = gl.getAttribLocation(this.program, attribute.name);
             locations[location] = attribute.name;
-            this.attributeLocations.set(attribute.name, gl.getAttribLocation(this.program, attribute.name));
+            this.attributeLocations.set(attribute.name, location);
         }
         this.attributeOrder = locations.join('');
         this.checkTextureUnits();
@@ -257,12 +257,12 @@ export class Program {
      * @param {Boolean} [options.flipFaces=false] - Whether flipFaces
      */
     use({
-        programActive = false,
         flipFaces = false,
     } = {}) {
         // Used if this.assignTextureUnits is true, when texture units overlap
         let textureUnit = -1;
         // Avoid gl call if program already in use
+        const programActive = this.gl.renderer.currentProgram === this.id;
         if (!programActive) {
             this.gl.useProgram(this.program);
             this.gl.renderer.currentProgram = this.id;
@@ -287,7 +287,7 @@ export class Program {
                 return warn(`Active uniform ${name} has not been supplied`);
             }
 
-            if (!uniform || !uniform.value) {
+            if (!uniform || !uniform.value === undefined) {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 

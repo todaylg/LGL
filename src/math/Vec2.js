@@ -38,6 +38,7 @@ export class Vec2 extends Array {
      * @returns {Vec2} 
      */
     set(x, y = x) {
+        if (x.length) return this.copy(x);
         Vec2Func.set(this, x, y);
         return this;
     }

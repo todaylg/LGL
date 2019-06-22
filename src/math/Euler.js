@@ -58,10 +58,23 @@ export class Euler extends Array {
      * @returns {Euler} 
      */
     set(x, y = x, z = x) {
+        if (x.length) return this.copy(x);
         this[0] = x;
         this[1] = y;
         this[2] = z;
         this.onChange();
+        return this;
+    }
+     /**
+     * @function
+     * @description copy a Euler from Array
+     * @param {Array} v
+     * @returns {Euler} 
+     */
+    copy(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
         return this;
     }
     /**

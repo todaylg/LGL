@@ -69,6 +69,7 @@ export class Quat extends Array {
     * @returns {Quat} 
     */
     set(x, y, z, w) {
+        if (x.length) return this.copy(x);
         QuatFunc.set(this, x, y, z, w);
         this.onChange();
         return this;
