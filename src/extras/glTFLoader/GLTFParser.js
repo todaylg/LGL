@@ -336,7 +336,7 @@ export default class GLTFParser {
                 }
                 let group = new Transform();
                 for (let i = 0, il = meshes.length; i < il; i++) {
-                    group.add(meshes[i]);
+                    group.addChild(meshes[i]);
                 }
                 return group;
             });

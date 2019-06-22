@@ -35,13 +35,13 @@
             let animationSys;
 
             let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
-            // let skinAnimationModel = './assets/models/Animation_Model/kiana/scene.gltf';
+            // let skinAnimationModel = './assets/models/tempModel/Animation_Model/buster/scene.gltf';
             // let mikuModel = './assets/models/Miku/blender_outPut/Miku.gltf';
             // let keyFrameAnimationModel = './assets/models/Animation_Model/ghost_stage/scene.gltf';
             loader.load( skinAnimationModel, {
-                useIBL: true,
-                envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
-                envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
+                // useIBL: true,
+                // envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
+                // envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
