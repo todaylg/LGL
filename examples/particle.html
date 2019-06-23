@@ -29,14 +29,8 @@
 
             const scene = new Transform();
 
-            const containerCount = 10;
-            let containerCountRandom = [];
-            for(let i=0;i<containerCount;i++){
-                containerCountRandom.push(2 * (Math.random() - 0.5));// -1 => 1
-            }
             let particleSystem = new ParticleSystem(gl, {
                 maxParticles: 300000,
-                containerCount,
             });
             let particleContainers = particleSystem.particleContainers;
 
@@ -44,12 +38,12 @@
             // particle options 
 			let options = {
 				position: new Vec3(),
-				positionRandomness: 15,
+				positionRandomness: .8,
 				velocity: new Vec3(),
 				velocityRandomness: .5,
 				color: new Color(0.6,0.54,1.),
 				colorRandomness: .01,
-				turbulence: .5,
+				turbulence: .0,
 				lifetime: 2,
 				size: 5,
 				sizeRandomness: 1
@@ -75,14 +69,11 @@
                 let loopTime = (.001 * (t - originTime)) % loopDuration - loopDuration/2;
                 loopTime/=-loopDuration; // -1 => 1
                 if ( delta > 0 ) {
-                    for(let i=0, length = particleContainers.length; i<length; i++){
-                        let container = particleContainers[i];
-                        options.position.x = loopTime * spawnerOptions.horizontalSpeed * 20 + 20 * containerCountRandom[i];
-                        options.position.y = loopTime * spawnerOptions.verticalSpeed * 10 ;
-                        options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
-                        for ( var x = 0; x < spawnerOptions.spawnRate/ length* delta; x++ ) {
-                            container.spawnParticle( options );
-                        }
+                    options.position.x = loopTime * spawnerOptions.horizontalSpeed * 30;
+                    options.position.y = loopTime * spawnerOptions.verticalSpeed * 10;
+                    options.position.z = Math.sin( tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed ) * 5;
+                    for ( var x = 0; x < spawnerOptions.spawnRate * delta; x++ ) {
+                        particleSystem.spawnParticle( options );
                     }
                 }
                 particleSystem.update(tick);
