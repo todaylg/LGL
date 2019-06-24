@@ -59,23 +59,23 @@ float shadowCalculation(vec4 fragPosLightSpace, vec3 normalVal ,vec3 lightDirVal
     // 检查当前片元是否在阴影中
     // Method1:
     // float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
-    // Method2:
-    // float bias = max(0.05 * (1.0 - max(dot(normalVal, lightDirVal),0.)), 0.005);
-    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-    // Method3:
-    float shadow = 0.0;
+    //Method2:
     float bias = max(0.05 * (1.0 - max(dot(normalVal, lightDirVal),0.)), 0.005);
-    ivec2 textureSizeVal = textureSize(shadowMap, 0);
-    vec2 texelSize = vec2(1 /textureSizeVal.x, 1 / textureSizeVal.y);
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
-        }    
-    }
-    shadow /= 9.0;
+    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+    // Method3:
+    // float shadow = 0.0;
+    // float bias = max(0.05 * (1.0 - max(dot(normalVal, lightDirVal),0.)), 0.005);
+    // ivec2 textureSizeVal = textureSize(shadowMap, 0);
+    // vec2 texelSize = vec2(1 /textureSizeVal.x, 1 / textureSizeVal.y);
+    // for(int x = -1; x <= 1; ++x)
+    // {
+    //     for(int y = -1; y <= 1; ++y)
+    //     {
+    //         float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+    //         shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+    //     }    
+    // }
+    // shadow /= 9.0;
 
     return shadow;
 }

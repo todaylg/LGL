@@ -50,7 +50,7 @@ export class Mesh extends Transform {
                 viewMatrix: { value: null }, //V => alawaysbBe replaced by camera
                 modelViewMatrix: { value: null }, //MV
                 normalMatrix: { value: null }, //N
-                projectionMatrix: { value: null }, //P => alawaysbBe replaced by camera
+                projectionMatrix: { value: null }, //P => alaways replaced by camera
                 cameraPosition: { value: null },
             });
         }
@@ -77,11 +77,12 @@ export class Mesh extends Transform {
             this.normalMatrix.getNormalMatrix(this.modelViewMatrix);
 
             //replaced by mesh matrix
-            this.program.uniforms.modelMatrix.value = this.matrix;
             this.program.uniforms.modelViewMatrix.value = this.modelViewMatrix;
             this.program.uniforms.normalMatrix.value = this.normalMatrix;
         }
 
+        this.program.uniforms.modelMatrix.value = this.matrix;
+        
         // determine if faces need to be flipped - when mesh scaled negatively
         let flipFaces = this.program.cullFace && this.worldMatrix.determinant() < 0;
 
@@ -89,5 +90,11 @@ export class Mesh extends Transform {
         this.geometry.draw({mode: this.mode, program: this.program});
 
         this.onAfterRender && this.onAfterRender({ mesh: this, camera });
+    }
+    clone(option){
+        let meshState = Object.assign({}, this, option);
+        let cloneMesh =  new Mesh(this.gl, meshState);
+        Object.assign(cloneMesh, meshState);
+        return cloneMesh;
     }
 }

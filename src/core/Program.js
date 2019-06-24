@@ -287,7 +287,7 @@ export class Program {
                 return warn(`Active uniform ${name} has not been supplied`);
             }
 
-            if (!uniform || !uniform.value === undefined) {
+            if (!uniform || uniform.value === undefined || uniform.value === null) {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 
