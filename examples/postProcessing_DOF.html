@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Post Processing - Blur</title>
+    <title>Post Processing - Vignette</title>
     <link href="assets/main.css" rel="stylesheet">
 </head>
 <body>
@@ -12,12 +12,11 @@
         import {Renderer, Camera, Transform, Program, Mesh, Vec2, Texture, RenderTarget} from '../src/Core.js';
         import {Orbit, Post, Plane} from '../src/Extras.js';
         import TextureShader from './shaders/TextureShader.js';
-        import blurPassShader from './shaders/pass/blurPassShader.js';
-        import fxaaPassShader from './shaders/pass/fxaaPassShader.js';
-        import transitionPassShader from './shaders/pass/transitionPassShader.js';
+        import vignetteShader from './shaders/pass/vignettePassShader.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
+            gl.clearColor(1, 1, 1, 1);
             document.body.appendChild(gl.canvas);
             const camera = new Camera();
             camera.position.set(0, 0, 20);
@@ -35,37 +34,18 @@
             let w = gl.canvas.width;
             let h = gl.canvas.height;
             post.addPass({
-                fragment: blurPassShader,
+                fragment: vignetteShader,
                 uniforms: {
-                    resolution: { value: new Vec2(w, h) },
-                    direction: { value: new Vec2(0, 1) }
-                }
-            });
-            post.addPass({
-                fragment: blurPassShader,
-                uniforms: {
-                    resolution: { value: new Vec2(w, h) },
-                    direction: { value: new Vec2(1, 0) }
-                }
-            });
-            post.addPass({
-                fragment: fxaaPassShader,
-                uniforms: {
-                    resolution: { value: new Vec2(w, h) },
+                    offset: { value: .5 },
+                    darkness: { value: .5 },
                 }
             });
            
             const scene = new Transform();
-            const preScene = new Transform();
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
             img.src = './assets/images/bg.jpg';
-
-            const mixTexture = new Texture(gl);
-            const mixImg = new Image();
-            mixImg.onload = () => mixTexture.image = mixImg;
-            mixImg.src = './assets/images/transition/transition5.png';
 
             const planeGeometry = new Plane(gl,{
                 width: 20,
@@ -81,30 +61,10 @@
             });
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
-            const prePlane = new Mesh(gl, {geometry: planeGeometry, program});
-            prePlane.setParent(preScene);
-            const preScenetarget = new RenderTarget(gl);
-            let mixRatio = { value: 0 };
-            post.addPass({
-                fragment: transitionPassShader,
-                uniforms: {
-                    tPreMap:{ value: preScenetarget.texture},
-                    mixRatio, // 0 => 1
-                    threshold: { value: 0.2 },
-                    useTexture: { value: 1 },
-                    tMixTexture: {value: mixTexture}
-                }
-            });
-            const loopDuration = 6;
-            let startTime = performance.now();
+
             requestAnimationFrame(update);
             function update(t) {
-                const time = (.001 * (t - startTime)) % loopDuration; // 0 => loopDuration
-                mixRatio.value = Math.abs(time - loopDuration/2) / (loopDuration/2) ; // 1 => 0 => 1
                 controls.update();
-                gl.clearColor(1, 1, 1, 1);
-                renderer.render({scene: preScene, camera, target: preScenetarget});
-                gl.clearColor(0, 0, 0, 0);
                 post.render({scene, camera})
                 requestAnimationFrame(update);
             }

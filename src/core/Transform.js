@@ -133,7 +133,7 @@ export class Transform {
     clone(recursive=true){
         let cloneTransform = new Transform();
         let source = this;
-        //暴露引用的这样是
+        //export link
         cloneTransform.matrix = source.matrix;
         cloneTransform.worldMatrix = source.worldMatrix;
         cloneTransform.position = source.position;
