@@ -42,7 +42,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -62,7 +62,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Color<span class="signature">(array<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Color<span class="signature">(r<span class="signature-attributes">opt</span>, g<span class="signature-attributes">opt</span>, b<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -80,7 +80,7 @@
     <h4 class="name" id="Color">
         
         <span class="code-name">
-            new Color<span class="signature">(array<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+            new Color<span class="signature">(r<span class="signature-attributes">opt</span>, g<span class="signature-attributes">opt</span>, b<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -130,13 +130,13 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>array</code></td>
+      <td class="name"><code>r</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type">Array</span>
+<span class="param-type">Number</span>
 
 
   
@@ -157,12 +157,94 @@
   
       <td class="default">
       
-          [0, 0, 0]
+          0
       
       </td>
   
 
-  <td class="description last">The element(rgb) of Color.</td>
+  <td class="description last">The element of Color.r</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>g</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+      <td class="attributes">
+      
+          &lt;optional><br>
+      
+
+      
+
+      
+      </td>
+  
+
+  
+      <td class="default">
+      
+          x
+      
+      </td>
+  
+
+  <td class="description last">The element of Color.g</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>b</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+      <td class="attributes">
+      
+          &lt;optional><br>
+      
+
+      
+
+      
+      </td>
+  
+
+  
+      <td class="default">
+      
+          x
+      
+      </td>
+  
+
+  <td class="description last">The element of Color.b</td>
 </tr>
 
 
@@ -237,7 +319,8 @@
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>// create a new Three-Dimensional Vectornew Color();</code></pre>
+    <pre class="prettyprint"><code>// create a new Three-Dimensional Vector
+new Color();</code></pre>
 
 
 </div>
@@ -269,10 +352,14 @@
                 <div class="member">
 
     
-    <h4 class="name" id="set">
+    <h4 class="name" id=".hexToRGB">
+        
+            
+                <span class='tag'>static</span>
+            
         
         <span class="code-name">
-            set<span class="signature">(r, g, b)</span><span class="type-signature"> &rarr; {<a href="Color.html">Color</a>}</span>
+            hexToRGB<span class="signature">(hexValue)</span><span class="type-signature"> &rarr; {Array}</span>
         </span>
     </h4>
     
@@ -280,7 +367,584 @@
     
     
     <div class="description">
-        Set the components of Color to the given values
+        Conversion hex format to rgb format
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>hexValue</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">String</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Color.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line76">line 76</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type">Array</span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const rgb = Color.hexToRGB('#FFF');</code></pre>
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id=".hslToRGB">
+        
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            hslToRGB<span class="signature">(h, s, l)</span><span class="type-signature"> &rarr; {Array}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Conversion hsl format to rgb format
+https://en.wikipedia.org/wiki/HSL_and_HSV.
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>h</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">hue(色相)</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>s</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">saturation(饱和度)</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>l</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">lightness(亮度)</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Color.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line118">line 118</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type">Array</span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const rgb = Color.hslToRGB(0.1,0.2,0.3);</code></pre>
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id=".rgbToHex">
+        
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            rgbToHex<span class="signature">(rgbValue)</span><span class="type-signature"> &rarr; {Array}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Conversion rgb format to hex format
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>rgbValue</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Array</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Color.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line94">line 94</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type">Array</span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const hex = Color.rgbToHex([255,255,255]);</code></pre>
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id=".rgbToHsl">
+        
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            rgbToHsl<span class="signature">(r, g, b)</span><span class="type-signature"> &rarr; {Array}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Conversion rgb format to hsl format
+https://en.wikipedia.org/wiki/HSL_and_HSV.
     </div>
     
 
@@ -431,7 +1095,7 @@
         <p class="tag-source">
             <a href="math_Color.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line47">line 47</a>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line151">line 151</a>
             </span>
         </p>
     
@@ -466,7 +1130,7 @@
     <div class='column is-5 has-text-left'>
         <label>Type: </label>
         
-<span class="param-type"><a href="Color.html">Color</a></span>
+<span class="param-type">Array</span>
 
 
     </div>
@@ -480,15 +1144,24 @@
 
 
 
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const rgb = Color.rgbToHsl(255,255,255);</code></pre>
+
+
 </div>
             
                 <div class="member">
 
     
-    <h4 class="name" id="setHex">
+    <h4 class="name" id=".rgbToHsv">
+        
+            
+                <span class='tag'>static</span>
+            
         
         <span class="code-name">
-            setHex<span class="signature">(haxValue)</span><span class="type-signature"> &rarr; {<a href="Color.html">Color</a>}</span>
+            rgbToHsv<span class="signature">(r, g, b)</span><span class="type-signature"> &rarr; {Array}</span>
         </span>
     </h4>
     
@@ -496,7 +1169,8 @@
     
     
     <div class="description">
-        Set the Color from  hex format
+        Conversion rgb format to hsv format
+https://en.wikipedia.org/wiki/HSL_and_HSV
     </div>
     
 
@@ -534,7 +1208,223 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>haxValue</code></td>
+      <td class="name"><code>r</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>g</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>b</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Color.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line178">line 178</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type">Array</span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="copy">
+        
+        <span class="code-name">
+            copy<span class="signature">(v)</span><span class="type-signature"> &rarr; {<a href="Color.html">Color</a>}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        copy a Color from Array
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>v</code></td>
   
 
   <td class="type">
@@ -597,7 +1487,7 @@
         <p class="tag-source">
             <a href="math_Color.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line59">line 59</a>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line62">line 62</a>
             </span>
         </p>
     
@@ -651,10 +1541,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="setHSL">
+    <h4 class="name" id="fromArray">
         
         <span class="code-name">
-            setHSL<span class="signature">(haxValue)</span><span class="type-signature"> &rarr; {<a href="Color.html">Color</a>}</span>
+            fromArray<span class="signature">(a, o)</span><span class="type-signature"> &rarr; {<a href="Vec4.html">Vec4</a>}</span>
         </span>
     </h4>
     
@@ -662,7 +1552,210 @@
     
     
     <div class="description">
-        Set the Color from  hsl format
+        generate Color from Array
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>a</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Array</span>
+
+
+  
+  </td>
+
+  
+
+  
+      <td class="default">
+      
+      </td>
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>o</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+      <td class="default">
+      
+          0
+      
+      </td>
+  
+
+  <td class="description last">index offset of a</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Color.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line221">line 221</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type"><a href="Vec4.html">Vec4</a></span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="set">
+        
+        <span class="code-name">
+            set<span class="signature">(r, g, b)</span><span class="type-signature"> &rarr; {<a href="Color.html">Color</a>}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Set the components of Color to the given values
     </div>
     
 
@@ -700,13 +1793,63 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>haxValue</code></td>
+      <td class="name"><code>r</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type">Array</span>
+<span class="param-type">Number/String/Array</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>g</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>b</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
 
 
   
@@ -763,7 +1906,7 @@
         <p class="tag-source">
             <a href="math_Color.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line73">line 73</a>
+                <a href="math_Color.js.html">math/Color.js</a>, <a href="math_Color.js.html#line48">line 48</a>
             </span>
         </p>
     
@@ -835,7 +1978,7 @@
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:39 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

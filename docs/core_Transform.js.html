@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -66,9 +66,10 @@
 import { Quat } from '../math/Quat.js';
 import { Mat4 } from '../math/Mat4.js';
 import { Euler } from '../math/Euler.js';
+import { generateUUID } from '../math/Utils.js';
 
 /**
- * The base class for objects that are rendered on the screen.
+ * The base class of transform object
  *
  * @class
  */
@@ -90,6 +91,8 @@ export class Transform {
 
         this.rotation.onChange = () => this.quaternion.fromEuler(this.rotation);
         this.quaternion.onChange = () => this.rotation.fromQuaternion(this.quaternion);
+        
+        this.uuid = generateUUID();
     }
 
     /**
@@ -102,6 +105,16 @@ export class Transform {
         if (notifyParent &amp;&amp; this.parent &amp;&amp; parent !== this.parent) this.parent.removeChild(this, false);
         this.parent = parent;
         if (notifyParent &amp;&amp; parent) parent.addChild(this, false);
+    }
+     /**
+     * Transform the matrix by input
+     *
+     * @param {Mat4} matrix - The matrix to tranform
+     */
+    applyMatrix(matrix){
+        this.matrix.multiply( this.matrix, matrix );
+        // Sync change
+        this.decompose();
     }
     /**
      * Add the Transform object to parent Transform object
@@ -136,7 +149,6 @@ export class Transform {
             this.worldMatrixNeedsUpdate = false;
             force = true;
         }
-
         let children = this.children;
         for (let i = 0, l = children.length; i &lt; l; i++) {
             children[i].updateMatrixWorld(force);
@@ -152,7 +164,7 @@ export class Transform {
     /**
      * Traverse the callback function to all this Transfrom group
      * 
-     * @param {Boolean} force - Whether force update matrix
+     * @param {Function} callback
      */
     traverse(callback) {
         callback(this);
@@ -181,6 +193,26 @@ export class Transform {
         this.matrix.getRotation(this.quaternion);
         this.rotation.fromQuaternion(this.quaternion);
     };
+    
+    clone(recursive=true){
+        let cloneTransform = new Transform();
+        let source = this;
+        //export link
+        cloneTransform.matrix = source.matrix;
+        cloneTransform.worldMatrix = source.worldMatrix;
+        cloneTransform.position = source.position;
+        cloneTransform.quaternion = source.quaternion;
+        cloneTransform.scale = source.scale;
+        cloneTransform.rotation = source.rotation;
+        cloneTransform.up = source.up;
+        if (recursive === true) {
+			for (let i = 0; i &lt; source.children.length; i ++ ) {
+				let child = source.children[i];
+                cloneTransform.addChild( child.clone() );
+			}
+        }
+        return cloneTransform;
+    }
 }</code></pre>
         </article>
     </section>
@@ -195,7 +227,7 @@ export class Transform {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

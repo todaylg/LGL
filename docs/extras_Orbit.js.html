@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -258,7 +258,7 @@ export class Orbit {
                 this.state = STATE.ROTATE;
                 break;
             // Middle scroll
-            case MOURSE_BTTON.middle:
+            case   MOURSE_BTTON.middle:
                 if (this.enableZoom === false) return;
                 dollyStart.set(e.clientX, e.clientY);
                 this.state = STATE.DOLLY;
@@ -342,26 +342,31 @@ export class Orbit {
     */
     handleMovePan(x, y) {
         tempVec2a.set(x, y);
-        tempVec2b.sub(tempVec2a, panStart).multiply(this.panSpeed);
+        tempVec2b.sub(tempVec2a, panStart).multiply(this.panSpeed); //计算变化向量
         this.pan(tempVec2b.x, tempVec2b.y);
         panStart.copy(tempVec2a);
     }
     pan(deltaX, deltaY) {
         let { element, camera } = this;
         let el = element === document ? document.body : element;
+        // perspective
         tempVec3.copy(camera.position).sub(this.target);
         let targetDistance = tempVec3.distance();
-        targetDistance *= Math.tan(((camera.fov || 45) / 2) * Math.PI / 180.0);
-        this.panLeft(2 * deltaX * targetDistance / el.clientHeight, camera.matrix);
-        this.panUp(2 * deltaY * targetDistance / el.clientHeight, camera.matrix);
+
+        // half of the fov is center to top of screen
+        targetDistance *= Math.tan(((camera.fov || 45) / 2) * Math.PI / 180.0); //投影高度
+
+        // we use only clientHeight here so aspect ratio does not distort speed
+        this.panLeft( deltaX * 2 * targetDistance / el.clientHeight, camera.matrix); //高度比值
+        this.panUp( deltaY * 2 * targetDistance / el.clientHeight, camera.matrix);
     };
     panLeft(distance, m) {
-        tempVec3.set(m[0], m[1], m[2]);
+        tempVec3.set(m[0], m[1], m[2]); //X
         tempVec3.multiply(-distance);
         this.panDelta.add(tempVec3);
     }
     panUp(distance, m) {
-        tempVec3.set(m[4], m[5], m[6]);
+        tempVec3.set(m[4], m[5], m[6]); //Y
         tempVec3.multiply(distance);
         this.panDelta.add(tempVec3);
     }
@@ -372,7 +377,7 @@ export class Orbit {
     onMouseWheel(e) {
         const { enabled, enableZoom, state } = this;
         if (!enabled || !enableZoom || (state !== STATE.NONE &amp;&amp; state !== STATE.ROTATE)) return;
-        e.preventDefault();//Warning passive
+        // e.preventDefault(); //Warning passive
         e.stopPropagation();
 
         if (e.deltaY &lt; 0) {
@@ -385,7 +390,7 @@ export class Orbit {
     /**
     * Handle mobile touch start event
     */
-    onTouchStart = (e) => {
+    onTouchStart(e) {
         if (!this.enabled) return;
         e.preventDefault();
         switch (e.touches.length) {
@@ -502,7 +507,7 @@ export class Orbit {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

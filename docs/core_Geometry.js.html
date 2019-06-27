@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -77,7 +77,7 @@ let ATTR_ID = 0;
  * @param {Object} [attribute] -  The attribute of geometry parameters
  * @param {Array} [attribute.data] - Typed array eg UInt16Array for indices, Float32Array
  * @param {Number} [attribute.size=1]
- * @param {Boolean} [attribute.instanced=false] - Boolean default false. can pass true or divisor amount
+ * @param {Boolean/Number} [attribute.instanced=null] - Boolean default null. can pass divisor amount
  * @param {GLenum} [attribute.type] - Default gl.UNSIGNED_SHORT for 'index', gl.FLOAT for others
  * @param {Boolean} [attribute.normalize=false] - Boolean default false
  * 
@@ -90,7 +90,10 @@ export class Geometry {
         this.attributes = attributes;
         this.id = ID++;
 
-        this.drawRange = { start: 0, count: 0 };
+        //Store one VAO per program
+        this.VAOs = {};
+
+        this.drawRange = { start: 0, count: 0 }; // start offset and total data count
         this.instancedCount = 0;
 
         // Unbind current VAO so that new buffers don't get added to active mesh
@@ -99,7 +102,6 @@ export class Geometry {
 
         // Alias for state store to avoid redundant calls for global state
         this.glState = this.gl.renderer.state;
-
         // create the buffers
         for (let key in attributes) {
             this.addAttribute(key, attributes[key]);
@@ -119,16 +121,16 @@ export class Geometry {
                     this.gl.UNSIGNED_INT); // Uint32Array
         attr.target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
         attr.normalize = attr.normalize || false;
-        attr.buffer = this.gl.createBuffer();
+        attr.buffer = this.gl.createBuffer();//Vertex Buffer Objects(VBO)
         attr.count = attr.data.length / attr.size;
-        attr.divisor = !attr.instanced ? 0 : typeof attr.instanced === 'number' ? attr.instanced : 1;
+        attr.divisor = attr.instanced || 0;
+        attr.dataMode = attr.dataMode || this.gl.STATIC_DRAW;
         attr.needsUpdate = false;
 
         // Push data to buffer
         this.updateAttribute(attr);
 
         // Update geometry counts. If indexed, ignore regular attributes
-        // Todo:啥用？
         if (attr.divisor) {
             this.isInstanced = true;
             if (this.instancedCount &amp;&amp; this.instancedCount !== attr.count * attr.divisor) {
@@ -151,7 +153,7 @@ export class Geometry {
             this.gl.bindBuffer(attr.target, attr.buffer);
             this.glState.boundBuffer = attr.id;
         }
-        this.gl.bufferData(attr.target, attr.data, this.gl.STATIC_DRAW);
+        this.gl.bufferData(attr.target, attr.data, attr.dataMode);//STATIC_DRAW、DYNAMIC_DRAW、STREAM_DRAW
         attr.needsUpdate = false;
     }
     /**
@@ -186,8 +188,9 @@ export class Geometry {
     * @param {Program} program - The program to bind new vao
     */
     createVAO(program) {
-        this.vao = this.gl.renderer.createVertexArray();
-        this.gl.renderer.bindVertexArray(this.vao);
+        // Cache the VAO
+        this.VAOs[program.attributeOrder] = this.gl.renderer.createVertexArray();
+        this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
         this.bindAttributes(program);
     }
     /**
@@ -196,7 +199,7 @@ export class Geometry {
     * @param {Program} program - The program to bind attribute
     */
     bindAttributes(program) {
-        // Link all attributes to program using gl.vertexAttribPointer
+        // Link all program attributes using gl.vertexAttribPointer
         program.attributeLocations.forEach((location, name) => {
             // If geometry missing a required shader attribute
             if (!this.attributes[name]) {
@@ -219,8 +222,8 @@ export class Geometry {
             // For firefox, need to set back to 0 if non-instanced drawn after instanced. Else won't render
             this.gl.renderer.vertexAttribDivisor(location, attr.divisor);
         });
-        // Bind indices if geometry indexed
-        if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer);
+        // Bind indices if geometry indexed (VAO will save IBO state)
+        if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer); //Index Buffer Object(IBO)
     }
     /**
     * Draw the Geometry
@@ -232,25 +235,19 @@ export class Geometry {
     draw({
         program,
         mode = this.gl.TRIANGLES,
-        geometryBound = false,
     }) {
-        if (!geometryBound) {
-            // Create VAO on first draw. Needs to wait for program to get attribute locations
-            if (!this.vao) this.createVAO(program);
-
-            // TODO: add fallback for non vao support (ie)
-
-            // Bind if not already bound to program
-            this.gl.renderer.bindVertexArray(this.vao);
-
-            // Store so doesn't bind redundantly
-            this.gl.renderer.currentGeometry = this.id;
+        if (this.gl.renderer.currentGeometry !== `${this.id}_${program.attributeOrder}`) {   
+            if (!this.VAOs[program.attributeOrder]) this.createVAO(program);// Create VAO on first draw.
+            this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
+            this.gl.renderer.currentGeometry = `${this.id}_${program.attributeOrder}`;
         }
 
         // Check if any attributes need updating
         program.attributeLocations.forEach((location, name) => {
             const attr = this.attributes[name];
-            if (attr.needsUpdate) this.updateAttribute(attr);
+            if (attr &amp;&amp; attr.needsUpdate){
+                this.updateAttribute(attr);
+            }
         });
 
         if (this.isInstanced) {
@@ -351,7 +348,7 @@ export class Geometry {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -95,6 +95,7 @@ let ID = 0;
 export class Texture {
     constructor(gl, {
         image,
+        images,
         target = gl.TEXTURE_2D,
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
@@ -108,6 +109,7 @@ export class Texture {
         minFilter = generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR,
         magFilter = gl.LINEAR,
         premultiplyAlpha = false,
+        unpackAlignment = 4,
         flipY = true,
     } = {}) {
         this.gl = gl;
@@ -115,6 +117,7 @@ export class Texture {
         // Assign texture unit spread over max available units to avoid frequent binding
         this.textureUnit = this.gl.renderer.state.textureUnitIndex++ % this.gl.renderer.parameters.maxTextureUnits;
         this.image = image;
+        this.images = images;
         this.target = target;
         this.type = type;
         this.format = format;
@@ -128,6 +131,7 @@ export class Texture {
         this.wrapT = wrapT;
         this.generateMipmaps = generateMipmaps;
         this.premultiplyAlpha = premultiplyAlpha;
+        this.unpackAlignment = unpackAlignment;
         this.flipY = flipY;
         this.texture = this.gl.createTexture();
 
@@ -144,9 +148,6 @@ export class Texture {
         this.state.magFilter = this.gl.LINEAR;
         this.state.wrapS = this.gl.REPEAT;
         this.state.wrapT = this.gl.REPEAT;
-
-        // TODO: test if premultiplyAlpha is global or per texture 
-        this.state.premultiplyAlpha = false;
     }
     /**
      * Bind to active texture unit
@@ -183,9 +184,14 @@ export class Texture {
             this.glState.flipY = this.flipY;
         }
 
-        if (this.premultiplyAlpha !== this.state.premultiplyAlpha) {
+        if (this.premultiplyAlpha !== this.glState.premultiplyAlpha) {
             this.gl.pixelStorei(this.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premultiplyAlpha);
-            this.state.premultiplyAlpha = this.premultiplyAlpha;
+            this.glState.premultiplyAlpha = this.premultiplyAlpha;
+        }
+
+        if (this.unpackAlignment !== this.glState.unpackAlignment) {
+            this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, this.unpackAlignment);
+            this.glState.unpackAlignment = this.unpackAlignment;
         }
 
         if (this.minFilter !== this.state.minFilter) {
@@ -213,17 +219,20 @@ export class Texture {
                 this.width = this.image.width;
                 this.height = this.image.height;
             }
-
-            // TODO: all sides if cubemap
-            // gl.TEXTURE_CUBE_MAP_POSITIVE_X
-
-            // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
-            if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
-                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+            // CubeMap
+            if (this.images &amp;&amp; this.images.length === 6) {
+                for (let i = 0; i &lt; this.images.length; i++) {
+                    let imageEle = this.images[i];
+                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, imageEle);
+                }
             } else {
-                this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
+                // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
+                if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
+                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+                } else {
+                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
+                }
             }
-
             // TODO: support everything
             // WebGL1:
             // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);
@@ -278,7 +287,7 @@ export class Texture {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

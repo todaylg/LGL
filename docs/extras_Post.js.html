@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: extras/Post.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>extras/Post.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Geometry } from '../core/Geometry.js';
+import { Program } from '../core/Program.js';
+import { Mesh } from '../core/Mesh.js';
+import { RenderTarget } from '../core/RenderTarget.js';
+
+/**
+ * Create a Post Progressing
+ * 
+ * @class
+ * @param {WebGLContext} gl
+ * @param {Object} [options] -  The optional post parameters
+ * @param {Number} [options.width] - The width of the canvas
+ * @param {Number} [options.height] - The height of the canvas
+ * @param {Number} [options.dpr] - The device pixel ratio of the post renderer, retina would be 2.
+ * @param {Number} [options.wrapS = gl.REPEAT] - Param of TEXTURE_WRAP_S. (RenderTarget)
+ * @param {Object} [options.wrapT = wrapS] - Param of TEXTURE_WRAP_T. (RenderTarget)
+ * @param {Object} [options.minFilter = gl.LINEAR] - Param of  TEXTURE_MIN_FILTER. (RenderTarget)
+ * @param {Object} [options.magFilter = minFilter] - Param of TEXTURE_MAG_FILTER. (RenderTarget)
+ * @param {GLenum} [options.type] - A GLenum specifying the data type of the texel(纹素) data. (RenderTarget)
+ * @param {GLenum} [options.format]  -A GLenum specifying the format of the texel data（In WebGL 1, this must be the same as internalformat）(RenderTarget)
+ * @param {GLenum} [options.internalFormat] - A GLenum specifying the color components in the texture. (RenderTarget)
+ */
+export class Post {
+    constructor(gl, {
+        width,
+        height,
+        dpr,
+        wrapS = gl.REPEAT,
+        wrapT = wrapS,
+        minFilter = gl.LINEAR,
+        magFilter = minFilter,
+        type,
+        format,
+        internalFormat
+    } = {}) {
+        this.gl = gl;
+        this.options = { wrapS, wrapT, minFilter, magFilter, type, format, internalFormat };
+        this.passes = [];
+        // Triangle that covers viewport, with UVs that still span 0 > 1 across viewport
+        this.geometry = new Geometry(gl, {
+            position: { size: 3, data: new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]) },
+            uv: { size: 2, data: new Float32Array([0, 0, 2, 0, 0, 2]) },
+        });
+        this.resize({ width, height, dpr });
+    }
+
+    addPass({
+        vertex = defaultVertex,
+        fragment = defaultFragment,
+        uniforms = {},
+        textureUniform = 'tMap',
+        enabled = true,
+    } = {}) {
+        let useOtherBufferFlag = true;
+        if(!uniforms[textureUniform]){
+            uniforms[textureUniform] = { value: this.fbos[this.currentFBO] };
+            useOtherBufferFlag = false;
+        }
+        const program = new Program(this.gl, { vertex, fragment, uniforms });
+        const mesh = new Mesh(this.gl, { geometry: this.geometry, program });
+        const pass = {
+            mesh,
+            program,
+            uniforms,
+            enabled,
+            textureUniform,
+            useOtherBufferFlag
+        };
+        this.passes.push(pass);
+        return pass;
+    }
+
+    resize({ width, height, dpr } = {}) {
+        if (dpr) this.dpr = dpr;
+        if (width) {
+            this.width = width;
+            this.height = height || width;
+        }
+        dpr = this.dpr || this.gl.renderer.dpr;
+        width = (this.width || this.gl.renderer.width) * dpr;
+        height = (this.height || this.gl.renderer.height) * dpr;
+        // TODO: Destroy render targets if size changed and exists
+        this.options.width = width;
+        this.options.height = height;
+        this.fbo = new RenderTarget(this.gl, this.options);
+        this.fbos = [this.fbo, this.fbo.clone()];
+        this.currentFBO = 0;
+    }
+
+    // Uses same arguments as renderer.render
+    render({
+        scene,
+        camera,
+        target = null,
+        update = true,
+        sort = true,
+        frustumCull = true,
+        clear = true
+    }) {
+        const enabledPasses = this.passes.filter(pass => pass.enabled);
+        // Render target first
+        this.gl.renderer.render({
+            scene, camera, update, sort, frustumCull, clear,
+            target: enabledPasses.length ? this.fbos[this.currentFBO] : target,
+        });
+        if(!enabledPasses.length) return;
+        // Render Pass
+        enabledPasses.forEach((pass, i) => {
+            if(!pass.useOtherBufferFlag &amp;&amp; i!=0){ //队列只允许首个pass自定义input frameBuffer
+                pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
+            }
+            // 最后一次Render (i == enabledPasses.length - 1) render回到target(默认即回到main FrameBuffer)
+            this.gl.renderer.render({
+                scene: pass.mesh,
+                target: i === enabledPasses.length - 1 ? target : this.fbos[1 - this.currentFBO],
+            });
+            this.currentFBO = 1 - this.currentFBO;
+        });
+       
+    }
+}
+
+const defaultVertex = `#version 300 es
+precision highp float;
+precision highp int;
+
+in vec2 uv;
+in vec3 position;
+
+out vec2 vUv;
+
+void main() {
+    vUv = uv;
+    gl_Position = vec4(position, 1.0);
+}
+`;
+
+const defaultFragment = `#version 300 es
+precision highp float;
+precision highp int;
+
+uniform sampler2D tMap;
+in vec2 vUv;
+out vec4 FragColor;
+
+void main() {
+    FragColor = texture(tMap, vUv);
+}
+`;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
