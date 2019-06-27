@@ -31,14 +31,13 @@
             resize();
 
             const post = new Post(gl);
-            let w = gl.canvas.width;
-            let h = gl.canvas.height;
+            let defalutUniform = {
+                offset: { value: .5 },
+                darkness: { value: .5 },
+            }
             post.addPass({
                 fragment: vignetteShader,
-                uniforms: {
-                    offset: { value: .5 },
-                    darkness: { value: .5 },
-                }
+                uniforms: defalutUniform
             });
            
             const scene = new Transform();
@@ -62,8 +61,12 @@
             const plane = new Mesh(gl, {geometry: planeGeometry, program});
             plane.setParent(scene);
 
+            const loopDuration = 4;
+            let startTime = performance.now();
             requestAnimationFrame(update);
             function update(t) {
+                const time = (.001 * (t - startTime)) % loopDuration; // 0 => loopDuration
+                defalutUniform.darkness.value = Math.abs(time - loopDuration/2) / (loopDuration/2) ; // 1 => 0 => 1
                 controls.update();
                 post.render({scene, camera})
                 requestAnimationFrame(update);
