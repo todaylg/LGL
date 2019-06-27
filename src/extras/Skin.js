@@ -69,7 +69,25 @@ export class Skin extends Mesh {
             boneMatrices: {value: this.boneMatrices}
         });
     }
-
+    clone(option){
+        let source = this;
+        let meshState = Object.assign({}, source, option);
+        let cloneMesh =  new Skin(source.gl, meshState);
+        // link transform
+        cloneMesh.matrix = source.matrix;
+        cloneMesh.worldMatrix = source.worldMatrix;
+        cloneMesh.position = source.position;
+        cloneMesh.quaternion = source.quaternion;
+        cloneMesh.scale = source.scale;
+        cloneMesh.rotation = source.rotation;
+        cloneMesh.up = source.up;
+        cloneMesh.root = source.root;
+        cloneMesh.bones = source.bones;
+        cloneMesh.boneMatrices = source.boneMatrices;
+        cloneMesh.boneTextureSize = source.boneTextureSize;
+        cloneMesh.boneTexture = source.boneTexture;
+        return cloneMesh;
+    }
     draw({
         camera,
     } = {}) {

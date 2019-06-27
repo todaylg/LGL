@@ -37,8 +37,8 @@
             const scene = new Transform();
             const cubeGeometry = new Cube(gl);
             const planeGeometry = new Plane(gl, {
-                width:20,
-                height:20
+                width:50,
+                height:50
             });
             const program = new Program(gl, {
                 vertex: shadowMapShader.vertex,
@@ -55,17 +55,15 @@
                 }
             });
             const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
-            cubeMesh.castShadowMap = true;
             const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
             planeMesh.castShadowMap = true;
             planeMesh.rotation.x = Math.PI / 2;
             planeMesh.setParent(scene);
-            cubeMesh.position.y = 5;
+            cubeMesh.position.y = 10;
+            cubeMesh.scale.set(2);
             cubeMesh.setParent(scene);
 
-            //2.Init Scene 
             shadowMap.init(scene);
-
             //3.(option)Post to Show depthMap
             const post = new Post(gl);
             post.addPass({
@@ -85,10 +83,7 @@
                 let delta = .001 * (now - startTime);
                 startTime = now;
                 tick += delta;
-                // lightPos.x = Math.sin(tick*2)*5;
-                // lightPos.z= Math.sin(tick*2)*5 -10;
                 cubeMesh.rotation.y += 0.01;
-                // cubeMesh.position.x = Math.sin(tick*2)*5;
                 controls.update();
                 shadowMap.render();
                 // post.render({scene: sceneDepth, camera}); //See The Depth Texture

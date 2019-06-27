@@ -2,16 +2,17 @@ import { Program, Transform, RenderTarget, Camera, Vec3, Mat4 } from '../../Core
 import simpleDepthShader from './shaders/simpleDepthShader.js';
 let tempMat4 = new Mat4();
 export class ShadowMap {
-    //初始化深度贴图
+    //Init param
     constructor(gl, options = {}) {
         this.gl = gl;
         this.renderer = gl.renderer;
         this.sceneDepth = new Transform();
         this.depthMap = new RenderTarget(gl, {
-            width: 1024*8,
-            height: 1024*8,
+            width: 2048*4,
+            height: 2048*4,
             depthTexture: true
         });
+        //Direction Light
         this.lightProjection = new Camera({
             left: -100,
             right: 100,
@@ -19,7 +20,7 @@ export class ShadowMap {
             top: 100,
             near: 0.1,
             far: 100,
-        });//Directional light
+        });
         this.lightPos = new Vec3(0, 10.0, -10);
         this.center = new Vec3(0, 0, 0);
         this.up = new Vec3(0, 1, 0);
@@ -29,11 +30,11 @@ export class ShadowMap {
     calculateLightSpaceMatrix(){
         tempMat4.lookAt(this.lightPos, this.center, this.up);
         this.lightSpaceMatrix.multiply(this.lightProjection.projectionMatrix, tempMat4);
+        this.sceneDepth.updateMatrixWorld(true);
     }
-    //场景初始化完毕
+    //Init shadow
     init(scene) {
         this.scene = scene;
-        //遍历Scene并赋值sceneDepth
         this.depthProgram = new Program(this.gl, {
             vertex: simpleDepthShader.vertex,
             fragment: simpleDepthShader.fragment,
@@ -42,15 +43,25 @@ export class ShadowMap {
                 lightSpaceMatrix: { value: this.lightSpaceMatrix }
             }
         });
-        scene.traverse((transform)=>{
-            if(!transform.castShadowMap) return;
-            let cloneMesh = transform.clone({ program: this.depthProgram });
-            this.sceneDepth.addChild(cloneMesh);
-        })
+        //Copy Scene
+        this.sceneDepth = scene.clone();
+        this.sceneDepth.traverse((transform)=>{
+            let parent = transform.parent;
+            if(parent && transform.meshType){
+                let cloneMesh = transform.clone({ program: this.depthProgram });
+                let children = parent.children;
+                let index = children.indexOf(transform);
+                if(!~index) return;
+                cloneMesh.parent = parent;
+                children[index] = cloneMesh;
+                transform.setParent(null, false);
+            }
+        });
+        console.log("sceneDepth: ", this.sceneDepth);
     }
     render() {
-        //对象引用同步原场景Tranform
         let { renderer, sceneDepth, depthMap } = this;
+        if(!this.sceneDepth) return;
         this.calculateLightSpaceMatrix();
         renderer.render({ scene: sceneDepth, target: depthMap });
     }

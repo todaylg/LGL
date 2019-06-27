@@ -85,7 +85,6 @@ export class Transform {
             this.worldMatrixNeedsUpdate = false;
             force = true;
         }
-
         let children = this.children;
         for (let i = 0, l = children.length; i < l; i++) {
             children[i].updateMatrixWorld(force);
@@ -130,4 +129,24 @@ export class Transform {
         this.matrix.getRotation(this.quaternion);
         this.rotation.fromQuaternion(this.quaternion);
     };
+    
+    clone(recursive=true){
+        let cloneTransform = new Transform();
+        let source = this;
+        //暴露引用的这样是
+        cloneTransform.matrix = source.matrix;
+        cloneTransform.worldMatrix = source.worldMatrix;
+        cloneTransform.position = source.position;
+        cloneTransform.quaternion = source.quaternion;
+        cloneTransform.scale = source.scale;
+        cloneTransform.rotation = source.rotation;
+        cloneTransform.up = source.up;
+        if (recursive === true) {
+			for (let i = 0; i < source.children.length; i ++ ) {
+				let child = source.children[i];
+                cloneTransform.addChild( child.clone() );
+			}
+        }
+        return cloneTransform;
+    }
 }
