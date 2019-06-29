@@ -59,20 +59,20 @@
                 depthTexture: true
             });
             const post = new Post(gl);
+            let defaultUniform = {
+                cameraNear: { value: camera.near },
+                cameraFar:  { value: camera.far },
+                tDepth: { value: depthMap.depthTexture },
+                aspect: { value: camera.aspect },
+                focus: { value: 0.32 },
+                dof:  { value: 0.02 },
+                aperture: { value: 0.015 },
+                maxBlur:  { value: 0.0125 }
+            }
             post.addPass({
                 fragment: bokehShader,
-                uniforms: {
-                    cameraNear: { value: camera.near },
-					cameraFar:  { value: camera.far },
-                    tDepth: { value: depthMap.depthTexture },
-                    aspect: { value: camera.aspect },
-                    focus: { value: 0.32 },
-                    dof:  { value: 0.02 },
-                    aperture: { value: 0.015 },
-					maxBlur:  { value: 0.0125 }
-                }
+                uniforms: defaultUniform
             });
-
             requestAnimationFrame(update);
             function update(t) {
                 controls.update();

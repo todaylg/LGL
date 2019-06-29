@@ -34,12 +34,12 @@
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
             let defaultModel = './assets/models/DamagedHelmet/glTF/DamagedHelmet.gltf';
-            // let mikuModel = './assets/models/tempModel/Miku/blender_Output/Miku.gltf';
+            // let mikuModel = './assets/models/tempModel/Miku/blender_Output/mikuGLTF.gltf';
             // let mikuModel = './assets/models/BRDFModel/shinobu_oshino/scene.gltf';
             loader.load( defaultModel, {
-                useIBL: true,
-                envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
-                envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
+                // useIBL: true,
+                // envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
+                // envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
