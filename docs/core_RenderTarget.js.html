@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -80,20 +80,28 @@ import { Texture } from './Texture.js';
  * @param {Boolean} [options.depth=true] - Specifying the internal format of the renderbuffer is DEPTH_COMPONENT16 or not
  * @param {Boolean} [options.stencil=false] - Specifying the internal format of the renderbuffer is STENCIL_INDEX8 or not
  * @param {Boolean} [options.stencil=false] - Whether is depth textures (note depth textures break stencil - so can't use together)depthTexture = false, // note - stencil breaks
+ * @param {GLenum} [options.type=gl.UNSIGNED_BYTE] - A GLenum specifying the data type of the texel(纹素) data.
+ * @param {GLenum} [options.format=gl.RGBA]  -A GLenum specifying the format of the texel data（In WebGL 1, this must be the same as internalformat）
+ * @param {GLenum} [options.internalFormat=format] - A GLenum specifying the color components in the texture.
  */
 export class RenderTarget {
     constructor(gl, {
         width = gl.canvas.width,
         height = gl.canvas.height,
         target = gl.FRAMEBUFFER,
-        color = 1, // number of color attachments
+        color = 1,
         depth = true,
         stencil = false,
         depthTexture = false, // note - stencil breaks
         wrapS = gl.CLAMP_TO_EDGE,
         wrapT = gl.CLAMP_TO_EDGE,
         minFilter = gl.LINEAR,
-        magFilter = gl.LINEAR,
+        magFilter = minFilter,
+        type = gl.UNSIGNED_BYTE,
+        format = gl.RGBA,
+        internalFormat = format,
+        unpackAlignment,
+        premultiplyAlpha,
     } = {}) {
         this.gl = gl;
         this.width = width;
@@ -102,16 +110,16 @@ export class RenderTarget {
         this.target = target;
         this.gl.bindFramebuffer(this.target, this.buffer);
         this.textures = [];
-        // TODO: multi target rendering
         // create and attach required num of color textures
+        // framebufferTexture2D / framebufferRenderbuffer
         for (let i = 0; i &lt; color; i++) {
             this.textures.push(new Texture(gl, {
-                width, height, wrapS, wrapT, minFilter, magFilter,
+                width, height, wrapS, wrapT, minFilter, magFilter, type, format, internalFormat, unpackAlignment, premultiplyAlpha,
                 flipY: false,
                 generateMipmaps: false,
             }));
             this.textures[i].update();
-            // color, alpha
+            // Todo : Mutiple Render Target
             this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
         }
 
@@ -134,7 +142,7 @@ export class RenderTarget {
             this.depthTexture.update();
             this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0 /* level */);
         } else {
-            // Render buffers (attaches a WebGLRenderbuffer object to a WebGLFramebuffer object)
+            // Renderbuffer Object
             if (depth &amp;&amp; !stencil) {
                 this.depthBuffer = this.gl.createRenderbuffer();
                 this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
@@ -156,10 +164,13 @@ export class RenderTarget {
                 this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, this.depthStencilBuffer);
             }
         }
+        if (this.gl.checkFramebufferStatus(this.target) != this.gl.FRAMEBUFFER_COMPLETE){
+            console.error("checkFramebufferStatus no complete");
+        }
+        // 解绑，在renderer中再进行绑定
         this.gl.bindFramebuffer(this.target, null);
     }
     clone() {
-        // deep clone
         return new RenderTarget(this.gl, this);
     }
 }</code></pre>
@@ -176,7 +187,7 @@ export class RenderTarget {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

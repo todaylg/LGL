@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -82,6 +82,7 @@ const arrayCacheF32 = {};
  * @param {Boolean} [options.depthTest] - Whether enable depth test
  * @param {Boolean} [options.depthWrite] -Whether enable depth write
  * @param {GLenum} [options.depthFunc] - Specifies a function that compares incoming pixel depth to the current depth buffer value.
+ * @param {String} [options.blendMode] - Blend Mode (Normal/Add/Subtract/Multiply)
  */
 export class Program {
     constructor(gl, {
@@ -94,6 +95,7 @@ export class Program {
         depthTest = true,
         depthWrite = true,
         depthFunc = gl.LESS,
+        blendMode = 'Normal',
     } = {}) {
         this.gl = gl;
         this.uniforms = uniforms;
@@ -109,14 +111,12 @@ export class Program {
         this.depthTest = depthTest;
         this.depthWrite = depthWrite;
         this.depthFunc = depthFunc;
+        this.blendMode = blendMode;
         this.blendFunc = {};
         this.blendEquation = {};
-
-        // Set default blendFunc if transparent flagged
-        if (this.transparent &amp;&amp; !this.blendFunc.src) {
-            if (this.gl.renderer.premultipliedAlpha) this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
-            else this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-        }
+        
+        // blend
+        this.setBlendMode(blendMode);
 
         // compile vertex shader and log errors
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -172,12 +172,15 @@ export class Program {
 
         // Get active attribute locations
         this.attributeLocations = new Map();
+        let locations = []; 
         let numAttribs = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
         for (let aIndex = 0; aIndex &lt; numAttribs; aIndex++) {
             let attribute = gl.getActiveAttrib(this.program, aIndex);
-            this.attributeLocations.set(attribute.name, gl.getAttribLocation(this.program, attribute.name));
+            let location = gl.getAttribLocation(this.program, attribute.name);
+            locations[location] = attribute.name;
+            this.attributeLocations.set(attribute.name, location);
         }
-
+        this.attributeOrder = locations.join('');
         this.checkTextureUnits();
     }
 
@@ -186,6 +189,15 @@ export class Program {
      */
     checkTextureUnits() {
         const assignedTextureUnits = [];
+        let checkDuplicate = (value) => {
+            if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
+                // If reused, set flag to true to assign sequential units when drawn
+                this.assignTextureUnits = true;
+                return false;
+            }
+            assignedTextureUnits.push(value.textureUnit);
+            return true;
+        }
         [...this.uniformLocations.keys()].every((activeUniform) => {
             let uniform = this.uniforms[activeUniform.uniformName];
 
@@ -211,15 +223,49 @@ export class Program {
 
             return true;
         });
-
-        function checkDuplicate(value) {
-            if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
-                // If reused, set flag to true to assign sequential units when drawn
-                this.assignTextureUnits = true;
-                return false;
+    }
+    /**
+     * Defines which BlendMode from input options
+     * 
+     * @param {String} mode - 
+     */
+    setBlendMode(mode) {
+        if (this.gl.renderer.premultipliedAlpha){
+            switch(mode){
+                case 'Normal':
+                        this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Add':
+                        this.setBlendFunc(this.gl.ONE, this.gl.ONE);
+                    break;
+                case 'Subtract':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.ZERO, this.gl.ONE_MINUS_SRC_COLOR, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Multiply':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR, this.gl.ZERO, this.gl.SRC_ALPHA);
+                    break;
+                default:
+                    console.error('Invalid blending mode: ', mode);
+                    break;
             }
-            assignedTextureUnits.push(value.textureUnit);
-            return true;
+        }else{
+            switch(mode){
+                case 'Normal':
+                        this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+                    break;
+                case 'Add':
+                        this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+                    break;
+                case 'Subtract':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_COLOR);
+                    break;
+                case 'Multiply':
+                        this.setBlendFunc(this.gl.ZERO, this.gl.SRC_COLOR);
+                    break;
+                default:
+                    console.error('Invalid blending mode: ', mode);
+                    break;
+            }
         }
     }
     /**
@@ -275,12 +321,12 @@ export class Program {
      * @param {Boolean} [options.flipFaces=false] - Whether flipFaces
      */
     use({
-        programActive = false,
         flipFaces = false,
     } = {}) {
         // Used if this.assignTextureUnits is true, when texture units overlap
         let textureUnit = -1;
         // Avoid gl call if program already in use
+        const programActive = this.gl.renderer.currentProgram === this.id;
         if (!programActive) {
             this.gl.useProgram(this.program);
             this.gl.renderer.currentProgram = this.id;
@@ -305,12 +351,11 @@ export class Program {
                 return warn(`Active uniform ${name} has not been supplied`);
             }
 
-            if (uniform &amp;&amp; uniform.value === undefined) {
+            if (!uniform || uniform.value === undefined || uniform.value === null) {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 
             if (uniform.value.texture) {
-                //Todo => Fix RenderTarget
                 if (!uniform.value.update) uniform.value = uniform.value.texture;
                 // if texture units overlapped, will sequential unit assignment
                 textureUnit = this.assignTextureUnits ? textureUnit + 1 : uniform.value.textureUnit;
@@ -424,7 +469,7 @@ function warn(message) {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

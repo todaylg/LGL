@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -92,7 +92,8 @@ export class Mesh extends Transform {
         super();
         this.gl = gl;
         this.id = ID++;
-
+        this.meshType = 'mesh';
+        
         this.geometry = geometry;
         this.program = program;
         this.mode = mode;
@@ -113,11 +114,13 @@ export class Mesh extends Transform {
                 viewMatrix: { value: null }, //V => alawaysbBe replaced by camera
                 modelViewMatrix: { value: null }, //MV
                 normalMatrix: { value: null }, //N
-                projectionMatrix: { value: null }, //P => alawaysbBe replaced by camera
+                projectionMatrix: { value: null }, //P => alaways replaced by camera
                 cameraPosition: { value: null },
+                worldMatrix: { value: null },
             });
         }
     }
+   
     /**
      * Render the Mesh
      * 
@@ -139,22 +142,33 @@ export class Mesh extends Transform {
             this.normalMatrix.getNormalMatrix(this.modelViewMatrix);
 
             //replaced by mesh matrix
-            this.program.uniforms.modelMatrix.value = this.matrix;
             this.program.uniforms.modelViewMatrix.value = this.modelViewMatrix;
             this.program.uniforms.normalMatrix.value = this.normalMatrix;
         }
 
+        this.program.uniforms.worldMatrix.value = this.worldMatrix;
+        this.program.uniforms.modelMatrix.value = this.matrix;
         // determine if faces need to be flipped - when mesh scaled negatively
         let flipFaces = this.program.cullFace &amp;&amp; this.worldMatrix.determinant() &lt; 0;
 
-        // Check here if any bindings can be skipped. Geometry also needs to be rebound if different program
-        const programActive = this.gl.renderer.currentProgram === this.program.id;
-        const geometryBound = programActive &amp;&amp; this.gl.renderer.currentGeometry === this.geometry.id;
-
-        this.program.use({ programActive, flipFaces });
-        this.geometry.draw({ mode: this.mode, program: this.program, geometryBound });
+        this.program.use({flipFaces});
+        this.geometry.draw({mode: this.mode, program: this.program});
 
         this.onAfterRender &amp;&amp; this.onAfterRender({ mesh: this, camera });
+    }
+    clone(option){
+        let source = this;
+        let meshState = Object.assign({}, source, option);
+        let cloneMesh =  new Mesh(source.gl, meshState);
+        // link transform
+        cloneMesh.matrix = source.matrix;
+        cloneMesh.worldMatrix = source.worldMatrix;
+        cloneMesh.position = source.position;
+        cloneMesh.quaternion = source.quaternion;
+        cloneMesh.scale = source.scale;
+        cloneMesh.rotation = source.rotation;
+        cloneMesh.up = source.up;
+        return cloneMesh;
     }
 }</code></pre>
         </article>
@@ -170,7 +184,7 @@ export class Mesh extends Transform {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

@@ -44,7 +44,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -152,6 +152,7 @@ export class Renderer {
     this.state.depthFunc = this.gl.LESS;
     this.state.premultiplyAlpha = false;
     this.state.flipY = false;
+    this.state.unpackAlignment = 4;
     this.state.framebuffer = null;
     this.state.viewport = { width: null, height: null };
     this.state.textureUnits = [];
@@ -161,17 +162,21 @@ export class Renderer {
     // store requested extensions
     this.extensions = {};
 
-    if (!this.isWebgl2) {
+    if (this.isWebgl2) {
+      this.getExtension('EXT_color_buffer_float');
+      this.getExtension('OES_texture_float_linear');
+    } else {
       // Initialise extra format types
-      this.getExtension("OES_texture_float"); //Todo:插件介绍
+      this.getExtension("OES_texture_float");
       this.getExtension("OES_texture_float_linear");
       this.getExtension("OES_texture_half_float");
+      this.getExtension('OES_texture_half_float_linear');
       this.getExtension("OES_element_index_uint");
       this.getExtension("OES_standard_derivatives");
       this.getExtension("EXT_sRGB");
       this.getExtension("WEBGL_depth_texture");
     }
-
+    this.drawBuffersExt = this.getExtension('WEBGL_draw_buffers');//drawBuffers is Editor's Draft status in WebGL2
     // Create method aliases using extension (WebGL1) or native if available (WebGL2)
     this.vertexAttribDivisor = this.getExtension(
       "ANGLE_instanced_arrays",
@@ -357,10 +362,20 @@ export class Renderer {
    * @param {GLenum} [options.target] - A GLenum specifying the binding point (target)
    * @param {WebGLFramebuffer} [options.buffer] - A WebGLFramebuffer object to bind
    */
-  bindFramebuffer({ target = this.gl.FRAMEBUFFER, buffer = null } = {}) {
+  bindFramebuffer({ target = this.gl.FRAMEBUFFER, buffer = null, textures = [] } = {}) {
     if (this.state.framebuffer === buffer) return;
     this.state.framebuffer = buffer;
     this.gl.bindFramebuffer(target, buffer);
+    // Todo: Multiple Render Target(WebGL 1.0/2.0)
+    // let length = textures.length;
+    // let drawBuffersExt = this.drawBuffersExt;
+    // if(length>1){//MTR
+    //   let drawBuffersArray = [];
+    //   for(let i=0;i&lt;length;i++){
+    //     drawBuffersArray.push(drawBuffersExt[`COLOR_ATTACHMENT${i}_WEBGL`]);//gl_FragData[i]
+    //   }
+    //   drawBuffersExt.drawBuffersWEBGL(drawBuffersArray);
+    // }
   }
   /**
    * Get a WebGL extension
@@ -493,7 +508,8 @@ export class Renderer {
     target = null,
     update = true,
     sort = true,
-    frustumCull = true
+    frustumCull = true,
+    clear = null,
   }) {
     if (target === null) {
       // make sure no render target bound so draws to canvas
@@ -504,7 +520,7 @@ export class Renderer {
       this.bindFramebuffer(target);
       this.setViewport(target.width, target.height);
     }
-    if (this.autoClear) {
+    if (clear || (this.autoClear &amp;&amp; clear !== false)) {
       // Ensure depth buffer writing is enabled so it can be cleared
       if (this.depth) {
         this.enable(this.gl.DEPTH_TEST); //Depth Buffer
@@ -518,7 +534,8 @@ export class Renderer {
     }
     // updates all scene graph matrices
     if (update) scene.updateMatrixWorld();
-    // Update camera separately if not in scene graph
+
+    // Update camera separately if not in scene graph (always not in)
     if (camera &amp;&amp; camera.parent === null) camera.updateMatrixWorld();
 
     // Get render list - entails culling and sorting
@@ -543,7 +560,7 @@ export class Renderer {
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Apr 07 2019 22:24:38 GMT+0800 (GMT+08:00)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
