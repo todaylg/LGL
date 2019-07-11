@@ -64,9 +64,10 @@ export class Mesh extends Transform {
      * @param {Camera} [options.camera] - The view of mesh
      */
     draw({
+        scene,
         camera,
     } = {}) {
-        this.onBeforeRender && this.onBeforeRender({ mesh: this, camera });
+        this.onBeforeRender && this.onBeforeRender({ mesh: this, scene, camera });
         // Set the matrix uniforms
         if (camera) {
             //replaced by camera matrix
@@ -90,7 +91,7 @@ export class Mesh extends Transform {
         this.program.use({flipFaces});
         this.geometry.draw({mode: this.mode, program: this.program});
 
-        this.onAfterRender && this.onAfterRender({ mesh: this, camera });
+        this.onAfterRender && this.onAfterRender({ mesh: this, scene, camera });
     }
     clone(option){
         let source = this;

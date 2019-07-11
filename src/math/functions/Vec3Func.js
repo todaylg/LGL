@@ -88,6 +88,13 @@ export function multiply(out, a, b) {
     return out;
 }
 
+export function multiplyScalar(out, a) {
+    out[0] *= a;
+    out[1] *= a;
+    out[2] *= a;
+    return out;
+}
+
 /**
  * Divides two vec3's
  * @private

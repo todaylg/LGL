@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Reflector</title>
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+<body>
+    <script type="module">
+        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Orbit, Post, Plane, Sphere, Cube, Reflector, GLTFLoader } from '../src/Extras.js';
+        import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
+        import TextureShader from './shaders/TextureShader.js';
+        {
+            const renderer = new Renderer({dpr: window.devicePixelRatio});
+            const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera({far:500});
+            camera.position.set(0, 75, 160);
+            const controls = new Orbit(camera, {
+                target: new Vec3(0, 40, 0),
+                maxDistance: 400,
+                minDistance: 10
+            });
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            const scene = new Transform();
+
+            let ambientLightColor = { value: new Color(1) };
+            let ambientStrength = { value: .1 };
+            let lightColor =  { value: new Color(.8) };
+            let lightPos = { value:new Vec3(0, 60, 0) };
+
+            // Geo
+            const planeGeometry = new Plane(gl, {
+                width:100,
+                height:100
+            });
+            
+            // Mirror
+            let mirrorPlane = new Reflector(planeGeometry, {
+                clipBias: 0.003,
+                textureWidth: window.innerWidth * window.devicePixelRatio,
+                textureHeight: window.innerHeight * window.devicePixelRatio,
+                color: new Color(.46),
+                recursion: 1
+            });
+            mirrorPlane.position.y = 50;
+            mirrorPlane.position.z = -50;
+            scene.addChild( mirrorPlane );
+
+            let loader = new GLTFLoader(gl);
+            let animationSys;
+            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
+            loader.load( skinAnimationModel, {
+                // useIBL: true,
+                // envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
+                // envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
+            }, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                let glTF = gltf.scene;
+                // Animation
+                glTF.scale.set(50);
+                animationSys = gltf.animations;
+                if ( animationSys ){
+                    animationSys.speed = 0.5;
+                }
+                scene.addChild(glTF);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
+            // Wall
+            const wallGroup = new Transform();
+            // Top/Bottom/Front/Right/Left
+            const wallColors = [new Color(1), new Color(1), new Color(0.49,0.49,1), new Color(0,1,0), new Color(1,0,0)];
+            for(let i=0; i<5; i++){
+                const wallPlane = new Mesh(gl, { geometry: planeGeometry, program: new Program(gl, {
+                    vertex: BasePrimitivesShader.vertex,
+                    fragment: BasePrimitivesShader.fragment,
+                    uniforms: {
+                        baseColor: { value: wallColors[i] },
+                        ambientLightColor,
+                        ambientStrength,
+                        lightColor,
+                        lightPos
+                    }
+                })});
+                wallGroup.addChild(wallPlane);
+            }
+            let wallPlanes = wallGroup.children;
+            // Top
+            let planeTop = wallPlanes[0];
+            planeTop.position.y = 100;
+            planeTop.rotation.x = Math.PI / 2;
+
+            // Bottom
+            let planeBottom = wallPlanes[1];
+            planeBottom.rotation.x = - Math.PI / 2;
+          
+            // Front
+            let planeFront = wallPlanes[2];
+            planeFront.position.z = 50;
+            planeFront.position.y = 50;
+            planeFront.rotation.y = Math.PI;
+
+            // Right
+            let planeRight = wallPlanes[3];
+            planeRight.position.x = 50;
+            planeRight.position.y = 50;
+            planeRight.rotation.y = - Math.PI / 2;
+
+            // Left
+            let planeLeft = wallPlanes[4];
+            planeLeft.position.x = -50;
+            planeLeft.position.y = 50;
+            planeLeft.rotation.y = Math.PI /2;
+
+            scene.addChild(wallGroup);
+
+            requestAnimationFrame(update);
+            let deltaTime = 0;
+            let lastTime = Date.now();
+            function update(t) {
+                deltaTime = (Date.now() - lastTime)/1000;
+                lastTime = Date.now();
+                if(animationSys) animationSys.update(deltaTime);
+                controls.update();
+                mirrorPlane.render({scene, camera});
+                renderer.render({scene, camera});
+                requestAnimationFrame(update);
+            }
+        }
+    </script>
+</body>
+</html>

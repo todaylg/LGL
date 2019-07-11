@@ -50,8 +50,6 @@ export class Texture {
     } = {}) {
         this.gl = gl;
         this.id = ID++;
-        // Assign texture unit spread over max available units to avoid frequent binding
-        this.textureUnit = this.gl.renderer.state.textureUnitIndex++ % this.gl.renderer.parameters.maxTextureUnits;
         this.image = image;
         this.images = images;
         this.target = target;
@@ -97,23 +95,19 @@ export class Texture {
     /**
      * Update the texture
      * 
-     * @param {String} [textureUnit] -  The textureUnit of update
+     * @param {Number} [textureUnit=0] -  The textureUnit of update
      */
-    update(textureUnit = this.textureUnit) {
+    update(textureUnit = 0) {
+        const needsUpdate = !(this.image === this.store.image && !this.needsUpdate);
+
         // Make sure that texture is bound to its texture unit
-        if (this.glState.textureUnits[textureUnit] !== this.id) {
+         if (needsUpdate || this.glState.textureUnits[textureUnit] !== this.id) {
             this.gl.renderer.activeTexture(textureUnit);
             this.bind();
         }
 
-        if (this.image === this.store.image && !this.needsUpdate) return;
+        if (!needsUpdate) return;
         this.needsUpdate = false;
-
-        // Even if bound, set active texture unit to perform texture functions
-        this.gl.renderer.activeTexture(textureUnit);
-
-        // Check if need to bind to texture unit
-        this.bind();
 
         if (this.flipY !== this.glState.flipY) {
             this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, this.flipY);

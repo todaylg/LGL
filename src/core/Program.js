@@ -117,49 +117,8 @@ export class Program {
             this.attributeLocations.set(attribute.name, location);
         }
         this.attributeOrder = locations.join('');
-        this.checkTextureUnits();
     }
 
-    /**
-     * Check to see if any of the allocated texture units are overlapping
-     */
-    checkTextureUnits() {
-        const assignedTextureUnits = [];
-        let checkDuplicate = (value) => {
-            if (assignedTextureUnits.indexOf(value.textureUnit) > -1) {
-                // If reused, set flag to true to assign sequential units when drawn
-                this.assignTextureUnits = true;
-                return false;
-            }
-            assignedTextureUnits.push(value.textureUnit);
-            return true;
-        }
-        [...this.uniformLocations.keys()].every((activeUniform) => {
-            let uniform = this.uniforms[activeUniform.uniformName];
-
-            if (activeUniform.isStruct) {
-                uniform = uniform[activeUniform.structProperty];
-            }
-            if (activeUniform.isStructArray) {
-                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
-            }
-
-            if (!(uniform && uniform.value)) return true;
-
-            // Texture array
-            if (uniform.value.length && uniform.value[0].texture) {
-                for (let i = 0; i < uniform.value.length - 1; i++) {
-                    if (!checkDuplicate(uniform.value[i])) return false;
-                }
-            }
-
-            if (uniform.value.texture) {
-                if (!checkDuplicate(uniform.value)) return false;
-            }
-
-            return true;
-        });
-    }
     /**
      * Defines which BlendMode from input options
      * 
@@ -259,14 +218,15 @@ export class Program {
     use({
         flipFaces = false,
     } = {}) {
-        // Used if this.assignTextureUnits is true, when texture units overlap
         let textureUnit = -1;
-        // Avoid gl call if program already in use
         const programActive = this.gl.renderer.currentProgram === this.id;
+
+        // Avoid gl call if program already in use
         if (!programActive) {
             this.gl.useProgram(this.program);
             this.gl.renderer.currentProgram = this.id;
         }
+
         // Set only the active uniforms found in the shader
         this.uniformLocations.forEach((location, activeUniform) => {
             let name = activeUniform.uniformName;
@@ -292,9 +252,7 @@ export class Program {
             }
 
             if (uniform.value.texture) {
-                if (!uniform.value.update) uniform.value = uniform.value.texture;
-                // if texture units overlapped, will sequential unit assignment
-                textureUnit = this.assignTextureUnits ? textureUnit + 1 : uniform.value.textureUnit;
+                textureUnit = textureUnit + 1;
                 // Check if texture needs to be updated
                 uniform.value.update(textureUnit);
                 // texture will set its own texture unit
@@ -305,11 +263,11 @@ export class Program {
             if (uniform.value.length && uniform.value[0].texture) {
                 const textureUnits = [];
                 uniform.value.forEach(value => {
-                    textureUnit = this.assignTextureUnits ? textureUnit + 1 : value.textureUnit;
+                    textureUnit = textureUnit + 1;
                     value.update(textureUnit);
                     textureUnits.push(textureUnit);
                 });
-
+                
                 return setUniform(this.gl, activeUniform.type, location, textureUnits);
             }
 
@@ -339,24 +297,45 @@ export class Program {
  * @param {Number/Float32Array} A new value to be used for the uniform variable
  */
 function setUniform(gl, type, location, value) {
+    value = value.length ? flatten(value) : value;
+    const setValue = gl.renderer.state.uniformLocations.get(location);
+
+    // Avoid redundant uniform commands
+    if (value.length) {
+        if (setValue === undefined) {
+
+            // clone array to store as cache
+            gl.renderer.state.uniformLocations.set(location, value.slice(0));
+        } else {
+            if (arraysEqual(setValue, value)) return;
+
+            // Update cached array values
+            setValue.set(value);
+            gl.renderer.state.uniformLocations.set(location, setValue);
+        }
+    } else {
+        if (setValue === value) return;
+        gl.renderer.state.uniformLocations.set(location, value);
+    }
+
     switch (type) {
-        case 5126: return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value); // FLOAT
-        case 35664: return gl.uniform2fv(location, value[0].length ? flatten(value) : value); // FLOAT_VEC2
-        case 35665: return gl.uniform3fv(location, value[0].length ? flatten(value) : value); // FLOAT_VEC3
-        case 35666: return gl.uniform4fv(location, value[0].length ? flatten(value) : value); // FLOAT_VEC4
-        case 35670: // BOOL
-        case 5124: // INT
-        case 35678: // SAMPLER_2D
-        case 35680: return value.length ? gl.uniform1iv(location, value) : gl.uniform1i(location, value); // SAMPLER_CUBE
-        case 35671: // BOOL_VEC2
-        case 35667: return gl.uniform2iv(location, value); // INT_VEC2
-        case 35672: // BOOL_VEC3
-        case 35668: return gl.uniform3iv(location, value); // INT_VEC3
-        case 35673: // BOOL_VEC4
-        case 35669: return gl.uniform4iv(location, value); // INT_VEC4
-        case 35674: return gl.uniformMatrix2fv(location, false, value[0].length ? flatten(value) : value); // FLOAT_MAT2
-        case 35675: return gl.uniformMatrix3fv(location, false, value[0].length ? flatten(value) : value); // FLOAT_MAT3
-        case 35676: return gl.uniformMatrix4fv(location, false, value[0].length ? flatten(value) : value); // FLOAT_MAT4
+        case 5126  : return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value); // FLOAT
+        case 35664 : return gl.uniform2fv(location, value); // FLOAT_VEC2
+        case 35665 : return gl.uniform3fv(location, value); // FLOAT_VEC3
+        case 35666 : return gl.uniform4fv(location, value); // FLOAT_VEC4
+        case 35670 : // BOOL
+        case 5124  : // INT
+        case 35678 : // SAMPLER_2D
+        case 35680 : return value.length ? gl.uniform1iv(location, value) : gl.uniform1i(location, value); // SAMPLER_CUBE
+        case 35671 : // BOOL_VEC2
+        case 35667 : return gl.uniform2iv(location, value); // INT_VEC2
+        case 35672 : // BOOL_VEC3
+        case 35668 : return gl.uniform3iv(location, value); // INT_VEC3
+        case 35673 : // BOOL_VEC4
+        case 35669 : return gl.uniform4iv(location, value); // INT_VEC4
+        case 35674 : return gl.uniformMatrix2fv(location, false, value); // FLOAT_MAT2
+        case 35675 : return gl.uniformMatrix3fv(location, false, value); // FLOAT_MAT3
+        case 35676 : return gl.uniformMatrix4fv(location, false, value); // FLOAT_MAT4
     }
 }
 
@@ -370,6 +349,7 @@ function setUniform(gl, type, location, value) {
 function flatten(array) {
     const arrayLen = array.length;
     const valueLen = array[0].length;
+    if (valueLen === undefined) return array;
     const length = arrayLen * valueLen;
     let value = arrayCacheF32[length];
     if (!value) arrayCacheF32[length] = value = new Float32Array(length);
@@ -383,6 +363,14 @@ function addLineNumbers(string) {
         lines[i] = (i + 1) + ': ' + lines[i];
     }
     return lines.join('\n');
+}
+
+function arraysEqual(a, b) {
+	if (a.length !== b.length) return false;
+	for (let i = 0, l = a.length; i < l; i ++) {
+		if (a[i] !== b[i]) return false;
+	}
+	return true;
 }
 
 let warnCount = 0;

@@ -170,6 +170,17 @@ export class Vec3 extends Array {
         Vec3Func.negate(this, v);
         return this;
     }
+
+    /**
+    * @function
+    * @description Reflect incident vector off plane orthogonal to normal(normal is assumed to have unit length)
+    * @param {vec3} [normal] the normal vector
+    * @returns {Vec3}
+    */
+    reflect(normal) {
+        let v1 = normal.clone();
+        return this.sub(v1.multiply(2 * this.dot(normal)));
+    }
     /**
      * @function
      * @description Returns the inverse of the components of a vec3.
@@ -272,6 +283,17 @@ export class Vec3 extends Array {
         return this;
     }
     /**
+    * @function
+    * @description
+    * Transforms the vec3 with a mat3
+    * @param {mat4} m matrix to transform with
+    * @returns {Vec3}
+    */
+    applyMatrix3(mat3) {
+        Vec3Func.transformMat3(this, this, mat3);
+        return this;
+    }
+    /**
      * @function
      * @description
      * Transforms the vec3 with a quat
@@ -281,6 +303,13 @@ export class Vec3 extends Array {
      */
     applyQuaternion(q) {
         Vec3Func.transformQuat(this, this, q);
+        return this;
+    }
+
+    setFromMatrixPosition(mat4) {
+        this.x = mat4[12];
+        this.y = mat4[13];
+        this.z = mat4[14];
         return this;
     }
     /**

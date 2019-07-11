@@ -1,4 +1,4 @@
-export class Text{
+export class Text {
     constructor({
         font,
         text,
@@ -9,7 +9,7 @@ export class Text{
         lineHeight = 1.4,
         wordSpacing = 0,
         wordBreak = false,
-    }){
+    }) {
         this.font = font;
         this.text = text;
         this.width = width;
@@ -32,11 +32,12 @@ export class Text{
         this.parseFont();
         this.createGeometry();
     }
-    parseFont(){
+    parseFont() {
         this.glyphs = {};
+        // Get all glyphs
         this.font.chars.forEach(d => this.glyphs[d.char] = d);
     }
-    createGeometry(){
+    createGeometry() {
         let { font, text } = this;
         this.fontHeight = font.common.lineHeight;
         this.baseline = font.common.base;
@@ -65,7 +66,7 @@ export class Text{
         this.layout();
     }
 
-    layout(){
+    layout() {
         const lines = [];
         let cursor = 0;
         let wordCursor = 0;
@@ -144,7 +145,7 @@ export class Text{
                     line.glyphs.pop();
                     line = newLine();
                     continue;
-                // If not first word, undo current word and cursor and create new line
+                    // If not first word, undo current word and cursor and create new line
                 } else if (!wordBreak && wordWidth !== line.width) {
                     let numGlyphs = cursor - wordCursor + 1;
                     line.glyphs.splice(-numGlyphs, numGlyphs);
@@ -175,7 +176,7 @@ export class Text{
         }
         return 0;
     }
-    populateBuffers(lines){
+    populateBuffers(lines) {
         let { font, size, align, whitespace, buffers, scale, lineHeight } = this;
 
         const texW = font.common.scaleW;
@@ -208,10 +209,10 @@ export class Text{
                 let w = glyph.width * scale;
                 let h = glyph.height * scale;
                 buffers.position.set([
-                    x,     y - h, 0,
-                    x,     y,     0,
+                    x, y - h, 0,
+                    x, y, 0,
                     x + w, y - h, 0,
-                    x + w, y,     0
+                    x + w, y, 0
                 ], j * 4 * 3);
 
                 let u = glyph.x / texW;
@@ -219,8 +220,8 @@ export class Text{
                 let v = 1.0 - glyph.y / texH;
                 let vh = glyph.height / texH;
                 buffers.uv.set([
-                    u,      v - vh,
-                    u,      v,
+                    u, v - vh,
+                    u, v,
                     u + uw, v - vh,
                     u + uw, v,
                 ], j * 4 * 2);

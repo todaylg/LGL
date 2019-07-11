@@ -1,19 +1,19 @@
 import * as Mat4Func from './functions/Mat4Func.js';
 /** 
  * @class Mat4
- * @description Four order matrix
- * @param {Number} [m00=1] The 0 row 0 column element of matrix
- * @param {Number} [m01=0] The 0 row 1 column element of matrix
- * @param {Number} [m02=0] The 0 row 2 column element of matrix
- * @param {Number} [m03=0] The 0 row 3 column element of matrix
- * @param {Number} [m10=0] The 1 row 0 column element of matrix
- * @param {Number} [m11=1] The 1 row 1 column element of matrix
- * @param {Number} [m12=0] The 1 row 2 column element of matrix
- * @param {Number} [m13=0] The 1 row 3 column element of matrix
- * @param {Number} [m20=0] The 2 row 0 column element of matrix
- * @param {Number} [m21=0] The 2 row 1 column element of matrix
- * @param {Number} [m22=1] The 2 row 2 column element of matrix
- * @param {Number} [m23=0] The 2 row 3 column element of matrix
+ * @description Four order matrix(column-major order)
+ * @param {Number} [m00=1] The 0 column 0 row element of matrix
+ * @param {Number} [m01=0] The 0 column 1 row element of matrix
+ * @param {Number} [m02=0] The 0 column 2 row element of matrix
+ * @param {Number} [m03=0] The 0 column 3 row element of matrix
+ * @param {Number} [m10=0] The 1 column 0 row element of matrix
+ * @param {Number} [m11=1] The 1 column 1 row element of matrix
+ * @param {Number} [m12=0] The 1 column 2 row element of matrix
+ * @param {Number} [m13=0] The 1 column 3 row element of matrix
+ * @param {Number} [m20=0] The 2 column 0 row element of matrix
+ * @param {Number} [m21=0] The 2 column 1 row element of matrix
+ * @param {Number} [m22=1] The 2 column 2 row element of matrix
+ * @param {Number} [m23=0] The 2 column 3 row element of matrix
  * @example
  * // create a new Three-Dimensional Vector
  * new Mat4();
@@ -265,11 +265,17 @@ export class Mat4 extends Array {
      *  of a transformation matrix. If a matrix is built with
      *  fromRotationTranslation, the returned quaternion will be the
      *  same as the quaternion originally supplied.
-     * @param {mat4} q Matrix to be decomposed (input)
+     * @param {mat4} q Quaternion to receive the rotation component
      * @returns {Mat4} 
      */
     getRotation(q) {
         Mat4Func.getRotation(q, this);
+        return this;
+    }
+    extractRotation(mat4){
+        let q = [];
+        Mat4Func.getRotation(q, mat4);
+        Mat4Func.fromQuat(this, q);
         return this;
     }
     /**

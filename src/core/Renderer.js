@@ -92,8 +92,9 @@ export class Renderer {
     this.state.framebuffer = null;
     this.state.viewport = { width: null, height: null };
     this.state.textureUnits = [];
-    this.state.textureUnitIndex = 0;
     this.state.activeTextureUnit = 0;
+    this.state.boundBuffer = null;
+    this.state.uniformLocations = new Map();
 
     // store requested extensions
     this.extensions = {};
@@ -478,7 +479,7 @@ export class Renderer {
     const renderList = this.getRenderList({ scene, camera, frustumCull, sort });
 
     renderList.forEach(node => {
-      node.draw({ camera });
+      node.draw({ scene, camera });
     });
   }
 }

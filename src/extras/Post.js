@@ -53,7 +53,7 @@ export class Post {
     } = {}) {
         let useOtherBufferFlag = true;
         if(!uniforms[textureUniform]){
-            uniforms[textureUniform] = { value: this.fbos[this.currentFBO] };
+            uniforms[textureUniform] = { value: this.fbos[this.currentFBO].texture };
             useOtherBufferFlag = false;
         }
         const program = new Program(this.gl, { vertex, fragment, uniforms });
@@ -107,7 +107,7 @@ export class Post {
         // Render Pass
         enabledPasses.forEach((pass, i) => {
             if(!pass.useOtherBufferFlag && i!=0){ //队列只允许首个pass自定义input frameBuffer
-                pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO]
+                pass.mesh.program.uniforms[pass.textureUniform].value = this.fbos[this.currentFBO].texture;
             }
             // 最后一次Render (i == enabledPasses.length - 1) render回到target(默认即回到main FrameBuffer)
             this.gl.renderer.render({

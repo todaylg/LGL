@@ -30,13 +30,14 @@ out vec4 color;
 void main() {
 
     vec3 tex = texture(tMap, vUv).rgb;
+    //Antialiasing
     float signedDist = max(min(tex.r, tex.g), min(max(tex.r, tex.g), tex.b)) - 0.5;
     float d = fwidth(signedDist);
     float alpha = smoothstep(-d, d, signedDist);
 
     if (alpha < 0.01) discard;
 
-    color.rgb = vec3(0.2);
+    color.rgb = vec3(0.3);
     color.a = alpha;
 }
 `;

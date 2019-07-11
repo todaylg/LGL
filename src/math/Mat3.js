@@ -2,17 +2,17 @@ import * as Mat3Func from './functions/Mat3Func.js';
 
 /** 
  * @class Mat3
- * @description Three order matrix
+ * @description Three order matrix(column-major order)
  * @param {Array} [array=[1, 0, 0, 0, 1, 0, 0, 0, 1]] The element of matrix.
- * @param {Number} [m00=1] The 0 row 0 column element of matrix
- * @param {Number} [m01=0] The 0 row 1 column element of matrix
- * @param {Number} [m02=0] The 0 row 2 column element of matrix
- * @param {Number} [m10=0] The 1 row 0 column element of matrix
- * @param {Number} [m11=1] The 1 row 1 column element of matrix
- * @param {Number} [m12=0] The 1 row 2 column element of matrix
- * @param {Number} [m20=0] The 2 row 0 column element of matrix
- * @param {Number} [m21=0] The 2 row 1 column element of matrix
- * @param {Number} [m22=1] The 2 row 2 column element of matrix
+ * @param {Number} [m00=1] The 0 column 0 row element of matrix
+ * @param {Number} [m01=0] The 0 column 1 row element of matrix
+ * @param {Number} [m02=0] The 0 column 2 row element of matrix
+ * @param {Number} [m10=0] The 1 column 0 row element of matrix
+ * @param {Number} [m11=1] The 1 column 1 row element of matrix
+ * @param {Number} [m12=0] The 1 column 2 row element of matrix
+ * @param {Number} [m20=0] The 2 column 0 row element of matrix
+ * @param {Number} [m21=0] The 2 column 1 row element of matrix
+ * @param {Number} [m22=1] The 2 column 2 row element of matrix
  * @example
  * // create a new Three-Dimensional Vector
  * new Mat3();

@@ -55,9 +55,23 @@ export class Vec4 extends Array {
      * @param {Number} [z=x]
      * @param {Number} [w=x]
      */
-    set(x, y=x, z=x, w=x) {
+    set(x, y = x, z = x, w = x) {
         if (x.length) return this.copy(x);
         Vec4Func.set(this, x, y, z, w);
+        return this;
+    }
+    dot(v) {
+        return Vec4Func.dot(this, v);
+    }
+    /**
+     * @function
+     * @description Multiplies a vec4/number
+     * @param {Array/Number} m
+     * @returns {Vec3}
+     */
+    multiply(v) {
+        if (v.length) Vec4Func.multiply(this, this, v);
+        else Vec4Func.scale(this, this, v);
         return this;
     }
     /**
@@ -68,11 +82,11 @@ export class Vec4 extends Array {
      * @returns {Vec4} 
      */
     fromArray(a, o = 0) {
-		this[0] = a[o];
-		this[1] = a[o + 1];
-		this[2] = a[o + 2];
-		this[3] = a[o + 3];
-		return this;
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        this[2] = a[o + 2];
+        this[3] = a[o + 3];
+        return this;
     }
     /**
      * @function

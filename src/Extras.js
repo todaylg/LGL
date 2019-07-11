@@ -10,3 +10,5 @@ export {Skin} from './extras/Skin.js';
 export {Animation} from './extras/Animation.js';
 export {GLTFLoader} from './extras/glTFLoader/GLTFLoader.js';
 export {ShadowMap} from './extras/shadowMap/ShadowMap.js';
+export {Reflector} from './extras/reflector/Reflector.js';
+

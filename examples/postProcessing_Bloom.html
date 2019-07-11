@@ -63,7 +63,7 @@
                 blurPass.addPass({
                 fragment: blurPassShader,
                     uniforms: {
-                        tMap: { value: thresholdPassTarget },
+                        tMap: { value: thresholdPassTarget.texture },
                         resolution: { value: new Vec2(tw, th) },
                         direction: { value: new Vec2(0, 1) }
                     }

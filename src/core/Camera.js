@@ -98,7 +98,7 @@ export class Camera extends Transform {
     */
     updateMatrixWorld() {
         super.updateMatrixWorld();
-        this.viewMatrix.inverse(this.worldMatrix);//why inverse??
+        this.viewMatrix.inverse(this.worldMatrix);// remove the basis vector for the current world coordinates
 
         // used for sorting
         this.projectionViewMatrix.multiply(this.projectionMatrix, this.viewMatrix);
