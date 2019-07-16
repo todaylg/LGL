@@ -42,14 +42,14 @@ float perspectiveDepthToViewZ( const in float invClipZ, const in float near, con
 
 // Perspective => Orthographic (Z-Value)
 float readDepth( sampler2D depthSampler, vec2 coord ) {
-    float fragCoordZ = texture( depthSampler, coord ).x;
+    float fragCoordZ = texture( depthSampler, coord ).r;
     float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
     return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
 }
 
 void main() {
     // orthographic
-    float depth = texture( tMap, vUv ).r;
+    float depth = texture(tMap, vUv).r;
     FragColor.rgb = 1.0 - vec3( depth );
     FragColor.a = 1.0;
 

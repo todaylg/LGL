@@ -429,6 +429,19 @@ export class Renderer {
     }
     return renderList;
   }
+  setRenderTarget(target) {
+    // bind supplied render target and update viewport
+    this.bindFramebuffer(target);
+    this.setViewport(target.width, target.height);
+  }
+  clear(color, depth, stencil) {
+    let bits = 0;
+    let gl = this.gl;
+    if (color === undefined || color) bits |= gl.COLOR_BUFFER_BIT;
+    if (depth === undefined || depth) bits |= gl.DEPTH_BUFFER_BIT;
+    if (stencil === undefined || stencil) bits |= gl.STENCIL_BUFFER_BIT;
+    gl.clear(bits);
+  }
   /**
    * Renders the hole scene to its webGL view
    * @param {Object} options - The optional render parameters
@@ -463,11 +476,7 @@ export class Renderer {
         this.enable(this.gl.DEPTH_TEST); //Depth Buffer
         this.setDepthMask(true);
       }
-      this.gl.clear(
-        (this.color ? this.gl.COLOR_BUFFER_BIT : 0) |
-        (this.depth ? this.gl.DEPTH_BUFFER_BIT : 0) |
-        (this.stencil ? this.gl.STENCIL_BUFFER_BIT : 0)
-      );
+      this.clear(this.color, this.depth, this.stencil);
     }
     // updates all scene graph matrices
     if (update) scene.updateMatrixWorld();

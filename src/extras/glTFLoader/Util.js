@@ -12,6 +12,9 @@ export function decodeText(array) {
 	}
 }
 
+export function radToDeg(radians){
+    return radians * 180 / Math.PI;
+}
 //Todo
 export function GLTFRegistry() {
     let objects = {};

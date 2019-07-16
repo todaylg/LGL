@@ -64,6 +64,7 @@ export class RenderTarget {
 
         // depth and stencil
         // note depth textures break stencil - so can't use together
+        // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
         if (depthTexture && (this.gl.renderer.isWebgl2 || this.gl.renderer.getExtension('WEBGL_depth_texture'))) {
             this.depthTexture = new Texture(gl, {
                 width, height, wrapS, wrapT,

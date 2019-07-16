@@ -55,7 +55,6 @@
                 pendings.push(pending)
             }
             Promise.all(pendings).then(function (obj) {
-                console.log("obj", obj);
                 const texture = new Texture(gl, {
                     target: gl.TEXTURE_CUBE_MAP,
                     image: obj[0],

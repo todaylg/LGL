@@ -79,7 +79,7 @@ export class Reflector extends Mesh {
 			if (view.dot(normal) > 0) return;
 
 			view.reflect(normal).negate();// reflect ray
-			view.add(reflectorWorldPosition);// move to reflect point(reflect camera angle)
+			view.add(reflectorWorldPosition);// move to reflecting plane symmetric point(virtualCamera pos)
 
 			rotationMatrix.extractRotation(camera.worldMatrix);// synchronous rotation
 

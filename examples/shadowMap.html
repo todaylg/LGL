@@ -30,19 +30,34 @@
             }
             window.addEventListener('resize', resize, false);
             resize();
-            let shadowMap = new ShadowMap(gl);
-            let { sceneDepth, depthMap, lightSpaceMatrix, lightPos } = shadowMap;
+
+            let lightPos = new Vec3(0, 5, -10);
+            let lightPos1 = new Vec3(10, 30.0, -20);
+            //Init Shadow
+            let shadowMap = new ShadowMap(gl, {
+                lightArr: [{
+                    lightType: 'spot',
+                    lightPos: lightPos
+                },{
+                    lightType: 'spot',
+                    lightPos: lightPos1
+                }]
+            });
+            let { lightArr, depthMap, depthBuffer, lightSpaceMatrix } = shadowMap;
 
             //1.Init Scene 
             const scene = new Transform();
             const cubeGeometry = new Cube(gl);
             const planeGeometry = new Plane(gl, {
-                width:50,
-                height:50
+                width: 50,
+                height: 50
             });
+            //Test
+            let NUM_SPOT_LIGHTS = lightArr.length;
+            let shaderDefines = '#version 300 es\n' + `#define NUM_SPOT_LIGHTS ${NUM_SPOT_LIGHTS}\n` + `#define SHADOWMAP_TYPE_PCF 1\n`;
             const program = new Program(gl, {
-                vertex: shadowMapShader.vertex,
-                fragment: shadowMapShader.fragment,
+                vertex: shaderDefines + shadowMapShader.vertex,
+                fragment: shaderDefines + shadowMapShader.fragment,
                 cullFace: null,
                 uniforms: {
                     baseColor: { value: new Color(1) },
@@ -51,25 +66,26 @@
                     lightColor: { value: new Color(1) },
                     lightPos: { value: lightPos },
                     lightSpaceMatrix: {value: lightSpaceMatrix},
-                    shadowMap: { value: depthMap.depthTexture }
+                    shadowMap: { value: depthMap },
+                    cameraNear: { value: camera.near },
+					cameraFar:  { value: camera.far },
                 }
             });
             const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
             const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
-            planeMesh.castShadowMap = true;
             planeMesh.rotation.x = Math.PI / 2;
             planeMesh.setParent(scene);
             cubeMesh.position.y = 10;
             cubeMesh.scale.set(2);
+            cubeMesh.castShadowMap = true;
             cubeMesh.setParent(scene);
 
-            shadowMap.init(scene);
             //3.(option)Post to Show depthMap
             const post = new Post(gl);
             post.addPass({
                 fragment: showDepthShader.fragment,
                 uniforms: {
-                    tMap: { value: depthMap.depthTexture },
+                    tMap: { value: depthMap[0] },
                     cameraNear: { value: camera.near },
 					cameraFar:  { value: camera.far },
                 }
@@ -85,8 +101,8 @@
                 tick += delta;
                 cubeMesh.rotation.y += 0.01;
                 controls.update();
-                shadowMap.render();
-                // post.render({scene: sceneDepth, camera}); //See The Depth Texture
+                shadowMap.render(scene);
+                // post.render({scene, camera}); //See The Depth Texture
                 renderer.render({scene, camera});
                 requestAnimationFrame(update);
             }

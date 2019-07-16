@@ -1,6 +1,6 @@
 import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Vec2 } from '../../Core.js';
 import { Skin } from '../Skin.js';
-import { GLTFRegistry, resolveURL, definesToString, sliceBlockData, isPrimitiveEqual } from './Util.js';
+import { GLTFRegistry, resolveURL, definesToString, sliceBlockData, isPrimitiveEqual, radToDeg } from './Util.js';
 import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
 import { BufferAttribute } from './bufferHandler/BufferAttribute.js';
 import PBRBaseShader from './shaders/PBRBaseShader.js';

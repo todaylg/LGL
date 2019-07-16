@@ -7,13 +7,8 @@ export class ShadowMap {
         this.gl = gl;
         this.renderer = gl.renderer;
         this.sceneDepth = new Transform();
-        this.depthMap = new RenderTarget(gl, {
-            width: 2048*4,
-            height: 2048*4,
-            depthTexture: true
-        });
         //Direction Light
-        this.lightProjection = new Camera({
+        this.shadowCamera = new Camera({
             left: -100,
             right: 100,
             bottom: -100,
@@ -21,48 +16,70 @@ export class ShadowMap {
             near: 0.1,
             far: 100,
         });
-        this.lightPos = new Vec3(0, 10.0, -10);
+        //Test
+        this.lightArr = options.lightArr;
         this.center = new Vec3(0, 0, 0);
         this.up = new Vec3(0, 1, 0);
-        this.lightSpaceMatrix = new Mat4();
-        this.calculateLightSpaceMatrix();
+        this.depthBuffer = [];
+        this.depthMap = [];
+        this.lightSpaceMatrix = [];
+
+        for (let i = 0; i < this.lightArr.length; i++) {
+            this.depthBuffer[i] = new RenderTarget(gl, {
+                width: 1024*2,
+                height: 1024*2,
+                depthTexture: true
+            });
+            this.depthMap[i] = this.depthBuffer[i].depthTexture;
+            this.lightSpaceMatrix[i] = new Mat4();
+        }
     }
-    calculateLightSpaceMatrix(){
-        tempMat4.lookAt(this.lightPos, this.center, this.up);
-        this.lightSpaceMatrix.multiply(this.lightProjection.projectionMatrix, tempMat4);
-        this.sceneDepth.updateMatrixWorld(true);
+    calculateLightSpaceMatrix(lightPos, lightSpaceMatrix) {
+        tempMat4.lookAt(lightPos, this.center, this.up);//V
+        lightSpaceMatrix.multiply(this.shadowCamera.projectionMatrix, tempMat4);//P
     }
-    //Init shadow
-    init(scene) {
-        this.scene = scene;
-        this.depthProgram = new Program(this.gl, {
-            vertex: simpleDepthShader.vertex,
-            fragment: simpleDepthShader.fragment,
-            // cullFace: gl.FRONT,
-            uniforms: {
-                lightSpaceMatrix: { value: this.lightSpaceMatrix }
-            }
-        });
-        //Copy Scene
-        this.sceneDepth = scene.clone();
-        this.sceneDepth.traverse((transform)=>{
-            let parent = transform.parent;
-            if(parent && transform.meshType){
-                let cloneMesh = transform.clone({ program: this.depthProgram });
-                let children = parent.children;
-                let index = children.indexOf(transform);
-                if(!~index) return;
-                cloneMesh.parent = parent;
-                children[index] = cloneMesh;
-                transform.setParent(null, false);
-            }
-        });
-        console.log("sceneDepth: ", this.sceneDepth);
+    renderDepthTexture(scene) {
+        let lightArr = this.lightArr;
+        for (let i = 0; i < lightArr.length; i++) {
+            let light = lightArr[i];
+            let lightSpaceMatrix = this.lightSpaceMatrix[i];
+            let depthBuffer = this.depthBuffer[i];
+            scene.traverse((transform) => {
+                let parent = transform.parent;
+                if (parent && transform.meshType && transform.castShadowMap) {
+                    //Get Depth Matiral
+                    //Todo: 有些变异的顶点信息需要单独处理：Skinnig和MorphTarget
+                    if (transform.meshType == 'skinnedMesh') {
+                        this.depthProgram.uniforms.boneMatrices = { value: transform.boneMatrices };
+                    }
+                    //1.setRenderTarget => target: depthMap
+                    this.renderer.setRenderTarget(depthBuffer);
+                    this.renderer.clear();
+                    //2.renderBufferDirect
+                    this.calculateLightSpaceMatrix(light.lightPos, lightSpaceMatrix);
+                    if(!light.depthProgram){
+                        light.depthProgram = new Program(this.gl, {
+                            vertex: simpleDepthShader.vertex,
+                            fragment: simpleDepthShader.fragment,
+                            // cullFace: this.gl.FRONT,
+                            uniforms: {
+                                lightSpaceMatrix: { value: lightSpaceMatrix }
+                            }
+                        })
+                    }
+                    // console.log(this.lightSpaceMatrix[1]);
+                    light.depthProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
+                    light.depthProgram.uniforms.modelMatrix = { value: transform.matrix };
+                    let flipFaces = transform.program.cullFace && transform.worldMatrix.determinant() < 0;
+                    light.depthProgram.use({ flipFaces });
+                    transform.geometry.draw({
+                        program: light.depthProgram 
+                    });
+                }
+            });
+        }
     }
-    render() {
-        let { renderer, sceneDepth, depthMap } = this;
-        if(!this.sceneDepth) return;
-        this.calculateLightSpaceMatrix();
-        renderer.render({ scene: sceneDepth, target: depthMap });
+    render(scene) {
+        this.renderDepthTexture(scene);
     }
 }

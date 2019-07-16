@@ -60,11 +60,7 @@
             let loader = new GLTFLoader(gl);
             let animationSys;
             let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
-            loader.load( skinAnimationModel, {
-                // useIBL: true,
-                // envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
-                // envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
-            }, gltf => {
+            loader.load( skinAnimationModel, {}, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 // Animation

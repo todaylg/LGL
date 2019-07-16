@@ -29,7 +29,7 @@ export class Mesh extends Transform {
         this.gl = gl;
         this.id = ID++;
         this.meshType = 'mesh';
-        
+
         this.geometry = geometry;
         this.program = program;
         this.mode = mode;
