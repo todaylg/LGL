@@ -63,6 +63,10 @@ export class Vec4 extends Array {
     dot(v) {
         return Vec4Func.dot(this, v);
     }
+    inverse(v = this) {
+        Vec4Func.inverse(this, v);
+        return this;
+    }
     /**
      * @function
      * @description Multiplies a vec4/number

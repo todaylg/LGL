@@ -37,18 +37,17 @@ in vec3 FragPos;
 out vec4 FragColor;
 
 void main() {
-     vec3 ambient = ambientStrength * ambientLightColor;
-
+    vec3 ambient = ambientStrength * ambientLightColor;
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(lightPos - FragPos);
-    vec3 diffuse = lightColor * max(dot(normal, lightDir),0.0);
+    vec3 diffuse = max(dot(normal, lightDir), 0.0) * lightColor;
     
     // specular
     float specularStrength = 0.5;
     vec3 viewDir = normalize(cameraPosition-FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
 
-    float spec = pow(max(dot(viewDir, halfwayDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = specularStrength * spec * lightColor; 
 
     vec3 result = baseColor * (diffuse + ambient + specular);

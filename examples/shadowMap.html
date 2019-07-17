@@ -9,7 +9,7 @@
 </head>
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
+        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
         import { Orbit, Post, Plane, Sphere, Cube, ShadowMap } from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
         import shadowMapShader from './shaders/shadowMapShader.js';
@@ -58,11 +58,11 @@
             const program = new Program(gl, {
                 vertex: shaderDefines + shadowMapShader.vertex,
                 fragment: shaderDefines + shadowMapShader.fragment,
-                cullFace: null,
+                // cullFace: null,
                 uniforms: {
                     baseColor: { value: new Color(1) },
                     ambientLightColor: { value: new Color(1) },
-                    ambientStrength: { value: 0.3 },
+                    ambientStrength: { value: .2 },
                     lightColor: { value: new Color(1) },
                     lightPos: { value: lightPos },
                     lightSpaceMatrix: {value: lightSpaceMatrix},
@@ -73,10 +73,10 @@
             });
             const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
             const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
-            planeMesh.rotation.x = Math.PI / 2;
+            planeMesh.rotation.x = -Math.PI / 2;
             planeMesh.setParent(scene);
             cubeMesh.position.y = 10;
-            cubeMesh.scale.set(2);
+            cubeMesh.scale.set(3);
             cubeMesh.castShadowMap = true;
             cubeMesh.setParent(scene);
 
