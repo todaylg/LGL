@@ -119,9 +119,6 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal)
 
     return (diffuse + specular);
 }
-
-void CalcPointLight(){
-}
 vec3 CalcSpotLight(SpotLight light, vec3 normal){
     vec3 viewDir = normalize(cameraPosition - vFragPos);
     vec3 lightDir = normalize(light.lightPos - vFragPos);
@@ -143,7 +140,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal){
     specular *= attenuation * intensity;
     return (diffuse + specular);
 }
-
+void CalcPointLight(){}
 // Shadow Calulation
 float compareDepthTexture( sampler2D depths, vec2 uv, float compare ) {
     float depth = texture(depths, uv).r;
@@ -165,8 +162,7 @@ float shadowMaskCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 no
     projCoords.z -= bias;
     float shadow = 1.0;
     #ifdef SHADOWMAP_TYPE_PCF
-        ivec2 textureSizeVal = textureSize(shadowMap, 0);
-        vec2 texelSize = vec2(1 /textureSizeVal.x, 1 / textureSizeVal.y);
+        vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
         for(int x = -1; x <= 1; ++x)
         {
             for(int y = -1; y <= 1; ++y)
