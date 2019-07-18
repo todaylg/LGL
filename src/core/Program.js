@@ -95,7 +95,6 @@ export class Program {
 
             uniform.uniformName = split[0];
 
-            //Todo:????
             if (split.length === 3) {
                 uniform.isStructArray = true;
                 uniform.structIndex = Number(split[1]);
@@ -239,8 +238,9 @@ export class Program {
                 name += `.${activeUniform.structProperty}`;
             }
             if (activeUniform.isStructArray) {
-                uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
+                let value = uniform.value[activeUniform.structIndex][activeUniform.structProperty];
                 name += `[${activeUniform.structIndex}].${activeUniform.structProperty}`;
+                return setUniform(this.gl, activeUniform.type, location, value);
             }
 
             if (!uniform) {

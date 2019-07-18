@@ -326,6 +326,11 @@ export class Mat4 extends Array {
         Mat4Func.targetTo(this, eye, target, up);
         return this;
     }
+    //为什么LookAt用的targetTo？？？
+    lookAtTarget(eye, target, up) {
+        Mat4Func.lookAt(this, eye, target, up);
+        return this;
+    }
     /**
      * @function
      * @description Calculates the determinant(行列式) of a mat4
