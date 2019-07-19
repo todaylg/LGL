@@ -161,6 +161,14 @@ float shadowMaskCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 no
     // 取得当前片元在光源视角下的深度
     projCoords.z -= bias;
     float shadow = 1.0;
+
+    bvec4 inFrustumVec = bvec4 ( projCoords.x >= 0.0, projCoords.x <= 1.0, projCoords.y >= 0.0, projCoords.y <= 1.0 );
+	bool inFrustum = all( inFrustumVec );
+	bvec2 frustumTestVec = bvec2( inFrustum, projCoords.z <= 1.0 );
+	bool frustumTest = all( frustumTestVec );
+
+    // if ( frustumTest )
+    // Todo: GL_CLAMP_TO_EDGE => GL_CLAMP_TO_BORDER
     #ifdef SHADOWMAP_TYPE_PCF
         vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
         for(int x = -1; x <= 1; ++x)

@@ -326,7 +326,14 @@ export class Mat4 extends Array {
         Mat4Func.targetTo(this, eye, target, up);
         return this;
     }
-    //为什么LookAt用的targetTo？？？
+     /**
+    * @function
+    * @description Generates a look-at matrix with the given eye position, focal point, and up axis. If you want a matrix that actually makes an object look at another object, you should use targetTo instead.
+    * @param {vec3} eye Position of the viewer
+    * @param {vec3} target Point the viewer is looking at
+    * @param {vec3} up vec3 pointing up
+    * @returns {Mat4} 
+    */
     lookAtTarget(eye, target, up) {
         Mat4Func.lookAt(this, eye, target, up);
         return this;

@@ -15,6 +15,7 @@ export default class GLTFParser {
         this.envDiffuseCubeMapSrc = options.envDiffuseCubeMapSrc;
         this.envSpecularCubeMapSrc = options.envSpecularCubeMapSrc;
         this.glExtension = options.glExtension || {};
+        this.castShadowMap = options.castShadowMap;
         this.defaultShader;
         this.animationSys = json.animations ? new AnimationSystem() : null;
         // Cache
@@ -319,6 +320,7 @@ export default class GLTFParser {
                         mesh = meshDef.isSkinnedMesh === true
                             ? new Skin(parser.gl, { geometry, program })
                             : new Mesh(parser.gl, { geometry, program });
+                        mesh.castShadowMap = parser.castShadowMap;
                         if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_STRIP) {
                             mesh.mode = parser.gl.TRIANGLE_STRIP;
                         } else if (primitive.mode === WEBGL_CONSTANTS.TRIANGLE_FAN) {

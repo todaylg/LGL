@@ -10,7 +10,7 @@
 <body>
     <script type="module">
         import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
-        import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap } from '../src/Extras.js';
+        import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap, GLTFLoader } from '../src/Extras.js';
         import shadowMapShader from './shaders/shadowMapShader.js';
         import showDepthShader from './shaders/showDepthShader.js';
         {
@@ -19,7 +19,7 @@
             gl.clearColor(1, 1, 1, 1);
             document.body.appendChild(gl.canvas);
             const camera = new Camera({ far:500 });
-            camera.position.set(20, 50, -50);
+            camera.position.set(30, 50, -50);
             const controls = new Orbit(camera);
             function resize() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -36,7 +36,7 @@
                 },
                 {
                     lightType: 'spot',
-                    lightPos: new Vec3(5, 10, 20),
+                    lightPos: new Vec3(5, 15, 15),
                     direction: new Vec3(-0.2, -1.0, -0.3),
                 },
             ]
@@ -113,6 +113,7 @@
             const program = new Program(gl, {
                 vertex: shaderDefines + shadowMapShader.vertex,
                 fragment: shaderDefines + shadowMapShader.fragment,
+                cullFace: null,
                 uniforms: {
                     baseColor: { value: new Color(1) },
                     ambientLightColor: { value: new Color(1) },
@@ -140,6 +141,7 @@
             const torusMesh = new Mesh(gl, { geometry: torusGeometry, program });
 
             planeMesh.rotation.x = - Math.PI / 2;
+            planeMesh.position.y = -10;
             planeMesh.setParent(scene);
 
             cubeMesh.position.y = 10;
@@ -158,6 +160,24 @@
             sphereMesh.scale.set(4);
             sphereMesh.castShadowMap = true;
             sphereMesh.setParent(scene);
+
+            let loader = new GLTFLoader(gl);
+            let animationSys;
+            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
+            loader.load( skinAnimationModel, {castShadowMap:true}, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                let glTF = gltf.scene;
+                // Animation
+                glTF.scale.set(10);
+                glTF.position.x = 20;
+                animationSys = gltf.animations;
+                if ( animationSys ){
+                    animationSys.speed = 0.5;
+                }
+                scene.addChild(glTF);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
 
             //3.(option)Post to Show depthMap
             const post = new Post(gl);
@@ -180,8 +200,10 @@
                 tick += delta;
                 cubeMesh.rotation.y += 0.01;
                 torusMesh.rotation.y += 0.01;
+                if(animationSys) animationSys.update(delta);
                 controls.update();
                 shadowMap.render(scene);
+                // lightArr[1].lightPos.y -=  0.01;
                 // post.render({scene, camera}); //See The Depth Texture
                 renderer.render({scene, camera});
                 requestAnimationFrame(update);

@@ -24,6 +24,7 @@ export class ShadowMap {
         this.depthMap = [];
         this.lightSpaceMatrix = [];
         this.lightPos = [];
+        this.loadingSkinningFlag = false;
 
         for (let i = 0; i < this.lightArr.length; i++) {
             let light = this.lightArr[i];
@@ -53,30 +54,33 @@ export class ShadowMap {
             scene.traverse((transform) => {
                 let parent = transform.parent;
                 if (parent && transform.meshType && transform.castShadowMap) {
-                    //Get Depth Matiral
                     //Todo: 有些变异的顶点信息需要单独处理：Skinnig和MorphTarget
-                    if (transform.meshType == 'skinnedMesh') {
-                        this.depthProgram.uniforms.boneMatrices = { value: transform.boneMatrices };
-                    }
-                    //2.renderBufferDirect
-                    this.calculateLightSpaceMatrix(light.lightPos, lightSpaceMatrix);
-                    if(!light.depthProgram){
-                        light.depthProgram = new Program(this.gl, {
-                            vertex: simpleDepthShader.vertex,
+                    let shaderDefines = `#version 300 es\n`;
+                    //必须要Cache
+                    if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
+                        shaderDefines += `#define USE_SKINNING 1\n`;
+                        transform.shadowProgram = new Program(this.gl, {
+                            vertex: shaderDefines + simpleDepthShader.vertex,
                             fragment: simpleDepthShader.fragment,
-                            // cullFace: this.gl.FRONT,
                             uniforms: {
-                                lightSpaceMatrix: { value: lightSpaceMatrix }
+                                boneTexture: { value: transform.boneTexture },
+                                boneTextureSize: { value: transform.boneTextureSize }
                             }
                         })
+                    }else if(!transform.shadowProgram){
+                        transform.shadowProgram = new Program(this.gl, {
+                            vertex: shaderDefines + simpleDepthShader.vertex,
+                            fragment: simpleDepthShader.fragment,
+                        })
                     }
-                    // console.log(this.lightSpaceMatrix[1]);
-                    light.depthProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
-                    light.depthProgram.uniforms.modelMatrix = { value: transform.matrix };
+                    this.calculateLightSpaceMatrix(light.lightPos, lightSpaceMatrix);
+                    transform.shadowProgram.uniforms.lightSpaceMatrix = { value: lightSpaceMatrix };
+                    transform.shadowProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
+                    transform.shadowProgram.uniforms.modelMatrix = { value: transform.matrix };
                     let flipFaces = transform.program.cullFace && transform.worldMatrix.determinant() < 0;
-                    light.depthProgram.use({ flipFaces });
+                    transform.shadowProgram.use({ flipFaces });
                     transform.geometry.draw({
-                        program: light.depthProgram 
+                        program: transform.shadowProgram
                     });
                 }
             });
