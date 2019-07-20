@@ -234,8 +234,9 @@ export class Program {
 
             // For structs, get the specific property instead of the entire object
             if (activeUniform.isStruct) {
-                uniform = uniform[activeUniform.structProperty];
+                let value = uniform.value[activeUniform.structProperty];
                 name += `.${activeUniform.structProperty}`;
+                return setUniform(this.gl, activeUniform.type, location, value);
             }
             if (activeUniform.isStructArray) {
                 let value = uniform.value[activeUniform.structIndex][activeUniform.structProperty];

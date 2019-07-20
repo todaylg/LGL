@@ -11,11 +11,11 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 
 out vec3 vNormal;
-out vec3 FragPos;
+out vec3 vFragPos;
 
 void main() {
     vNormal = normalize(normalMatrix * normal);
-    FragPos = vec3(modelMatrix * vec4(position, 1.0));
+    vFragPos = vec3(modelMatrix * vec4(position, 1.0));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
@@ -29,28 +29,40 @@ uniform vec3 cameraPosition;
 uniform vec3 baseColor;
 uniform vec3 ambientLightColor;
 uniform float ambientStrength;
-uniform vec3 lightColor;
-uniform vec3 lightPos;
 
 in vec3 vNormal;
-in vec3 FragPos;
+in vec3 vFragPos;
+
+struct DirectionalLight {
+    vec3 target;
+    vec3 lightColor;
+    vec3 lightPos;
+    float diffuseFactor;
+    float specularFactor;
+};
+uniform DirectionalLight directionalLight;
+
+vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 ambient)
+{
+    vec3 lightDir = normalize(light.lightPos - light.target);
+    // diffuse
+    vec3 diffuse = light.diffuseFactor  * max(dot(normal, lightDir),0.0) * light.lightColor;
+    // specular
+    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = light.specularFactor * spec * light.lightColor; 
+
+    return (ambient + diffuse + specular);
+}
+
 out vec4 FragColor;
 
 void main() {
     vec3 ambient = ambientStrength * ambientLightColor;
     vec3 normal = normalize(vNormal);
-    vec3 lightDir = normalize(lightPos - FragPos);
-    vec3 diffuse = max(dot(normal, lightDir), 0.0) * lightColor;
     
-    // specular
-    float specularStrength = 0.5;
-    vec3 viewDir = normalize(cameraPosition-FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
-    vec3 specular = specularStrength * spec * lightColor; 
-
-    vec3 result = baseColor * (diffuse + ambient + specular);
+    vec3 result = CalcDirLight(directionalLight, normal, ambient) * baseColor;
     FragColor = vec4(result, 1.0);
 }
 `;

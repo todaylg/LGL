@@ -32,12 +32,16 @@
                 {
                     lightType: 'dir',
                     lightPos: new Vec3(0, 20, 0.1),
-                    direction: new Vec3(0, -1.0, 0)
+                    target: new Vec3(0, 0, 0),
+                    diffuseFactor: 0.4,
+                    specularFactor: 0.5,
                 },
                 {
                     lightType: 'spot',
                     lightPos: new Vec3(5, 15, 15),
-                    direction: new Vec3(-0.2, -1.0, -0.3),
+                    target: new Vec3(0, 0, -10),
+                    diffuseFactor: 10,
+                    specularFactor: 10,
                 },
             ]
             //Init Shadow
@@ -72,8 +76,10 @@
                         case 'dir':
                             directionalLights[NUM_DIR_LIGHTS] = {
                                 lightPos: light.lightPos,
-                                direction: light.direction,
-                                lightColor: light.color,
+                                lightColor: light.lightColor,
+                                target: light.target,
+                                diffuseFactor: light.diffuseFactor,
+                                specularFactor: light.specularFactor,
                             };
                             dirShadowMap[NUM_DIR_LIGHTS] = light.depthTexture;
                             dirLightSpaceMatrix[NUM_DIR_LIGHTS] = light.lightSpaceMatrix;
@@ -82,13 +88,15 @@
                         case 'spot':
                             spotLights[NUM_SPOT_LIGHTS] = { 
                                 lightPos: light.lightPos,
-                                direction: light.direction,
-                                lightColor: light.color,
+                                target: light.target,
+                                lightColor: light.lightColor,
+                                diffuseFactor: light.diffuseFactor,
+                                specularFactor: light.specularFactor,
                                 constant: 1,
                                 linear: 0.09,
                                 quadratic: 0.032,
-                                cutOff: Math.cos(12.5),
-                                outerCutOff: Math.cos(15),
+                                cutOff: Math.cos(0),
+                                outerCutOff: Math.cos(20)
                             };
                             spotShadowMap[NUM_SPOT_LIGHTS] = light.depthTexture;
                             spotLightSpaceMatrix[NUM_SPOT_LIGHTS] = light.lightSpaceMatrix;
@@ -117,7 +125,7 @@
                 uniforms: {
                     baseColor: { value: new Color(1) },
                     ambientLightColor: { value: new Color(1) },
-                    ambientStrength: { value: .05 },
+                    ambientStrength: { value: .02 },
 
                     directionalLights: { value: directionalLights },
                     dirLightSpaceMatrix: {value: dirLightSpaceMatrix},

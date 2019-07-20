@@ -34,10 +34,13 @@
 
             const scene = new Transform();
 
-            let ambientLightColor = { value: new Color(1) };
-            let ambientStrength = { value: .2 };
-            let lightColor =  { value: new Color(.8) };
-            let lightPos = { value:new Vec3(0, 60, 0) };
+            let directionalLight = {
+                lightPos: new Vec3(0, 100, 0),
+                target: new Vec3(0, 0, -1),
+                lightColor: new Color(1),
+                diffuseFactor: 0.4,
+                specularFactor: 0.5,
+            }
 
             // Geo
             const planeGeometry = new Plane(gl, {
@@ -83,10 +86,9 @@
                     fragment: BasePrimitivesShader.fragment,
                     uniforms: {
                         baseColor: { value: wallColors[i] },
-                        ambientLightColor,
-                        ambientStrength,
-                        lightColor,
-                        lightPos
+                        ambientLightColor: { value: new Color(1) },
+                        ambientStrength: { value: 0.5 },
+                        directionalLight: { value: directionalLight },
                     }
                 })});
                 wallGroup.addChild(wallPlane);

@@ -35,7 +35,7 @@ export class ShadowMap {
             });
             light.depthTexture = light.depthBuffer.depthTexture;
             light.lightSpaceMatrix = new Mat4();
-            light.color = light.color || new Color(1);
+            light.lightColor = light.lightColor || new Color(1);
         }
     }
     calculateLightSpaceMatrix(lightPos, lightSpaceMatrix) {

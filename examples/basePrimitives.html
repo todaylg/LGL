@@ -30,6 +30,13 @@
             }
             window.addEventListener('resize', resize, false);
             resize();
+            let directionalLight = {
+                lightPos: new Vec3(0, 20, 0),
+                target: new Vec3(0, 0, 0),
+                lightColor: new Color(1),
+                diffuseFactor: 0.4,
+                specularFactor: 0.5,
+            }
 
             let noise = new Noise();
             noise.seed(0);
@@ -66,9 +73,8 @@
                         uniforms: {
                             baseColor: { value: new Color(1) },
                             ambientLightColor: { value: new Color(1) },
-                            ambientStrength: { value: 0.3 },
-                            lightColor: { value: new Color(1) },
-                            lightPos: { value: new Vec3(0.0, 10.0, 10.0) }
+                            ambientStrength: { value: 0.6 },
+                            directionalLight: { value: directionalLight },
                         }
                     });
                     const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program });
