@@ -82,6 +82,8 @@ struct SpotLight {
     vec3 lightPos;
     vec3 target;
     vec3 lightColor;
+    float lightCameraNear;
+    float lightCameraFar;
     float cutOff;
     float outerCutOff;
     float constant;
@@ -91,18 +93,27 @@ struct SpotLight {
     float specularFactor;
 };
 
+struct PointLight {
+    vec3 lightPos;
+    vec3 lightColor;
+    float constant;
+    float linear;
+    float quadratic;
+
+    float diffuseFactor;
+    float specularFactor;
+};
+
 #if NUM_DIR_LIGHTS > 0
     uniform sampler2D dirShadowMap[ NUM_DIR_LIGHTS ];
     in vec4 dirFragPos[ NUM_DIR_LIGHTS ];
 
-   
 	uniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];
 #endif
 
 #if NUM_SPOT_LIGHTS > 0
     uniform sampler2D spotShadowMap[ NUM_SPOT_LIGHTS ];
     in vec4 spotFragPos[ NUM_SPOT_LIGHTS ];
-
     
     uniform SpotLight spotLights[ NUM_SPOT_LIGHTS ];
 #endif
@@ -110,12 +121,12 @@ struct SpotLight {
 #if NUM_POINT_LIGHTS > 0
     uniform sampler2D pointShadowMap[ NUM_POINT_LIGHTS ];
     in vec4 pointFragPos[ NUM_POINT_LIGHTS ];
+
+    uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
 #endif
 
 // Light Calulation
-// calculates the color when using a directional light.
-vec3 CalcDirLight(DirectionalLight light, vec3 normal)
-{
+vec3 CalcDirLight(DirectionalLight light, vec3 normal){
     vec3 lightDir = normalize(light.lightPos - light.target);
     // diffuse
     vec3 diffuse = light.diffuseFactor * max(dot(normal, lightDir),0.0) * light.lightColor;
@@ -128,12 +139,12 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal)
     return (diffuse + specular);
 }
 vec3 CalcSpotLight(SpotLight light, vec3 normal){
-    vec3 viewDir = normalize(cameraPosition - vFragPos);
     vec3 lightDir = normalize(light.lightPos - vFragPos);
     // diffuse
     vec3 diffuse = light.diffuseFactor * max(dot(normal, lightDir),0.0) * light.lightColor;
     // specular
     vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     vec3 specular = light.specularFactor * spec * light.lightColor;
     // attenuation
@@ -148,51 +159,124 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal){
     specular *= attenuation * intensity;
     return (diffuse + specular);
 }
-void CalcPointLight(){}
-// Shadow Calulation
-float compareDepthTexture( sampler2D depths, vec2 uv, float compare ) {
-    float depth = texture(depths, uv).r;
-    return step(compare, depth);//in shadow => 0，out shadow => 1
+vec3 CalcPointLight(PointLight light, vec3 normal){
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
+    vec3 lightDir = normalize(light.lightPos - vFragPos);
+    // diffuse
+    vec3 diffuse = light.diffuseFactor * max(dot(normal, lightDir),0.0) * light.lightColor;
+    // specular
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = light.specularFactor * spec * light.lightColor;
+    // attenuation
+    float distance = length(light.lightPos - vFragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    // combine results
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return (diffuse + specular);
 }
 
+// Projection <=> View
 float viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {
 	return ( viewZ + near ) / ( near - far );
 }
+float orthographicDepthToViewZ( const in float linearClipZ, const in float near, const in float far ) {
+	return linearClipZ * ( near - far ) - near;
+}
+float viewZToPerspectiveDepth( const in float viewZ, const in float near, const in float far ) {
+	return (( near + viewZ ) * far ) / (( far - near ) * viewZ );
+}
+float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
+	return ( near * far ) / ( ( far - near ) * invClipZ - far );
+}
+float readOrthoDepth( sampler2D depthSampler, vec2 coord ) {
+    float depth = texture(depthSampler, coord).r;
+    return depth;
+}
+float readPerspectiveDepth( sampler2D depthSampler, vec2 coord, float near, float far ) {
+    // Screen Space => Clip Space => View Space
+    float fragCoordZ = texture(depthSampler, coord).r; // Screen Space
+    float z = fragCoordZ * 2.0 - 1.0; // Clip Space
+    float viewZ = perspectiveDepthToViewZ(z, near, far);
+    viewZ = viewZToOrthographicDepth(viewZ, near, far);
+    return viewZ;
+}
+float compareDepthTexture( float depth, float viewDepth ) {
+    return step(viewDepth, depth);//in shadow => 0，out shadow => 1
+}
 
-float shadowMaskCalculation(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 normalVal ,vec3 lightDirVal) {
-    // Todo: Frustum Check
-    // 执行透视除法
+// Shadow Calulation
+float dirShadowMaskCal(sampler2D shadowMap, vec4 fragPosLightSpace, DirectionalLight light, vec3 normalVal) {
+    vec3 lightDirVal = normalize(light.lightPos - vFragPos);
+    // View Space => Screen Space (depthTexture data is Screen Space)
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // 变换到[0,1]的范围以便和深度贴图的深度相比较(转换到Screen Space,Depth Texture在Screen Space)
     projCoords = projCoords * 0.5 + 0.5;
     float bias = max(0.05 * (1.0 - max(dot(normalVal, lightDirVal),0.)), 0.005);
-    // 取得当前片元在光源视角下的深度
+    // Get current fragment depth
     projCoords.z -= bias;
-    float shadow = 1.0;
+    float shadow = 0.0;
 
     bvec4 inFrustumVec = bvec4 ( projCoords.x >= 0.0, projCoords.x <= 1.0, projCoords.y >= 0.0, projCoords.y <= 1.0 );
 	bool inFrustum = all( inFrustumVec );
 	bvec2 frustumTestVec = bvec2( inFrustum, projCoords.z <= 1.0 );
 	bool frustumTest = all( frustumTestVec );
 
-    // if ( frustumTest )
-    // Todo: GL_CLAMP_TO_EDGE => GL_CLAMP_TO_BORDER
+    // if ( frustumTest ){
+        //  Todo: GL_CLAMP_TO_EDGE => GL_CLAMP_TO_BORDER
+         #ifdef SHADOWMAP_TYPE_PCF
+            vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
+            for(int x = -1; x <= 1; ++x)
+            {
+                for(int y = -1; y <= 1; ++y)
+                {
+                    float pcfDepth = 0.0;
+                    pcfDepth = readOrthoDepth(shadowMap, projCoords.xy + vec2(x, y) * texelSize); 
+                    shadow += compareDepthTexture(pcfDepth, projCoords.z);
+                }    
+            }
+            shadow /= 9.0;
+        #else
+            shadow = compareDepthTexture(readOrthoDepth(shadowMap, projCoords.xy), projCoords.z);
+        #endif
+    // }
+    return shadow;
+}
+float spotShadowMaskCal(sampler2D shadowMap, vec4 fragPosLightSpace, SpotLight light, vec3 normalVal) {
+    vec3 lightDirVal = normalize(light.lightPos - vFragPos);
+    float clipSpaceDepth = fragPosLightSpace.z / fragPosLightSpace.w;
+
+    // Clip Space => View Space
+    float linearDepth = perspectiveDepthToViewZ(fragPosLightSpace.z/fragPosLightSpace.w, light.lightCameraNear, light.lightCameraFar);
+    linearDepth = viewZToOrthographicDepth(linearDepth, light.lightCameraNear, light.lightCameraFar);
+    // Clip Space => Screen Space
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float bias = max(0.05 * (1.0 - max(dot(normalVal, lightDirVal),0.)), 0.005);
+    linearDepth -= bias;
+
+    float shadow = 0.0;
     #ifdef SHADOWMAP_TYPE_PCF
         vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
         for(int x = -1; x <= 1; ++x)
         {
             for(int y = -1; y <= 1; ++y)
             {
-                float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-                shadow += step(projCoords.z, pcfDepth);
+                float pcfDepth = 0.0;
+                pcfDepth = readPerspectiveDepth(shadowMap, projCoords.xy + vec2(x, y) * texelSize, light.lightCameraNear, light.lightCameraFar); 
+                shadow += compareDepthTexture(pcfDepth, linearDepth);
             }    
         }
         shadow /= 9.0;
     #else
-        shadow = compareDepthTexture(shadowMap, projCoords.xy, projCoords.z);
+        shadow = compareDepthTexture(readPerspectiveDepth(shadowMap, projCoords.xy, light.lightCameraNear, light.lightCameraFar), linearDepth); 
     #endif
 
     return shadow;
+}
+void pointShadowMaskCalculation(sampler2D shadowMap){
+    vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
 }
 
 out vec4 FragColor;
@@ -201,24 +285,35 @@ void main() {
     vec3 ambient = ambientStrength * ambientLightColor;
     vec3 normal = normalize(vNormal);
     vec3 result = vec3(0.);
-    float shadow = 1.0;
+    float shadow = 0.0;
     #if NUM_DIR_LIGHTS > 0
+        vec3 perDirLightRes = vec3(0.);
         for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
-            result += CalcDirLight(directionalLights[i], normal);
-            vec3 lightDir = normalize(directionalLights[i].lightPos - vFragPos);
-            shadow *= shadowMaskCalculation(dirShadowMap[i], dirFragPos[i], normal, lightDir);
+            perDirLightRes = CalcDirLight(directionalLights[i], normal);
+            shadow = dirShadowMaskCal(dirShadowMap[i], dirFragPos[i], directionalLights[i], normal);
+            result += perDirLightRes * shadow;
         }
     #endif
     #if NUM_SPOT_LIGHTS > 0
+        vec3 perSpotLightRes = vec3(0.);
         for ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ ) {
-            result += CalcSpotLight(spotLights[i], normal);
-            vec3 lightDir = normalize(spotLights[i].lightPos - vFragPos);
-            shadow *= shadowMaskCalculation(spotShadowMap[i], spotFragPos[i], normal, lightDir);
+            perSpotLightRes = CalcSpotLight(spotLights[i], normal);
+            shadow = spotShadowMaskCal(spotShadowMap[i], spotFragPos[i], spotLights[i], normal);
+            result += perSpotLightRes * shadow;
         }
     #endif
+    #if NUM_POINT_LIGHTS > 0
+        // vec3 perPointLightRes = vec3(0.);
+        // for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
+        //     perPointLightRes = CalcPointLight(pointLights[i], normal);
+        //     vec3 lightDir = normalize(pointLights[i].lightPos - vFragPos);
+        //     shadow = shadowMaskCalculation(pointShadowMap[i], pointFragPos[i], normal, lightDir, false);
+        //     result += perPointLightRes * shadow;
+        // }
+    #endif
     //Shadow Mask
-    result = baseColor * shadow * (ambient + result);
-    FragColor = vec4(result,1.0);
+    result = baseColor * (ambient + result);
+    FragColor = vec4(result, 1.0);
 }
 `;
 

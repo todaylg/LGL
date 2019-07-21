@@ -54,11 +54,10 @@
                 })
                 pendings.push(pending)
             }
-            Promise.all(pendings).then(function (obj) {
+            Promise.all(pendings).then(function (images) {
                 const texture = new Texture(gl, {
                     target: gl.TEXTURE_CUBE_MAP,
-                    image: obj[0],
-                    images: obj,
+                    images: images,
                     flipY: false
                 });
                 const geometry = new Cube(gl);

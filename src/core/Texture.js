@@ -50,8 +50,8 @@ export class Texture {
     } = {}) {
         this.gl = gl;
         this.id = ID++;
-        this.image = image;
         this.images = images;
+        this.image = image || (images && images[0]);
         this.target = target;
         this.type = type;
         this.format = format;

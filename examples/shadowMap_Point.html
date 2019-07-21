@@ -10,11 +10,259 @@
 <body>
     <script type="module">
         import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
-        import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap } from '../src/Extras.js';
+        import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap, GLTFLoader } from '../src/Extras.js';
         import shadowMapShader from './shaders/shadowMapShader.js';
         import showDepthShader from './shaders/showDepthShader.js';
+        import baseGeoShader from './shaders/baseGeoShader.js';
         {
-            //Todo: 
+            const renderer = new Renderer({dpr: 2});
+            const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
+            document.body.appendChild(gl.canvas);
+            const camera = new Camera({ far:800 });
+            camera.position.set(0, 75, -160);
+            const controls = new Orbit(camera, {
+                target: new Vec3(0, 40, 0),
+            });
+            function resize() {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+            }
+            window.addEventListener('resize', resize, false);
+            resize();
+
+            let lightArrConf = [
+                {
+                    lightType: 'spot',
+                    lightPos: new Vec3(10, 40, -40),
+                    target: new Vec3(0, 0, 0),
+                    diffuseFactor: 30,
+                    specularFactor: 30,
+                    shadowCameraFar:100
+                },
+                // {
+                //     lightType: 'dir',
+                //     lightPos: new Vec3(0, 90, 1),
+                //     target: new Vec3(0, 0, 0),
+                //     diffuseFactor: 0.4,
+                //     specularFactor: 0.5,
+                // },
+                // {
+                //     lightType: 'point',
+                //     lightPos: new Vec3(-20, 40, 30),
+                //     diffuseFactor: 10,
+                //     specularFactor: 10,
+                // },
+                // {
+                //     lightType: 'point',
+                //     lightPos: new Vec3(-40, 70, -20),
+                //     diffuseFactor: 10,
+                //     specularFactor: 10,
+                // },
+                // {
+                //     lightType: 'point',
+                //     lightPos: new Vec3(20, 60, -40),
+                //     diffuseFactor: 10,
+                //     specularFactor: 10,
+                // },
+            ]
+           
+            //Init Shadow
+            let shadowMap = new ShadowMap(gl, lightArrConf);
+            let { lightArr } = shadowMap;
+
+            let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
+            let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
+            let directionalLights = [], spotLights = [], pointLights = [];
+            function initShaderDefines(lightArr){
+                let shaderDefines = `#version 300 es\n`;
+                let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
+                for(let i = 0, l = lightArr.length; i < l; i++){
+                    let light = lightArr[i];
+                    switch(light.lightType){
+                        case 'dir':
+                            directionalLights[NUM_DIR_LIGHTS] = {
+                                lightPos: light.lightPos,
+                                lightColor: light.lightColor,
+                                target: light.target,
+                                diffuseFactor: light.diffuseFactor,
+                                specularFactor: light.specularFactor,
+                            };
+                            dirShadowMap[NUM_DIR_LIGHTS] = light.depthTexture;
+                            dirLightSpaceMatrix[NUM_DIR_LIGHTS] = light.lightSpaceMatrix;
+                            NUM_DIR_LIGHTS++;
+                        break;
+                        case 'spot':
+                            spotLights[NUM_SPOT_LIGHTS] = { 
+                                lightPos: light.lightPos,
+                                lightCameraNear: light.shadowCamera.near,
+                                lightCameraFar: light.shadowCamera.far,
+                                target: light.target,
+                                lightColor: light.lightColor,
+                                diffuseFactor: light.diffuseFactor,
+                                specularFactor: light.specularFactor,
+                                constant: 1,
+                                linear: 0.09,
+                                quadratic: 0.032,
+                                cutOff: Math.cos(0),
+                                outerCutOff: Math.cos(70)
+                            };
+                            spotShadowMap[NUM_SPOT_LIGHTS] = light.depthTexture;
+                            spotLightSpaceMatrix[NUM_SPOT_LIGHTS] = light.lightSpaceMatrix;
+                            NUM_SPOT_LIGHTS++;
+                        break;
+                        case 'point':
+                            pointLights[NUM_POINT_LIGHTS] = {
+                                lightPos: light.lightPos,
+                                lightColor: light.lightColor,
+                                diffuseFactor: light.diffuseFactor,
+                                specularFactor: light.specularFactor,
+                                constant: 1,
+                                linear: 0.09,
+                                quadratic: 0.032,
+                            };
+                            pointShadowMap[NUM_POINT_LIGHTS] = light.depthTexture;
+                            pointLightSpaceMatrix[NUM_POINT_LIGHTS] = light.lightSpaceMatrix;
+                            NUM_POINT_LIGHTS++;
+                        break;
+                    }
+                }
+                return shaderDefines += 
+                `#define NUM_DIR_LIGHTS ${NUM_DIR_LIGHTS}\n`+
+                `#define NUM_SPOT_LIGHTS ${NUM_SPOT_LIGHTS}\n`+
+                `#define NUM_POINT_LIGHTS ${NUM_POINT_LIGHTS}\n` +
+                `#define SHADOWMAP_TYPE_PCF 1\n`;
+            }
+            let shaderDefines = initShaderDefines(lightArr);
+
+            //Init Scene 
+            const scene = new Transform();
+            // Geo
+            const planeGeometry = new Plane(gl, {
+                width:100,
+                height:100
+            });
+           
+            let loader = new GLTFLoader(gl);
+            let animationSys;
+            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
+            loader.load( skinAnimationModel, {castShadowMap:true}, gltf => {
+                console.log("gltfLoaderFin：", gltf);
+                let glTF = gltf.scene;
+                // Animation
+                glTF.scale.set(20);
+                animationSys = gltf.animations;
+                if ( animationSys ){
+                    animationSys.speed = 0.5;
+                }
+                scene.addChild(glTF);
+            }, err => {
+                console.error("Loader Error:", err);
+            });
+
+            //Light Visual
+            const sphereGeometry = new Sphere(gl, {
+                widthSegments: 8
+            });
+            for(let i=0,l=lightArr.length; i<l; i++){
+                const sphereMesh = new Mesh(gl, { geometry: sphereGeometry, program: new Program(gl, {
+                    vertex: baseGeoShader.vertex,
+                    fragment: baseGeoShader.fragment,
+                    uniforms: {
+                        baseColor: {value: lightArr[i].lightColor},
+                    },
+                })});
+                sphereMesh.position.set(lightArr[i].lightPos);
+                scene.addChild(sphereMesh);
+            }
+            // Wall
+            const wallGroup = new Transform();
+            // Top/Bottom/Front/Right/Left
+            const wallColors = [new Color(1), new Color(1), new Color(0.49,0.49,1), new Color(0,1,0), new Color(1,0,0)];
+            for(let i=0; i<5; i++){
+                const wallPlane = new Mesh(gl, { geometry: planeGeometry, program: new Program(gl, {
+                    vertex: shaderDefines + shadowMapShader.vertex,
+                    fragment: shaderDefines + shadowMapShader.fragment,
+                    cullFace: null,
+                    uniforms: {
+                        baseColor: { value: wallColors[i] },
+                        ambientLightColor: { value: new Color(1) },
+                        ambientStrength: { value: .5 },
+
+                        directionalLights: { value: directionalLights },
+                        dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
+                        dirShadowMap:{ value: dirShadowMap },
+
+                        spotLights: { value: spotLights },
+                        spotLightSpaceMatrix: {value: spotLightSpaceMatrix},
+                        spotShadowMap:{ value: spotShadowMap },
+
+                        pointLights: { value: pointLights },
+                        pointLightSpaceMatrix: {value: pointLightSpaceMatrix},
+                        pointShadowMap: {value: pointShadowMap},
+
+                        cameraNear: { value: camera.near },
+                        cameraFar:  { value: camera.far },
+                    }
+                })
+            });
+                wallGroup.addChild(wallPlane);
+            }
+            let wallPlanes = wallGroup.children;
+            // Top
+            let planeTop = wallPlanes[0];
+            planeTop.position.y = 100;
+            planeTop.rotation.x = Math.PI / 2;
+
+            // Bottom
+            let planeBottom = wallPlanes[1];
+            // planeBottom.castShadowMap = true;
+            planeBottom.rotation.x = - Math.PI / 2;
+          
+            // Front
+            let planeFront = wallPlanes[2];
+            planeFront.position.z = 50;
+            planeFront.position.y = 50;
+            planeFront.rotation.y = Math.PI;
+
+            // Right
+            let planeRight = wallPlanes[3];
+            planeRight.position.x = 50;
+            planeRight.position.y = 50;
+            planeRight.rotation.y = - Math.PI / 2;
+
+            // Left
+            let planeLeft = wallPlanes[4];
+            planeLeft.position.x = -50;
+            planeLeft.position.y = 50;
+            planeLeft.rotation.y = Math.PI /2;
+
+            scene.addChild(wallGroup);
+
+            // (option)Post to Show depthMap
+            const post = new Post(gl);
+            post.addPass({
+                fragment: showDepthShader.fragment,
+                uniforms: {
+                    tMap: { value: spotShadowMap[0] },
+                    cameraNear: { value: camera.near },
+					cameraFar:  { value: camera.far },
+                }
+            });
+
+            requestAnimationFrame(update);
+            let deltaTime = 0;
+            let lastTime = Date.now();
+            function update(t) {
+                deltaTime = (Date.now() - lastTime)/1000;
+                lastTime = Date.now();
+                if(animationSys) animationSys.update(deltaTime);
+                controls.update();
+                shadowMap.render(scene);
+                // post.render({scene, camera}); //See The Depth Texture
+                renderer.render({scene, camera});
+                requestAnimationFrame(update);
+            }
         }
     </script>
 </body>

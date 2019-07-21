@@ -7,16 +7,7 @@ export class ShadowMap {
         this.gl = gl;
         this.renderer = gl.renderer;
         this.sceneDepth = new Transform();
-        //Direction Light
-        this.shadowCamera = new Camera({
-            left: -100,
-            right: 100,
-            bottom: -100,
-            top: 100,
-            near: 0.1,
-            far: 400,
-        });
-        //Test
+    
         this.lightArr = lightArr;
         this.center = new Vec3(0, 0, 0);
         this.up = new Vec3(0, 1, 0);
@@ -31,16 +22,48 @@ export class ShadowMap {
             light.depthBuffer = new RenderTarget(gl, {
                 width: 1024*2,
                 height: 1024*2,
-                depthTexture: true
+                depthTexture: true,
             });
             light.depthTexture = light.depthBuffer.depthTexture;
             light.lightSpaceMatrix = new Mat4();
             light.lightColor = light.lightColor || new Color(1);
+            //Direction/Spot Light
+            switch (light.lightType) {
+                case 'dir':
+                    //OrthoCamera
+                    light.shadowCamera = new Camera({
+                        left:  light.shadowCameraLeft || -100,
+                        right: light.shadowCameraRight || 100,
+                        bottom: light.shadowCameraBottom || -100,
+                        top: light.shadowCameraTop || 100,
+                        near: light.shadowCameraNear || .1,
+                        far:  light.shadowCameraFar || 400,
+                    });
+                    break;
+                case 'spot':
+                    //PerspectiveCamera
+                    light.shadowCamera = new Camera({
+                        near: light.shadowCameraNear || .1,
+                        far:  light.shadowCameraFar || 400,
+                        fov: 90,
+                    });
+                break;
+                case 'point':
+                    //Todo: Cube-PerspectiveCamera
+                    light.shadowCamera = new Camera({
+                        near: light.shadowCameraNear || .1,
+                        far:  light.shadowCameraFar || 400,
+                    });
+                    break;
+                default:
+                   
+                    break;
+            }
         }
     }
-    calculateLightSpaceMatrix(lightPos, lightSpaceMatrix) {
+    calculateLightSpaceMatrix(lightPos, shadowCamera, lightSpaceMatrix) {
         tempMat4.lookAtTarget(lightPos, this.center, this.up);//V
-        lightSpaceMatrix.multiply(this.shadowCamera.projectionMatrix, tempMat4);//P
+        lightSpaceMatrix.multiply(shadowCamera.projectionMatrix, tempMat4);//P
     }
     renderDepthTexture(scene) {
         let lightArr = this.lightArr;
@@ -54,9 +77,8 @@ export class ShadowMap {
             scene.traverse((transform) => {
                 let parent = transform.parent;
                 if (parent && transform.meshType && transform.castShadowMap) {
-                    //Todo: 有些变异的顶点信息需要单独处理：Skinnig和MorphTarget
                     let shaderDefines = `#version 300 es\n`;
-                    //必须要Cache
+                    // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
                     if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
                         shaderDefines += `#define USE_SKINNING 1\n`;
                         transform.shadowProgram = new Program(this.gl, {
@@ -71,9 +93,10 @@ export class ShadowMap {
                         transform.shadowProgram = new Program(this.gl, {
                             vertex: shaderDefines + simpleDepthShader.vertex,
                             fragment: simpleDepthShader.fragment,
+                            cullFace: this.gl.FRONT
                         })
                     }
-                    this.calculateLightSpaceMatrix(light.lightPos, lightSpaceMatrix);
+                    this.calculateLightSpaceMatrix(light.lightPos, light.shadowCamera, lightSpaceMatrix);
                     transform.shadowProgram.uniforms.lightSpaceMatrix = { value: lightSpaceMatrix };
                     transform.shadowProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
                     transform.shadowProgram.uniforms.modelMatrix = { value: transform.matrix };

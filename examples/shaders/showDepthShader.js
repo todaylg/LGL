@@ -43,20 +43,21 @@ float perspectiveDepthToViewZ( const in float invClipZ, const in float near, con
 // Perspective => Orthographic (Z-Value)
 float readDepth( sampler2D depthSampler, vec2 coord ) {
     float fragCoordZ = texture( depthSampler, coord ).r;
+    fragCoordZ = fragCoordZ * 2.0 - 1.0; // Clip Space
     float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
     return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
 }
 
 void main() {
     // orthographic
-    float depth = texture(tMap, vUv).r;
-    FragColor.rgb = 1.0 - vec3( depth );
-    FragColor.a = 1.0;
-
-    //perspective
-    // float depth = readDepth( tMap, vUv );
+    // float depth = texture(tMap, vUv).r;
     // FragColor.rgb = 1.0 - vec3( depth );
     // FragColor.a = 1.0;
+
+    //perspective
+    float depth = readDepth( tMap, vUv );
+    FragColor.rgb = 1.0 - vec3( depth );
+    FragColor.a = 1.0;
 }
 `;
 
