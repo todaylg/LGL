@@ -11,9 +11,9 @@
     <script type="module">
         import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
         import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap, GLTFLoader } from '../src/Extras.js';
-        import shadowMapShader from './shaders/shadowMapShader.js';
-        import showDepthShader from './shaders/showDepthShader.js';
-        import baseGeoShader from './shaders/baseGeoShader.js';
+        import ShadowMapShader from './shaders/ShadowMapShader.js';
+        import ShowDepthShader from './shaders/ShowDepthShader.js';
+        import BaseGeoShader from './shaders/BaseGeoShader.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
@@ -72,8 +72,8 @@
             });
             for(let i=0,l=lightArr.length; i<l; i++){
                 const sphereMesh = new Mesh(gl, { geometry: sphereSimpleGeometry, program: new Program(gl, {
-                    vertex: baseGeoShader.vertex,
-                    fragment: baseGeoShader.fragment,
+                    vertex: BaseGeoShader.vertex,
+                    fragment: BaseGeoShader.fragment,
                     uniforms: {
                         baseColor: {value: lightArr[i].lightColor},
                     },
@@ -84,7 +84,7 @@
 
             let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
             let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
-            let directionalLights = [], spotLights = [], pointLights = [];
+            let dirLights = [], spotLights = [], pointLights = [];
             function initShaderDefines(lightArr){
                 let shaderDefines = `#version 300 es\n`;
                 let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
@@ -92,7 +92,7 @@
                     let light = lightArr[i];
                     switch(light.lightType){
                         case 'dir':
-                            directionalLights[NUM_DIR_LIGHTS] = {
+                            dirLights[NUM_DIR_LIGHTS] = {
                                 lightPos: light.lightPos,
                                 lightColor: light.lightColor,
                                 target: light.target,
@@ -139,15 +139,15 @@
 
             // input => lightSpaceMatrix + depthMap + struct light
             const program = new Program(gl, {
-                vertex: shaderDefines + shadowMapShader.vertex,
-                fragment: shaderDefines + shadowMapShader.fragment,
+                vertex: shaderDefines + ShadowMapShader.vertex,
+                fragment: shaderDefines + ShadowMapShader.fragment,
                 cullFace: null,
                 uniforms: {
                     baseColor: { value: new Color(1) },
                     ambientLightColor: { value: new Color(1) },
                     ambientStrength: { value: .02 },
 
-                    directionalLights: { value: directionalLights },
+                    dirLights: { value: dirLights },
                     dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
                     dirShadowMap:{ value: dirShadowMap },
 
@@ -210,7 +210,7 @@
             // (option)Post to Show depthMap
             const post = new Post(gl);
             post.addPass({
-                fragment: showDepthShader.fragment,
+                fragment: ShowDepthShader.fragment,
                 uniforms: {
                     tMap: { value: spotShadowMap[0] },
                     cameraNear: { value: camera.near },

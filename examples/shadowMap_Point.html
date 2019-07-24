@@ -11,16 +11,17 @@
     <script type="module">
         import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
         import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap, GLTFLoader } from '../src/Extras.js';
-        import shadowMapShader from './shaders/shadowMapShader.js';
-        import showDepthShader from './shaders/showDepthShader.js';
-        import baseGeoShader from './shaders/baseGeoShader.js';
+        import ShadowMapShader from './shaders/ShadowMapShader.js';
+        import ShowDepthShader from './shaders/ShowDepthShader.js';
+        import ShowCubeDepthShader from './shaders/ShowCubeDepthShader.js';
+        import BaseGeoShader from './shaders/BaseGeoShader.js';
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
-            gl.clearColor(0, 0, 0, 0);
+            gl.clearColor(1, 1, 1, 1);
             document.body.appendChild(gl.canvas);
             const camera = new Camera({ far:800 });
-            camera.position.set(0, 75, -160);
+            camera.position.set(0, 75, 160);
             const controls = new Orbit(camera, {
                 target: new Vec3(0, 40, 0),
             });
@@ -32,14 +33,14 @@
             resize();
 
             let lightArrConf = [
-                {
-                    lightType: 'spot',
-                    lightPos: new Vec3(10, 40, -40),
-                    target: new Vec3(0, 0, 0),
-                    diffuseFactor: 30,
-                    specularFactor: 30,
-                    shadowCameraFar:100
-                },
+                // {
+                //     lightType: 'spot',
+                //     lightPos: new Vec3(10, 40, -40),
+                //     target: new Vec3(0, 0, 0),
+                //     diffuseFactor: 30,
+                //     specularFactor: 30,
+                //     shadowCameraFar:100
+                // },
                 // {
                 //     lightType: 'dir',
                 //     lightPos: new Vec3(0, 90, 1),
@@ -48,11 +49,19 @@
                 //     specularFactor: 0.5,
                 // },
                 // {
-                //     lightType: 'point',
-                //     lightPos: new Vec3(-20, 40, 30),
-                //     diffuseFactor: 10,
-                //     specularFactor: 10,
+                //     lightType: 'spot',
+                //     lightPos: new Vec3(0, 40, 1),
+                //     target: new Vec3(0, 0, 0),
+                //     diffuseFactor: 30,
+                //     specularFactor: 30,
+                //     shadowCameraFar:100
                 // },
+                {
+                    lightType: 'point',
+                    lightPos: new Vec3(-20, 50, -20),
+                    diffuseFactor: 20,
+                    specularFactor: 20,
+                },
                 // {
                 //     lightType: 'point',
                 //     lightPos: new Vec3(-40, 70, -20),
@@ -115,6 +124,8 @@
                             pointLights[NUM_POINT_LIGHTS] = {
                                 lightPos: light.lightPos,
                                 lightColor: light.lightColor,
+                                lightCameraNear: light.shadowCamera.near,
+                                lightCameraFar: light.shadowCamera.far,
                                 diffuseFactor: light.diffuseFactor,
                                 specularFactor: light.specularFactor,
                                 constant: 1,
@@ -134,7 +145,7 @@
                 `#define SHADOWMAP_TYPE_PCF 1\n`;
             }
             let shaderDefines = initShaderDefines(lightArr);
-
+           
             //Init Scene 
             const scene = new Transform();
             // Geo
@@ -160,14 +171,14 @@
                 console.error("Loader Error:", err);
             });
 
-            //Light Visual
+            // Light Visual
             const sphereGeometry = new Sphere(gl, {
                 widthSegments: 8
             });
             for(let i=0,l=lightArr.length; i<l; i++){
                 const sphereMesh = new Mesh(gl, { geometry: sphereGeometry, program: new Program(gl, {
-                    vertex: baseGeoShader.vertex,
-                    fragment: baseGeoShader.fragment,
+                    vertex: BaseGeoShader.vertex,
+                    fragment: BaseGeoShader.fragment,
                     uniforms: {
                         baseColor: {value: lightArr[i].lightColor},
                     },
@@ -175,14 +186,76 @@
                 sphereMesh.position.set(lightArr[i].lightPos);
                 scene.addChild(sphereMesh);
             }
+
+            //Test
+            const cubeGeometry = new Cube(gl);
+            let cubes = [];
+            for(let i=0;i<4;i++){
+                const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program: new Program(gl, {
+                    vertex: shaderDefines + ShadowMapShader.vertex,
+                    fragment: shaderDefines + ShadowMapShader.fragment,
+                    cullFace: null,
+                    uniforms: {
+                        baseColor: { value: new Color(1) },
+                        ambientLightColor: { value: new Color(1) },
+                        ambientStrength: { value: .5 },
+
+                        directionalLights: { value: directionalLights },
+                        dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
+                        dirShadowMap:{ value: dirShadowMap },
+
+                        spotLights: { value: spotLights },
+                        spotLightSpaceMatrix: {value: spotLightSpaceMatrix},
+                        spotShadowMap:{ value: spotShadowMap },
+
+                        pointLights: { value: pointLights },
+                        pointLightSpaceMatrix: {value: pointLightSpaceMatrix},
+                        pointShadowMap: {value: pointShadowMap},
+
+                        cameraNear: { value: camera.near },
+                        cameraFar:  { value: camera.far },
+                    }
+                })});
+                cubeMesh.scale.set(5);
+                cubeMesh.castShadowMap = true;
+                scene.addChild(cubeMesh);
+                cubes.push(cubeMesh)
+            }
+            cubes[0].position.x = -20;
+            cubes[0].position.y = 20;
+            cubes[0].position.z = -20;
+            cubes[1].position.x = -40;
+            cubes[1].position.y = 50;
+            cubes[1].position.z = -20;
+            cubes[2].position.x = 30;
+            cubes[2].position.y = 80;
+            cubes[3].position.x = 20;
+            cubes[3].position.y = 20;
+            cubes[3].position.z = 20;
+
+            const skyboxGeometry = new Cube(gl);
+            const skyboxProgram = new Program(gl, {
+                vertex: ShowCubeDepthShader.vertex,
+                fragment: ShowCubeDepthShader.fragment,
+                uniforms: {
+                    cubeMap: { value: pointShadowMap[0] },
+                    cameraNear: { value: pointLights[0].lightCameraNear },
+                    cameraFar:  { value: pointLights[0].lightCameraFar },
+                },
+                cullFace: null,
+            });
+            const skybox = new Mesh(gl, { geometry: skyboxGeometry, program: skyboxProgram });
+            skybox.scale.set(500);
+            skybox.setParent(scene);
+
             // Wall
             const wallGroup = new Transform();
             // Top/Bottom/Front/Right/Left
             const wallColors = [new Color(1), new Color(1), new Color(0.49,0.49,1), new Color(0,1,0), new Color(1,0,0)];
             for(let i=0; i<5; i++){
                 const wallPlane = new Mesh(gl, { geometry: planeGeometry, program: new Program(gl, {
-                    vertex: shaderDefines + shadowMapShader.vertex,
-                    fragment: shaderDefines + shadowMapShader.fragment,
+                    vertex: shaderDefines + ShadowMapShader.vertex,
+                    fragment: shaderDefines + ShadowMapShader.fragment,
                     cullFace: null,
                     uniforms: {
                         baseColor: { value: wallColors[i] },
@@ -206,6 +279,7 @@
                     }
                 })
             });
+            // wallPlane.castShadowMap = true;
                 wallGroup.addChild(wallPlane);
             }
             let wallPlanes = wallGroup.children;
@@ -221,7 +295,7 @@
           
             // Front
             let planeFront = wallPlanes[2];
-            planeFront.position.z = 50;
+            planeFront.position.z = -50;
             planeFront.position.y = 50;
             planeFront.rotation.y = Math.PI;
 
@@ -239,27 +313,18 @@
 
             scene.addChild(wallGroup);
 
-            // (option)Post to Show depthMap
-            const post = new Post(gl);
-            post.addPass({
-                fragment: showDepthShader.fragment,
-                uniforms: {
-                    tMap: { value: spotShadowMap[0] },
-                    cameraNear: { value: camera.near },
-					cameraFar:  { value: camera.far },
-                }
-            });
-
             requestAnimationFrame(update);
             let deltaTime = 0;
+            let temp = 0;
             let lastTime = Date.now();
             function update(t) {
                 deltaTime = (Date.now() - lastTime)/1000;
                 lastTime = Date.now();
                 if(animationSys) animationSys.update(deltaTime);
                 controls.update();
+                temp+=deltaTime;
+                // pointLights[0].lightPos.y = 50+Math.sin(temp);
                 shadowMap.render(scene);
-                // post.render({scene, camera}); //See The Depth Texture
                 renderer.render({scene, camera});
                 requestAnimationFrame(update);
             }

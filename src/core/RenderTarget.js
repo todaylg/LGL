@@ -38,6 +38,7 @@ export class RenderTarget {
         internalFormat = format,
         unpackAlignment,
         premultiplyAlpha,
+        cubeMapFlag,
     } = {}) {
         this.gl = gl;
         this.width = width;
@@ -68,6 +69,7 @@ export class RenderTarget {
         if (depthTexture && (this.gl.renderer.isWebgl2 || this.gl.renderer.getExtension('WEBGL_depth_texture'))) {
             this.depthTexture = new Texture(gl, {
                 width, height, wrapS, wrapT,
+                target: cubeMapFlag ? gl.TEXTURE_CUBE_MAP: gl.TEXTURE_2D,
                 minFilter: this.gl.NEAREST,
                 magFilter: this.gl.NEAREST,
                 flipY: false,
@@ -76,8 +78,14 @@ export class RenderTarget {
                 type: this.gl.UNSIGNED_INT,
                 generateMipmaps: false,
             });
-            this.depthTexture.update();
-            this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0 /* level */);
+            if(cubeMapFlag){
+                // Render Depth Info To Cube Map
+                this.depthTexture.images = [null, null, null, null, null, null];
+                this.depthTexture.update();
+            }else{
+                this.depthTexture.update();
+                this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0);
+            }
         } else {
             // Renderbuffer Object
             if (depth && !stencil) {

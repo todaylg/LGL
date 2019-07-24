@@ -144,16 +144,19 @@ export class Texture {
             this.state.wrapT = this.wrapT;
         }
 
-        if (this.image) {
-            if (this.image.width) {
+        if (this.image || this.images) {
+            if (this.image && this.image.width) {
                 this.width = this.image.width;
                 this.height = this.image.height;
             }
             // CubeMap
             if (this.images && this.images.length === 6) {
                 for (let i = 0; i < this.images.length; i++) {
-                    let imageEle = this.images[i];
-                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, imageEle);
+                    if (this.gl.renderer.isWebgl2){
+                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.images[i]);
+                    }else{
+                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, this.images[i]);
+                    }
                 }
             } else {
                 // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
