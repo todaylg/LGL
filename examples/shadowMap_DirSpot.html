@@ -95,6 +95,8 @@
                             dirLights[NUM_DIR_LIGHTS] = {
                                 lightPos: light.lightPos,
                                 lightColor: light.lightColor,
+                                lightCameraNear: light.shadowCamera.near,
+                                lightCameraFar: light.shadowCamera.far,
                                 target: light.target,
                                 diffuseFactor: light.diffuseFactor,
                                 specularFactor: light.specularFactor,
@@ -217,7 +219,6 @@
 					cameraFar:  { value: camera.far },
                 }
             });
-          
             let startTime = performance.now();
             let tick = 0;
             requestAnimationFrame(update);

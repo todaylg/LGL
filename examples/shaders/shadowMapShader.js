@@ -130,24 +130,24 @@ struct PointLight {
 // Light Calulation
 vec3 CalcDirLight(DirectionalLight dirLight, vec3 normal){
     vec3 lightDir = normalize(dirLight.lightPos - dirLight.target);
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     // diffuse
     vec3 diffuse = dirLight.diffuseFactor * max(dot(normal, lightDir),0.0) * dirLight.lightColor;
     // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 viewDir = normalize(cameraPosition - vFragPos);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = dirLight.specularFactor * spec * dirLight.lightColor;
 
     return (diffuse + specular);
 }
 vec3 CalcSpotLight(SpotLight spotLight, vec3 normal){
     vec3 lightDir = normalize(spotLight.lightPos - vFragPos);
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     // diffuse
     vec3 diffuse = spotLight.diffuseFactor * max(dot(normal, lightDir),0.0) * spotLight.lightColor;
     // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 viewDir = normalize(cameraPosition - vFragPos);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = spotLight.specularFactor * spec * spotLight.lightColor;
     // attenuation
     float distance = length(spotLight.lightPos - vFragPos);
@@ -164,11 +164,11 @@ vec3 CalcSpotLight(SpotLight spotLight, vec3 normal){
 vec3 CalcPointLight(PointLight pointLight, vec3 normal){
     vec3 viewDir = normalize(cameraPosition - vFragPos);
     vec3 lightDir = normalize(pointLight.lightPos - vFragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     // diffuse
     vec3 diffuse = pointLight.diffuseFactor * max(dot(normal, lightDir),0.0) * pointLight.lightColor;
     // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = pointLight.specularFactor * spec * pointLight.lightColor;
     // attenuation
     float distance = length(pointLight.lightPos - vFragPos);
@@ -193,17 +193,11 @@ float perspectiveDepthToViewZ( const in float invClipZ, const in float near, con
 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
 }
 
-float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float near, float far ) {
-    float fragCoordZ = texture(depthSampler, coord).r; // Screen Space [0,1]
-    float z = fragCoordZ * 2.0 - 1.0; // Clip Space [-1,1]
-    float viewZ = perspectiveDepthToViewZ(fragCoordZ, near, far); // View Space
-    viewZ = viewZToOrthographicDepth(viewZ, near, far); // linear
-    return viewZ;
-}
 float readOrthoDepth(sampler2D depthSampler, vec2 coord ) {
     float depth = texture(depthSampler, coord).r;
     return depth;
 }
+
 float readPerspectiveDepth(sampler2D depthSampler, vec2 coord, float near, float far ) {
     // Screen Space => Clip Space => View Space
     float fragCoordZ = texture(depthSampler, coord).r; // Screen Space 
@@ -212,6 +206,15 @@ float readPerspectiveDepth(sampler2D depthSampler, vec2 coord, float near, float
     viewZ = viewZToOrthographicDepth(viewZ, near, far);
     return viewZ;
 }
+
+float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float near, float far ) {
+    float fragCoordZ = texture(depthSampler, coord).r; // Screen Space [0,1]
+    float z = fragCoordZ * 2.0 - 1.0; // Clip Space [-1,1]
+    float viewZ = perspectiveDepthToViewZ(fragCoordZ, near, far); // View Space
+    viewZ = viewZToOrthographicDepth(viewZ, near, far); // linear
+    return viewZ;
+}
+
 float compareDepthTexture(float depth, float viewDepth ) {
     return step(viewDepth, depth);//in shadow => 0，out shadow => 1
 }
@@ -234,7 +237,7 @@ float dirShadowMaskCal(sampler2D shadowMap, vec4 fragPosLightSpace, DirectionalL
 
     // if ( frustumTest ){
         //  Todo: GL_CLAMP_TO_EDGE => GL_CLAMP_TO_BORDER
-         #ifdef SHADOWMAP_TYPE_PCF
+        #ifdef SHADOWMAP_TYPE_PCF
             vec2 texelSize = 1.0 /vec2(textureSize(shadowMap, 0));
             for(int x = -1; x <= 1; ++x)
             {

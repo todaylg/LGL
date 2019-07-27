@@ -35,11 +35,11 @@
             let lightArrConf = [
                 // {
                 //     lightType: 'spot',
-                //     lightPos: new Vec3(10, 40, -40),
+                //     lightPos: new Vec3(30, 80, 30),
                 //     target: new Vec3(0, 0, 0),
                 //     diffuseFactor: 30,
                 //     specularFactor: 30,
-                //     shadowCameraFar:100
+                //     shadowCameraFar:200
                 // },
                 // {
                 //     lightType: 'dir',
@@ -82,7 +82,7 @@
 
             let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
             let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
-            let directionalLights = [], spotLights = [], pointLights = [];
+            let dirLights = [], spotLights = [], pointLights = [];
             function initShaderDefines(lightArr){
                 let shaderDefines = `#version 300 es\n`;
                 let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
@@ -90,7 +90,7 @@
                     let light = lightArr[i];
                     switch(light.lightType){
                         case 'dir':
-                            directionalLights[NUM_DIR_LIGHTS] = {
+                            dirLights[NUM_DIR_LIGHTS] = {
                                 lightPos: light.lightPos,
                                 lightColor: light.lightColor,
                                 target: light.target,
@@ -200,7 +200,7 @@
                         ambientLightColor: { value: new Color(1) },
                         ambientStrength: { value: .5 },
 
-                        directionalLights: { value: directionalLights },
+                        dirLights: { value: dirLights },
                         dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
                         dirShadowMap:{ value: dirShadowMap },
 
@@ -262,7 +262,7 @@
                         ambientLightColor: { value: new Color(1) },
                         ambientStrength: { value: .5 },
 
-                        directionalLights: { value: directionalLights },
+                        dirLights: { value: dirLights },
                         dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
                         dirShadowMap:{ value: dirShadowMap },
 

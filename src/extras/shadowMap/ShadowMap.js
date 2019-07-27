@@ -64,103 +64,69 @@ export class ShadowMap {
             }
         }
     }
-    calLightSpaceMatrix(light, center = this.center, up = this.up) {
+    calLightSpaceMatrix(light, center, up) {
         let { lightPos, shadowCamera, lightSpaceMatrix } = light;
         tempMat4.lookAtTarget(lightPos, center, up);//V
         lightSpaceMatrix.multiply(shadowCamera.projectionMatrix, tempMat4);//P
     }
-    renderDepthTexture(scene) {
+    renderScene(scene, light, lookCenter = this.center, lookUp = this.up) {
+        //Todo: frustum culling
+        scene.traverse((transform) => {
+            let parent = transform.parent;
+            if (parent && transform.meshType && transform.castShadowMap) {
+                let shaderDefines = `#version 300 es\n`;
+                // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
+                if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
+                    shaderDefines += `#define USE_SKINNING 1\n`;
+                    transform.shadowProgram = new Program(this.gl, {
+                        vertex: shaderDefines + simpleDepthShader.vertex,
+                        fragment: simpleDepthShader.fragment,
+                        cullFace: this.gl.FRONT,
+                        uniforms: {
+                            boneTexture: { value: transform.boneTexture },
+                            boneTextureSize: { value: transform.boneTextureSize }
+                        }
+                    })
+                } else if (!transform.shadowProgram) {
+                    transform.shadowProgram = new Program(this.gl, {
+                        vertex: shaderDefines + simpleDepthShader.vertex,
+                        fragment: simpleDepthShader.fragment,
+                        cullFace: this.gl.FRONT
+                    })
+                }
+                this.calLightSpaceMatrix(light, lookCenter, lookUp);
+                transform.shadowProgram.uniforms.lightSpaceMatrix = { value: light.lightSpaceMatrix };
+                transform.shadowProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
+                transform.shadowProgram.uniforms.modelMatrix = { value: transform.matrix };
+
+                let flipFaces = transform.program.cullFace && transform.worldMatrix.determinant() < 0;
+                transform.shadowProgram.use({ flipFaces });
+
+                transform.geometry.draw({
+                    program: transform.shadowProgram
+                });
+            }
+        });
+    }
+    render(scene) {
         let lightArr = this.lightArr;
         for (let i = 0; i < lightArr.length; i++) {
             let light = lightArr[i];
-            let lightSpaceMatrix = light.lightSpaceMatrix;
             let depthBuffer = light.depthBuffer;
             //1.setRenderTarget => target: depthMap
             this.renderer.setRenderTarget(depthBuffer);
             this.renderer.clear();
-            if(light.lightType === 'point'){
+            if (light.lightType === 'point') {
                 // Need draw 6 faces
                 for (let i = 0; i < 6; i++) {
                     this.gl.framebufferTexture2D(depthBuffer.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, light.depthTexture.texture, 0);
-                    this.renderer.clear(false,true,false);
-                    //Todo: frustum culling
-                    scene.traverse((transform) => {
-                        let parent = transform.parent;
-                        if (parent && transform.meshType && transform.castShadowMap) {
-                            let shaderDefines = `#version 300 es\n`;
-                            // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
-                            if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
-                                shaderDefines += `#define USE_SKINNING 1\n`;
-                                transform.shadowProgram = new Program(this.gl, {
-                                    vertex: shaderDefines + simpleDepthShader.vertex,
-                                    fragment: simpleDepthShader.fragment,
-                                    cullFace: this.gl.FRONT,
-                                    uniforms: {
-                                        boneTexture: { value: transform.boneTexture },
-                                        boneTextureSize: { value: transform.boneTextureSize }
-                                    }
-                                })
-                            } else if (!transform.shadowProgram) {
-                                transform.shadowProgram = new Program(this.gl, {
-                                    vertex: shaderDefines + simpleDepthShader.vertex,
-                                    fragment: simpleDepthShader.fragment,
-                                    cullFace: this.gl.FRONT
-                                })
-                            }
-                            tempVec3.add(light.lightPos, pointCameraLookCenter[i]);
-                            this.calLightSpaceMatrix(light, tempVec3, pointCameraLookUp[i]);
-                            transform.shadowProgram.uniforms.lightSpaceMatrix = { value: lightSpaceMatrix };
-                            transform.shadowProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
-                            transform.shadowProgram.uniforms.modelMatrix = { value: transform.matrix };
-
-                            let flipFaces = transform.program.cullFace && transform.worldMatrix.determinant() < 0;
-                            transform.shadowProgram.use({ flipFaces });
-                            
-                            transform.geometry.draw({
-                                program: transform.shadowProgram
-                            });
-                        }
-                    });
+                    this.renderer.clear(false, true, false);
+                    tempVec3.add(light.lightPos, pointCameraLookCenter[i]);
+                    this.renderScene(scene, light, tempVec3, pointCameraLookUp[i]);
                 }
-            }else{
-                scene.traverse((transform) => {
-                    let parent = transform.parent;
-                    if (parent && transform.meshType && transform.castShadowMap) {
-                        let shaderDefines = `#version 300 es\n`;
-                        // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
-                        if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
-                            shaderDefines += `#define USE_SKINNING 1\n`;
-                            transform.shadowProgram = new Program(this.gl, {
-                                vertex: shaderDefines + simpleDepthShader.vertex,
-                                fragment: simpleDepthShader.fragment,
-                                cullFace: this.gl.FRONT,
-                                uniforms: {
-                                    boneTexture: { value: transform.boneTexture },
-                                    boneTextureSize: { value: transform.boneTextureSize }
-                                }
-                            })
-                        } else if (!transform.shadowProgram) {
-                            transform.shadowProgram = new Program(this.gl, {
-                                vertex: shaderDefines + simpleDepthShader.vertex,
-                                fragment: simpleDepthShader.fragment,
-                                cullFace: this.gl.FRONT
-                            })
-                        }
-                        this.calLightSpaceMatrix(light);
-                        transform.shadowProgram.uniforms.lightSpaceMatrix = { value: lightSpaceMatrix };
-                        transform.shadowProgram.uniforms.worldMatrix = { value: transform.worldMatrix };
-                        transform.shadowProgram.uniforms.modelMatrix = { value: transform.matrix };
-                        let flipFaces = transform.program.cullFace && transform.worldMatrix.determinant() < 0;
-                        transform.shadowProgram.use({ flipFaces });
-                        transform.geometry.draw({
-                            program: transform.shadowProgram
-                        });
-                    }
-                });
+            } else {
+                this.renderScene(scene, light);
             }
         }
-    }
-    render(scene) {
-        this.renderDepthTexture(scene);
     }
 }

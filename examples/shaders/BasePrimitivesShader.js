@@ -45,12 +45,12 @@ uniform DirectionalLight directionalLight;
 vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 ambient)
 {
     vec3 lightDir = normalize(light.lightPos - light.target);
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     // diffuse
     vec3 diffuse = light.diffuseFactor  * max(dot(normal, lightDir),0.0) * light.lightColor;
     // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 viewDir = normalize(cameraPosition - vFragPos);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = light.specularFactor * spec * light.lightColor; 
 
     return (ambient + diffuse + specular);

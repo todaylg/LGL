@@ -62,7 +62,6 @@ export class RenderTarget {
 
         // alias for majority of use cases
         this.texture = this.textures[0];
-
         // depth and stencil
         // note depth textures break stencil - so can't use together
         // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
