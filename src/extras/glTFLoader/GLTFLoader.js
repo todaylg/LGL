@@ -41,7 +41,7 @@ export class GLTFLoader {
         }
         // Todo:Extension
         if (json.extensionsUsed) {
-            console.error("No support extension now");
+            console.error("No support extension now: ", json.extensionsUsed);
         }
         let parser = new GLTFParser(this.gl, json, { glExtension, path, ...options });
         parser.parse((scene, scenes, cameras, animations, json) => {

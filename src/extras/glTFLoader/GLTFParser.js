@@ -815,7 +815,7 @@ export default class GLTFParser {
  */
 function addMorphTargets(geometry, targets, accessors) {
     let length = targets.length;
-    if (length > 2) console.warn('Unsupport length > 2 targets');
+    console.warn("No complete support MorphTargets Animation now.");
     for (let i = 0; i < length; i++) {
         let target = targets[i]
         for (let key in target) {
@@ -830,6 +830,7 @@ function addMorphTargets(geometry, targets, accessors) {
                 let attributeName = `TAR_NORMAL_${i}`;
                 geometry.addAttribute(attributeName, bufferAttribute);
             }
+            //Todo: TANGENT
         }
     }
 }

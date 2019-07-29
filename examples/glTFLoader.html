@@ -12,7 +12,9 @@
 
 <body>
     <script type="module">
-        import { Renderer, Camera, Transform, Orbit, GLTFLoader, Vec3 } from '../src/index.js';
+        import { Mesh, Renderer, Camera, Transform, Vec3, Texture, Program } from '../src/Core.js';
+        import { Orbit, Cube, GLTFLoader } from '../src/Extras.js';
+        import CubeMapShader from './shaders/CubeMapShader.js';
         {
             const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
@@ -34,8 +36,6 @@
             const scene = new Transform();
             let loader = new GLTFLoader(gl);
             let defaultModel = './assets/models/DamagedHelmet/glTF/DamagedHelmet.gltf';
-            // let mikuModel = './assets/models/tempModel/Miku/blender_Output/mikuGLTF.gltf';
-            // let mikuModel = './assets/models/BRDFModel/shinobu_oshino/scene.gltf';
             loader.load( defaultModel, {
                 useIBL: true,
                 envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
@@ -46,6 +46,54 @@
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);
+            });
+
+            // Texture is equirectangular
+            let path = '/examples/assets/images/cube/papermill/environment/';
+            let paths = [
+                path + "px.jpg",
+                path + "nx.jpg",
+                path + "py.jpg",
+                path + "ny.jpg",
+                path + "pz.jpg",
+                path + "nz.jpg"
+            ];
+            
+            let pendings = [];
+            for (let i = 0; i < paths.length; i++) {
+                let pending = new Promise(function (resolve) {
+                    let image = new Image();
+                    image.onload = () => resolve(image);
+                    image.src = paths[i];
+                })
+                pendings.push(pending)
+            }
+            Promise.all(pendings).then(function (images) {
+                const texture = new Texture(gl, {
+                    target: gl.TEXTURE_CUBE_MAP,
+                    images: images,
+                    flipY: false
+                });
+                const geometry = new Cube(gl);
+                const program = new Program(gl, {
+                    vertex: CubeMapShader.vertex,
+                    fragment: CubeMapShader.fragment,
+                    uniforms: {
+                        cubeMap: { value: texture },
+                    },
+                    cullFace: null,
+                });
+                const skybox = new Mesh(gl, { geometry, program });
+                skybox.scale.set(30);
+                skybox.setParent(scene);
+
+                requestAnimationFrame(update);
+                function update() {
+                    requestAnimationFrame(update);
+
+                    controls.update();
+                    renderer.render({ scene, camera });
+                }
             });
 
             requestAnimationFrame(update);
