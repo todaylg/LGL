@@ -31,6 +31,7 @@ export class RenderTarget {
         depthTexture = false, // note - stencil breaks
         wrapS = gl.CLAMP_TO_EDGE,
         wrapT = gl.CLAMP_TO_EDGE,
+        wrapR = gl.CLAMP_TO_EDGE,
         minFilter = gl.LINEAR,
         magFilter = minFilter,
         type = gl.UNSIGNED_BYTE,
@@ -67,7 +68,7 @@ export class RenderTarget {
         // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
         if (depthTexture && (this.gl.renderer.isWebgl2 || this.gl.renderer.getExtension('WEBGL_depth_texture'))) {
             this.depthTexture = new Texture(gl, {
-                width, height, wrapS, wrapT,
+                width, height, wrapS, wrapT, wrapR,
                 target: cubeMapFlag ? gl.TEXTURE_CUBE_MAP: gl.TEXTURE_2D,
                 minFilter: this.gl.NEAREST,
                 magFilter: this.gl.NEAREST,

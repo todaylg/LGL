@@ -25,8 +25,6 @@ out vec2 vUv;
 #endif
 
 #if NUM_POINT_LIGHTS > 0
-    uniform mat4 pointLightSpaceMatrix[ NUM_POINT_LIGHTS ];
-    out vec4 pointFragPos[ NUM_POINT_LIGHTS ]; 
 #endif
 
 void main()
@@ -46,9 +44,6 @@ void main()
         }
     #endif
     #if NUM_POINT_LIGHTS > 0
-        for ( int i = 0; i < NUM_POINT_LIGHTS; i++ ) {
-            pointFragPos[ i ] = pointLightSpaceMatrix[ i ] * vec4(vFragPos, 1.0);
-        }
     #endif
 }
 `;
@@ -122,8 +117,6 @@ struct PointLight {
 
 #if NUM_POINT_LIGHTS > 0
     uniform samplerCube pointShadowMap[ NUM_POINT_LIGHTS ];
-    in vec4 pointFragPos[ NUM_POINT_LIGHTS ];
-
     uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
 #endif
 
@@ -207,12 +200,13 @@ float readPerspectiveDepth(sampler2D depthSampler, vec2 coord, float near, float
     return viewZ;
 }
 
-float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float near, float far ) {
-    float fragCoordZ = texture(depthSampler, coord).r; // Screen Space [0,1]
-    float z = fragCoordZ * 2.0 - 1.0; // Clip Space [-1,1]
-    float viewZ = perspectiveDepthToViewZ(fragCoordZ, near, far); // View Space
-    viewZ = viewZToOrthographicDepth(viewZ, near, far); // linear
-    return viewZ;
+float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float far ) {
+    float distanceZ = texture(depthSampler, coord).r; // Screen Space [0,1]
+    // (0=>1) => (0=>far)
+    // bias
+    distanceZ +=  0.0002;
+    distanceZ *= far;
+    return distanceZ;
 }
 
 float compareDepthTexture(float depth, float viewDepth ) {
@@ -289,16 +283,12 @@ float spotShadowMaskCal(sampler2D shadowMap, vec4 fragPosLightSpace, SpotLight s
     return shadow;
 }
 
-float pointShadowMaskCal(samplerCube shadowMap, vec4 fragPosLightSpace, PointLight pointLight) {
+float pointShadowMaskCal(samplerCube shadowMap, PointLight pointLight) {
     // Get vector between fragment position and light position
     vec3 fragToLight = vFragPos - pointLight.lightPos; //View Space
-    float currentDepth = length(fragToLight);
+    float currentDepth = length(fragToLight);//View Distance
     // get linear depth: (0=>1)
-    float closestDepth = readCubeMapDepth(shadowMap, fragToLight, pointLight.lightCameraNear, pointLight.lightCameraFar);
-    // bias
-    closestDepth +=  0.0002;
-    // (0=>1) => (0=>far)
-    closestDepth *= pointLight.lightCameraFar;
+    float closestDepth = readCubeMapDepth(shadowMap, fragToLight, pointLight.lightCameraFar);
     float shadow = step(currentDepth, closestDepth);
     return shadow;
 }
@@ -309,6 +299,14 @@ void main() {
     vec3 ambient = ambientStrength * ambientLightColor;
     vec3 normal = normalize(vNormal);
     vec3 result = vec3(0.);
+     #if NUM_POINT_LIGHTS > 0
+        vec3 perPointLightRes = vec3(0.);
+        for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
+            perPointLightRes = CalcPointLight(pointLights[i], normal);
+            float shadow = pointShadowMaskCal(pointShadowMap[i], pointLights[i]);
+            result += perPointLightRes * shadow;
+        }
+    #endif
     #if NUM_DIR_LIGHTS > 0
         vec3 perDirLightRes = vec3(0.);
         for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
@@ -323,14 +321,6 @@ void main() {
             perSpotLightRes = CalcSpotLight(spotLights[i], normal);
             float shadow = spotShadowMaskCal(spotShadowMap[i], spotFragPos[i], spotLights[i], normal);
             result += perSpotLightRes * shadow;
-        }
-    #endif
-    #if NUM_POINT_LIGHTS > 0
-        vec3 perPointLightRes = vec3(0.);
-        for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
-            perPointLightRes = CalcPointLight(pointLights[i], normal);
-            float shadow = pointShadowMaskCal(pointShadowMap[i], pointFragPos[i], pointLights[i]);
-            result += perPointLightRes * shadow;
         }
     #endif
     //Shadow Mask

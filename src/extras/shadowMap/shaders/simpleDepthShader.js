@@ -6,6 +6,7 @@ in vec2 uv;
 in vec3 position;
 in vec3 normal;
 
+
 uniform mat4 worldMatrix;
 uniform mat4 lightSpaceMatrix;
 
@@ -35,7 +36,10 @@ mat4 getBoneMatrix(const in float i) {
 }
 #endif
 
+out vec3 vFragPos;
+
 void main() {
+    vFragPos = vec3(worldMatrix * vec4(position, 1.0));
     #ifdef USE_SKINNING
         mat4 boneMatX = getBoneMatrix(skinIndex.x);
         mat4 boneMatY = getBoneMatrix(skinIndex.y);
@@ -57,8 +61,26 @@ void main() {
 }
 `;
 
-const fragment = `#version 300 es
+const fragment = `
+precision highp float;
+precision highp int;
+
+#ifdef POINT_SHADOW
+uniform vec3 lightPos;
+uniform float far;
+#endif
+
+in vec3 vFragPos;
+
 void main() {
+    #ifdef POINT_SHADOW
+        // get distance between fragment and light source
+        float lightDistance = length(vFragPos - lightPos);
+        // map to [0;1] range by dividing by far_plane
+        lightDistance = lightDistance / far;
+        // write this as modified depth
+        gl_FragDepth = lightDistance;
+    #endif
     // gl_FragDepth = gl_FragCoord.z;
 }
 `;

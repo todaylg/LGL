@@ -47,7 +47,8 @@
             ]
             // Init Shadow
             let shadowMap = new ShadowMap(gl, lightArrConf);
-            let { lightArr } = shadowMap;
+            let { lightArr, shaderDefines, lightInfos } = shadowMap;
+            let {dirLights, dirShadowMap, dirLightSpaceMatrix, spotLights, spotShadowMap, spotLightSpaceMatrix, pointLights, pointShadowMap, pointLightSpaceMatrix} = lightInfos;
 
             // Init Scene 
             const scene = new Transform();
@@ -81,63 +82,6 @@
                 sphereMesh.position.set(lightArr[i].lightPos);
                 scene.addChild(sphereMesh);
             }
-
-            let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
-            let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
-            let dirLights = [], spotLights = [], pointLights = [];
-            function initShaderDefines(lightArr){
-                let shaderDefines = `#version 300 es\n`;
-                let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
-                for(let i = 0, l = lightArr.length; i < l; i++){
-                    let light = lightArr[i];
-                    switch(light.lightType){
-                        case 'dir':
-                            dirLights[NUM_DIR_LIGHTS] = {
-                                lightPos: light.lightPos,
-                                lightColor: light.lightColor,
-                                lightCameraNear: light.shadowCamera.near,
-                                lightCameraFar: light.shadowCamera.far,
-                                target: light.target,
-                                diffuseFactor: light.diffuseFactor,
-                                specularFactor: light.specularFactor,
-                            };
-                            dirShadowMap[NUM_DIR_LIGHTS] = light.depthTexture;
-                            dirLightSpaceMatrix[NUM_DIR_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_DIR_LIGHTS++;
-                        break;
-                        case 'spot':
-                            spotLights[NUM_SPOT_LIGHTS] = { 
-                                lightPos: light.lightPos,
-                                lightCameraNear: light.shadowCamera.near,
-                                lightCameraFar: light.shadowCamera.far,
-                                target: light.target,
-                                lightColor: light.lightColor,
-                                diffuseFactor: light.diffuseFactor,
-                                specularFactor: light.specularFactor,
-                                constant: 1,
-                                linear: 0.09,
-                                quadratic: 0.032,
-                                cutOff: Math.cos(0),
-                                outerCutOff: Math.cos(70)
-                            };
-                            spotShadowMap[NUM_SPOT_LIGHTS] = light.depthTexture;
-                            spotLightSpaceMatrix[NUM_SPOT_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_SPOT_LIGHTS++;
-                        break;
-                        case 'point':
-                            pointShadowMap[NUM_POINT_LIGHTS] = light.depthTexture;
-                            pointLightSpaceMatrix[NUM_POINT_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_POINT_LIGHTS++;
-                        break;
-                    }
-                }
-                return shaderDefines += 
-                `#define NUM_DIR_LIGHTS ${NUM_DIR_LIGHTS}\n`+
-                `#define NUM_SPOT_LIGHTS ${NUM_SPOT_LIGHTS}\n`+
-                `#define NUM_POINT_LIGHTS ${NUM_POINT_LIGHTS}\n` +
-                `#define SHADOWMAP_TYPE_PCF 1\n`;
-            }
-            let shaderDefines = initShaderDefines(lightArr);
 
             // input => lightSpaceMatrix + depthMap + struct light
             const program = new Program(gl, {

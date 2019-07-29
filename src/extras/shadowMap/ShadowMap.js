@@ -54,15 +54,91 @@ export class ShadowMap {
                 case 'point':
                     //Todo: Cube-PerspectiveCamera
                     light.shadowCamera = new Camera({
-                        near: light.shadowCameraNear || .1,
-                        far: light.shadowCameraFar || 100,
-                        fov: light.shadowCameraFov || 90,
+                        near: light.shadowCameraNear || 0.1,
+                        far: light.shadowCameraFar || 200,
+                        fov: 90,
                     });
                     break;
                 default:
                     break;
             }
         }
+        this.shaderDefines = this.initShaderDefines(lightArr);
+    }
+    initShaderDefines(lightArr){
+        let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
+        let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
+        let dirLights = [], spotLights = [], pointLights = [];
+        let shaderDefines = `#version 300 es\n`;
+        let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
+        for(let i = 0, l = lightArr.length; i < l; i++){
+            let light = lightArr[i];
+            switch(light.lightType){
+                case 'dir':
+                    dirLights[NUM_DIR_LIGHTS] = {
+                        lightPos: light.lightPos,
+                        lightColor: light.lightColor,
+                        target: light.target,
+                        diffuseFactor: light.diffuseFactor,
+                        specularFactor: light.specularFactor,
+                    };
+                    dirShadowMap[NUM_DIR_LIGHTS] = light.depthTexture;
+                    dirLightSpaceMatrix[NUM_DIR_LIGHTS] = light.lightSpaceMatrix;
+                    NUM_DIR_LIGHTS++;
+                break;
+                case 'spot':
+                    spotLights[NUM_SPOT_LIGHTS] = { 
+                        lightPos: light.lightPos,
+                        lightCameraNear: light.shadowCamera.near,
+                        lightCameraFar: light.shadowCamera.far,
+                        target: light.target,
+                        lightColor: light.lightColor,
+                        diffuseFactor: light.diffuseFactor,
+                        specularFactor: light.specularFactor,
+                        constant: 1,
+                        linear: 0.09,
+                        quadratic: 0.032,
+                        cutOff: Math.cos(0),
+                        outerCutOff: Math.cos(70)
+                    };
+                    spotShadowMap[NUM_SPOT_LIGHTS] = light.depthTexture;
+                    spotLightSpaceMatrix[NUM_SPOT_LIGHTS] = light.lightSpaceMatrix;
+                    NUM_SPOT_LIGHTS++;
+                break;
+                case 'point':
+                    pointLights[NUM_POINT_LIGHTS] = {
+                        lightPos: light.lightPos,
+                        lightColor: light.lightColor,
+                        lightCameraNear: light.shadowCamera.near,
+                        lightCameraFar: light.shadowCamera.far,
+                        diffuseFactor: light.diffuseFactor,
+                        specularFactor: light.specularFactor,
+                        constant: 1,
+                        linear: 0.09,
+                        quadratic: 0.032,
+                    };
+                    pointShadowMap[NUM_POINT_LIGHTS] = light.depthTexture;
+                    pointLightSpaceMatrix[NUM_POINT_LIGHTS] = light.lightSpaceMatrix;
+                    NUM_POINT_LIGHTS++;
+                break;
+            }
+        }
+        this.lightInfos = {
+            dirLights,
+            dirShadowMap,
+            dirLightSpaceMatrix,
+            spotLights,
+            spotShadowMap,
+            spotLightSpaceMatrix,
+            pointLights,
+            pointShadowMap,
+            pointLightSpaceMatrix
+        };
+        return shaderDefines += 
+        `#define NUM_DIR_LIGHTS ${NUM_DIR_LIGHTS}\n`+
+        `#define NUM_SPOT_LIGHTS ${NUM_SPOT_LIGHTS}\n`+
+        `#define NUM_POINT_LIGHTS ${NUM_POINT_LIGHTS}\n` +
+        `#define SHADOWMAP_TYPE_PCF 1\n`;
     }
     calLightSpaceMatrix(light, center, up) {
         let { lightPos, shadowCamera, lightSpaceMatrix } = light;
@@ -78,20 +154,29 @@ export class ShadowMap {
                 // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
                 if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
                     shaderDefines += `#define USE_SKINNING 1\n`;
+                    if (light.lightType === 'point') shaderDefines += `#define POINT_SHADOW 1\n`;
                     transform.shadowProgram = new Program(this.gl, {
                         vertex: shaderDefines + simpleDepthShader.vertex,
-                        fragment: simpleDepthShader.fragment,
+                        fragment: shaderDefines + simpleDepthShader.fragment,
                         cullFace: this.gl.FRONT,
                         uniforms: {
                             boneTexture: { value: transform.boneTexture },
-                            boneTextureSize: { value: transform.boneTextureSize }
+                            boneTextureSize: { value: transform.boneTextureSize },
+                            lightPos: { value: light.lightPos },
+                            far: { value: light.shadowCamera.far }
                         }
                     })
                 } else if (!transform.shadowProgram) {
+                    // Point Light need define ahead in lightArr
+                    if (light.lightType === 'point') shaderDefines += `#define POINT_SHADOW 1\n`;
                     transform.shadowProgram = new Program(this.gl, {
                         vertex: shaderDefines + simpleDepthShader.vertex,
-                        fragment: simpleDepthShader.fragment,
-                        cullFace: this.gl.FRONT
+                        fragment: shaderDefines + simpleDepthShader.fragment,
+                        cullFace: this.gl.FRONT,
+                        uniforms: {
+                            lightPos: { value: light.lightPos },
+                            far: { value: light.shadowCamera.far }
+                        }
                     })
                 }
                 this.calLightSpaceMatrix(light, lookCenter, lookUp);

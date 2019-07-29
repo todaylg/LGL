@@ -20,7 +20,7 @@
             const gl = renderer.gl;
             gl.clearColor(1, 1, 1, 1);
             document.body.appendChild(gl.canvas);
-            const camera = new Camera({ far:800 });
+            const camera = new Camera({ far:1000 });
             camera.position.set(0, 75, 160);
             const controls = new Orbit(camera, {
                 target: new Vec3(0, 40, 0),
@@ -33,119 +33,19 @@
             resize();
 
             let lightArrConf = [
-                // {
-                //     lightType: 'spot',
-                //     lightPos: new Vec3(30, 80, 30),
-                //     target: new Vec3(0, 0, 0),
-                //     diffuseFactor: 30,
-                //     specularFactor: 30,
-                //     shadowCameraFar:200
-                // },
-                // {
-                //     lightType: 'dir',
-                //     lightPos: new Vec3(0, 90, 1),
-                //     target: new Vec3(0, 0, 0),
-                //     diffuseFactor: 0.4,
-                //     specularFactor: 0.5,
-                // },
-                // {
-                //     lightType: 'spot',
-                //     lightPos: new Vec3(0, 40, 1),
-                //     target: new Vec3(0, 0, 0),
-                //     diffuseFactor: 30,
-                //     specularFactor: 30,
-                //     shadowCameraFar:100
-                // },
                 {
                     lightType: 'point',
-                    lightPos: new Vec3(-20, 50, -20),
+                    lightPos: new Vec3(-10, 50, 0),
                     diffuseFactor: 20,
                     specularFactor: 20,
                 },
-                // {
-                //     lightType: 'point',
-                //     lightPos: new Vec3(-40, 70, -20),
-                //     diffuseFactor: 10,
-                //     specularFactor: 10,
-                // },
-                // {
-                //     lightType: 'point',
-                //     lightPos: new Vec3(20, 60, -40),
-                //     diffuseFactor: 10,
-                //     specularFactor: 10,
-                // },
             ]
            
             //Init Shadow
             let shadowMap = new ShadowMap(gl, lightArrConf);
-            let { lightArr } = shadowMap;
-
-            let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
-            let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
-            let dirLights = [], spotLights = [], pointLights = [];
-            function initShaderDefines(lightArr){
-                let shaderDefines = `#version 300 es\n`;
-                let NUM_DIR_LIGHTS = 0, NUM_SPOT_LIGHTS = 0, NUM_POINT_LIGHTS = 0;
-                for(let i = 0, l = lightArr.length; i < l; i++){
-                    let light = lightArr[i];
-                    switch(light.lightType){
-                        case 'dir':
-                            dirLights[NUM_DIR_LIGHTS] = {
-                                lightPos: light.lightPos,
-                                lightColor: light.lightColor,
-                                target: light.target,
-                                diffuseFactor: light.diffuseFactor,
-                                specularFactor: light.specularFactor,
-                            };
-                            dirShadowMap[NUM_DIR_LIGHTS] = light.depthTexture;
-                            dirLightSpaceMatrix[NUM_DIR_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_DIR_LIGHTS++;
-                        break;
-                        case 'spot':
-                            spotLights[NUM_SPOT_LIGHTS] = { 
-                                lightPos: light.lightPos,
-                                lightCameraNear: light.shadowCamera.near,
-                                lightCameraFar: light.shadowCamera.far,
-                                target: light.target,
-                                lightColor: light.lightColor,
-                                diffuseFactor: light.diffuseFactor,
-                                specularFactor: light.specularFactor,
-                                constant: 1,
-                                linear: 0.09,
-                                quadratic: 0.032,
-                                cutOff: Math.cos(0),
-                                outerCutOff: Math.cos(70)
-                            };
-                            spotShadowMap[NUM_SPOT_LIGHTS] = light.depthTexture;
-                            spotLightSpaceMatrix[NUM_SPOT_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_SPOT_LIGHTS++;
-                        break;
-                        case 'point':
-                            pointLights[NUM_POINT_LIGHTS] = {
-                                lightPos: light.lightPos,
-                                lightColor: light.lightColor,
-                                lightCameraNear: light.shadowCamera.near,
-                                lightCameraFar: light.shadowCamera.far,
-                                diffuseFactor: light.diffuseFactor,
-                                specularFactor: light.specularFactor,
-                                constant: 1,
-                                linear: 0.09,
-                                quadratic: 0.032,
-                            };
-                            pointShadowMap[NUM_POINT_LIGHTS] = light.depthTexture;
-                            pointLightSpaceMatrix[NUM_POINT_LIGHTS] = light.lightSpaceMatrix;
-                            NUM_POINT_LIGHTS++;
-                        break;
-                    }
-                }
-                return shaderDefines += 
-                `#define NUM_DIR_LIGHTS ${NUM_DIR_LIGHTS}\n`+
-                `#define NUM_SPOT_LIGHTS ${NUM_SPOT_LIGHTS}\n`+
-                `#define NUM_POINT_LIGHTS ${NUM_POINT_LIGHTS}\n` +
-                `#define SHADOWMAP_TYPE_PCF 1\n`;
-            }
-            let shaderDefines = initShaderDefines(lightArr);
-           
+            let { lightArr, shaderDefines, lightInfos } = shadowMap;
+            let { dirLights, dirShadowMap, dirLightSpaceMatrix, spotLights, spotShadowMap, spotLightSpaceMatrix, pointLights, pointShadowMap, pointLightSpaceMatrix } = lightInfos;
+            
             //Init Scene 
             const scene = new Transform();
             // Geo
@@ -175,6 +75,7 @@
             const sphereGeometry = new Sphere(gl, {
                 widthSegments: 8
             });
+            let sphereMeshGroup = [];
             for(let i=0,l=lightArr.length; i<l; i++){
                 const sphereMesh = new Mesh(gl, { geometry: sphereGeometry, program: new Program(gl, {
                     vertex: BaseGeoShader.vertex,
@@ -184,13 +85,14 @@
                     },
                 })});
                 sphereMesh.position.set(lightArr[i].lightPos);
+                sphereMeshGroup.push(sphereMesh);
                 scene.addChild(sphereMesh);
             }
 
             //Test
-            const cubeGeometry = new Cube(gl);
+            const cubeGeometry =  new Cube(gl);
             let cubes = [];
-            for(let i=0;i<4;i++){
+            for(let i=0;i<5;i++){
                 const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program: new Program(gl, {
                     vertex: shaderDefines + ShadowMapShader.vertex,
                     fragment: shaderDefines + ShadowMapShader.fragment,
@@ -209,7 +111,6 @@
                         spotShadowMap:{ value: spotShadowMap },
 
                         pointLights: { value: pointLights },
-                        pointLightSpaceMatrix: {value: pointLightSpaceMatrix},
                         pointShadowMap: {value: pointShadowMap},
 
                         cameraNear: { value: camera.near },
@@ -224,6 +125,7 @@
             cubes[0].position.x = -20;
             cubes[0].position.y = 20;
             cubes[0].position.z = -20;
+            
             cubes[1].position.x = -40;
             cubes[1].position.y = 50;
             cubes[1].position.z = -20;
@@ -232,6 +134,9 @@
             cubes[3].position.x = 20;
             cubes[3].position.y = 20;
             cubes[3].position.z = 20;
+            cubes[4].position.x = 0;
+            cubes[4].position.y = 40;
+            cubes[4].position.z = 0;
 
             const skyboxGeometry = new Cube(gl);
             const skyboxProgram = new Program(gl, {
@@ -245,7 +150,7 @@
                 cullFace: null,
             });
             const skybox = new Mesh(gl, { geometry: skyboxGeometry, program: skyboxProgram });
-            skybox.scale.set(500);
+            skybox.scale.set(800);
             skybox.setParent(scene);
 
             // Wall
@@ -256,7 +161,7 @@
                 const wallPlane = new Mesh(gl, { geometry: planeGeometry, program: new Program(gl, {
                     vertex: shaderDefines + ShadowMapShader.vertex,
                     fragment: shaderDefines + ShadowMapShader.fragment,
-                    cullFace: null,
+                    // cullFace: null,
                     uniforms: {
                         baseColor: { value: wallColors[i] },
                         ambientLightColor: { value: new Color(1) },
@@ -279,7 +184,6 @@
                     }
                 })
             });
-            // wallPlane.castShadowMap = true;
                 wallGroup.addChild(wallPlane);
             }
             let wallPlanes = wallGroup.children;
@@ -290,14 +194,12 @@
 
             // Bottom
             let planeBottom = wallPlanes[1];
-            // planeBottom.castShadowMap = true;
             planeBottom.rotation.x = - Math.PI / 2;
           
             // Front
             let planeFront = wallPlanes[2];
             planeFront.position.z = -50;
             planeFront.position.y = 50;
-            planeFront.rotation.y = Math.PI;
 
             // Right
             let planeRight = wallPlanes[3];
@@ -323,7 +225,12 @@
                 if(animationSys) animationSys.update(deltaTime);
                 controls.update();
                 temp+=deltaTime;
-                // pointLights[0].lightPos.y = 50+Math.sin(temp);
+
+                // Test Dynamic
+                pointLights[0].lightPos.y = 50+20*Math.sin(temp);
+                pointLights[0].lightPos.x = -10+10*Math.sin(temp);
+
+                sphereMeshGroup[0].position.set(pointLights[0].lightPos);
                 shadowMap.render(scene);
                 renderer.render({scene, camera});
                 requestAnimationFrame(update);

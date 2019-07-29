@@ -11,6 +11,11 @@
 export class Color extends Array {
     constructor(r = 0, g = r, b = g) {
         if (typeof r === 'string') [r, g, b] = Color.hexToRGB(r);
+        if (r > 1) {
+            r /= 255;
+            g /= 255;
+            b /= 266;
+        }
         super(r, g, b);
         return this;
     }
@@ -184,20 +189,20 @@ export class Color extends Array {
         let max = v = Math.max(r, g, b);
         let l = (min + max) / 2;
         let difference = max - min;
-    
+
         if (max == min) {
             h = 0;
         } else {
             switch (max) {
-            case r:
-                h = (g - b) / difference + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = 2.0 + (b - r) / difference;
-                break;
-            case b:
-                h = 4.0 + (r - g) / difference;
-                break;
+                case r:
+                    h = (g - b) / difference + (g < b ? 6 : 0);
+                    break;
+                case g:
+                    h = 2.0 + (b - r) / difference;
+                    break;
+                case b:
+                    h = 4.0 + (r - g) / difference;
+                    break;
             }
             h = Math.round(h * 60);
         }
@@ -219,9 +224,9 @@ export class Color extends Array {
      * @returns {Vec4} 
      */
     fromArray(a, o = 0) {
-		this[0] = a[o];
-		this[1] = a[o + 1];
-		this[2] = a[o + 2];
-		return this;
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        this[2] = a[o + 2];
+        return this;
     }
 }
