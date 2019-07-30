@@ -41,11 +41,16 @@ mat4 getBoneMatrix(const in float i) {
 
 
 #ifdef HAS_MORPH_TARGETS
-uniform vec2 TAR_WEIGHT; //morph target weight
+//support at least eight morphed attributes => 8 POSITION / 4 POSITION + 4 NORMAL / 2 POSITION + 2 NORMAL + 2TANGENT
+uniform float TAR_WEIGHT[8];
 in vec3 TAR_POSITION_0;
 in vec3 TAR_POSITION_1;
-in vec3 TAR_NORMAL_0;
-in vec3 TAR_NORMAL_1;
+in vec3 TAR_POSITION_2;
+in vec3 TAR_POSITION_3;
+in vec3 TAR_POSITION_4;
+in vec3 TAR_POSITION_5;
+in vec3 TAR_POSITION_6;
+in vec3 TAR_POSITION_7;
 #endif
 
 uniform mat4 modelMatrix;
@@ -68,8 +73,14 @@ void main() {
     vec3 tPosition = position;
     #ifdef HAS_MORPH_TARGETS
         tPosition = position + 
-        TAR_POSITION_0 * TAR_WEIGHT.x +
-        TAR_POSITION_1 * TAR_WEIGHT.y;
+        TAR_POSITION_0 * TAR_WEIGHT[0] +
+        TAR_POSITION_1 * TAR_WEIGHT[1] + 
+        TAR_POSITION_2 * TAR_WEIGHT[2] +
+        TAR_POSITION_3 * TAR_WEIGHT[3] + 
+        TAR_POSITION_4 * TAR_WEIGHT[4] +
+        TAR_POSITION_5 * TAR_WEIGHT[5] + 
+        TAR_POSITION_6 * TAR_WEIGHT[6] +
+        TAR_POSITION_7 * TAR_WEIGHT[7];
     #endif
 
     vec4 pos = modelMatrix * vec4(tPosition,1.0);

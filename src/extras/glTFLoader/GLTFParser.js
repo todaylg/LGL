@@ -21,6 +21,8 @@ export default class GLTFParser {
         // Cache
         this.cache = new GLTFRegistry();
         this.primitiveCache = [];
+
+        this.originWeightsLength = 0;
     }
     parse(onLoad, onError) {
         let json = this.json;
@@ -304,8 +306,16 @@ export default class GLTFParser {
                     if (meshDef.isSkinnedMesh) {
                         shaderDefines += '#define USE_SKINNING 1\n';
                     }
-                    materialParams.uniforms.TAR_WEIGHT = {
-                        value: meshDef.weights ? new Vec2().fromArray(meshDef.weights) : new Vec2(0)
+                    if (meshDef.weights) {
+                        let weight = meshDef.weights;
+                        parser.originWeightsLength = weight.length;
+                        let res = new Float32Array(8); //Only Support 8 attribute now
+                        for (let i = 0; i < 8; i++) {
+                            res[i] = weight[i] ? weight[i] : 0;
+                        }
+                        materialParams.uniforms.TAR_WEIGHT = {
+                            value: res
+                        }
                     }
                     let program = new Program(parser.gl, {
                         vertex: shaderDefines + PBRBaseShader.vertex,
@@ -788,18 +798,22 @@ export default class GLTFParser {
                         if (controlChannel) {
                             let anim;
                             if (node.Animation) {
+                                //这样复用有个问题啊兄弟，timeLine处理的时候时间会翻倍
                                 anim = node.Animation;
                             } else {
                                 anim = new Animation();
                                 node.Animation = anim;
+                                group.push(anim);
                             }
                             if (target.path === "weights") {
-                                keyFrame.size = 2;
+                                keyFrame.size = parser.originWeightsLength;
+                                //Limit/Fill in 8
+                                keyFrame.cutOff = 8 - parser.originWeightsLength;
+                                keyFrame.count = keyFrame.count / keyFrame.size;
                             }
                             let keyFrameData = sliceBlockData(keyFrame);
                             let animationChannel = new AnimationChannel(controlChannel, timeLine.data, keyFrameData);
                             anim.attachChannel(animationChannel);
-                            group.push(anim);
                         }
                     }
                 }
@@ -815,9 +829,9 @@ export default class GLTFParser {
  */
 function addMorphTargets(geometry, targets, accessors) {
     let length = targets.length;
-    console.warn("No complete support MorphTargets Animation now.");
+    if (length > 8) console.warn("Only support 8 morphed attributes now.");
     for (let i = 0; i < length; i++) {
-        let target = targets[i]
+        let target = targets[i];
         for (let key in target) {
             let bufferAttribute = accessors[target[key]];
             //Postion
@@ -825,14 +839,22 @@ function addMorphTargets(geometry, targets, accessors) {
                 let attributeName = `TAR_POSITION_${i}`;
                 geometry.addAttribute(attributeName, bufferAttribute);
             }
+            //Only implement 8 attribute POSITION now
+            //support at least 8 morphed attributes => 8 POSITION / 4 POSITION + 4 NORMAL / 2 POSITION + 2 NORMAL + 2TANGENT
+            
             //Normal
-            if (key === 'NORMAL') {
-                let attributeName = `TAR_NORMAL_${i}`;
-                geometry.addAttribute(attributeName, bufferAttribute);
-            }
-            //Todo: TANGENT
+            // if (key === 'NORMAL') {
+            //     let attributeName = `TAR_NORMAL_${i}`;
+            //     geometry.addAttribute(attributeName, bufferAttribute);
+            // }
+            // //TANGENT
+            // if (key === 'TANGENT') {
+            //     let attributeName = `TAR_TANGENT_${i}`;
+            //     geometry.addAttribute(attributeName, bufferAttribute);
+            // }
         }
     }
+    return length;
 }
 function addPrimitiveAttributes(geometry, primitiveDef, accessors) {
     let attributes = primitiveDef.attributes;
@@ -861,7 +883,8 @@ function addPrimitiveAttributes(geometry, primitiveDef, accessors) {
     }
     if (primitiveDef.targets !== undefined) {
         defines.HAS_MORPH_TARGETS = 1;
-        addMorphTargets(geometry, primitiveDef.targets, accessors);
+        let targetNum = addMorphTargets(geometry, primitiveDef.targets, accessors);
+        defines.MORPH_TARGET_NUM = targetNum;
     }
     geometry.glTFLoaderDefines = defines;
 }

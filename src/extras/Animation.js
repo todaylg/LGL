@@ -1,4 +1,3 @@
-import { Vec2 } from '../math/Vec2.js';
 import { Vec3 } from '../math/Vec3.js';
 import { Quat } from '../math/Quat.js';
 
@@ -42,7 +41,7 @@ export class AnimationSystem {
     constructor() {
         this.group = [];
         this.speed = 1;
-        this.defaultVec2 = new Vec2();
+        this.defaultWeights = new Float32Array(8);
         this.defaultVec3 = new Vec3();
         this.defaultQuat = new Quat();
     }
@@ -84,11 +83,17 @@ export class AnimationSystem {
                 channel.target.lerp(prevFrame || this.defaultVec3, nextFrame, interpolationValue);
                 break;
             // Morph Target Weight Animation
-            case 2:
-                channel.target.lerp(prevFrame || this.defaultVec2, nextFrame, interpolationValue);
+            case 8:
+                this.lerp(channel.target, prevFrame || this.defaultWeights, nextFrame, interpolationValue);
                 break;
             default:
                 break;
+        }
+    }
+    lerp(out, a, b, t) {
+        for(let i=0,l=a.length;i<l;i++){
+            let ax = a[i];
+            out[i] = ax + t * (b[i] - ax);
         }
     }
     playStep(anim, channel, dt) {
