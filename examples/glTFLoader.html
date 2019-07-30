@@ -9,8 +9,8 @@
     <title>glTF-Loader</title>
     <link rel="stylesheet" href="./assets/main.css">
 </head>
-
-<body>
+<body class="preLoading isLoading">
+    <p class="loadingText">Loading Assets...</p>
     <script type="module">
         import { Mesh, Renderer, Camera, Transform, Vec3, Texture, Program } from '../src/Core.js';
         import { Orbit, Cube, GLTFLoader } from '../src/Extras.js';
@@ -44,8 +44,10 @@
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 scene.addChild(glTF);
+                document.body.classList.remove("isLoading");
             }, err => {
                 console.error("Loader Error:", err);
+                document.body.classList.remove("isLoading");
             });
 
             // Texture is equirectangular

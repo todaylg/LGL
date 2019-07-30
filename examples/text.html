@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-
     <title>MSDF Text Glyphs (Multichannel Signed Distance Fields)</title>
     <link href="assets/main.css" rel="stylesheet">
 </head>
@@ -14,7 +12,6 @@
         import {Renderer, Camera, Transform, Geometry, Texture, Program, Mesh, Vec3} from '../src/Core.js';
         import {Orbit, Cube, Text} from '../src/Extras.js';
         import Shader from './shaders/MSDFTextShader.js';
-
         {
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
@@ -36,7 +33,6 @@
             const scene = new Transform();
 
             /*
-            
             Instructions to generate necessary MSDF assets
 
             Install msdf-bmfont https://github.com/soimy/msdf-bmfont-xml

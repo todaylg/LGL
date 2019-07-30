@@ -145,9 +145,6 @@
                 glTF.scale.set(10);
                 glTF.position.x = 20;
                 animationSys = gltf.animations;
-                if ( animationSys ){
-                    animationSys.speed = 0.5;
-                }
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);

@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="./assets/main.css">
 </head>
 
-<body>
-    <div class="preLoadingTips">Loading Model...</div>
+<body class="preLoading isLoading">
+    <p class="loadingText">Loading Assets...</p>
     <script type="module">
         import { Renderer, Camera, Transform, Orbit, GLTFLoader, Vec3 } from '../src/index.js';
         {
@@ -43,8 +43,10 @@
                 glTF.scale.set(0.02);
                 animationSys = gltf.animations;
                 scene.addChild(glTF);
+                document.body.classList.remove("isLoading");
             }, err => {
                 console.error("Loader Error:", err);
+                document.body.classList.remove("isLoading");
             });
 
             requestAnimationFrame(update);
