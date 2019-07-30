@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <div class="preLoadingTips">Loading Model...</div>
     <script type="module">
         import { Renderer, Camera, Transform, Orbit, GLTFLoader, Vec3 } from '../src/index.js';
         {
@@ -41,9 +42,6 @@
                 // Animation
                 glTF.scale.set(0.02);
                 animationSys = gltf.animations;
-                if ( animationSys ){
-                    // animationSys.speed = 0.5;
-                }
                 scene.addChild(glTF);
             }, err => {
                 console.error("Loader Error:", err);
