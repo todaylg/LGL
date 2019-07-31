@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>JSDoc: extras/reflector/Reflector.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:100,400,700|Oswald:300|Inconsolata,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+</head>
+
+<body>
+    <div id="stickyNavbarOverlay"></div>
+    <div class="top-navbar">
+        <div class="container">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    
+                    
+                        <h1 class="navbar-item">Documentation</h1>
+                    
+                    <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="columns">
+            <div class="column is-3" id="sidebarNav">
+                <div class="sidebar">
+                    <nav>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Reflector.html">Reflector</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                    </nav>
+                </div>
+            </div>
+            <div class="column is-9-desktop">
+                <div class="content" id="main-content-wrapper">
+                    <header class="page-title">
+                        <p>Source</p>
+                        <h1>extras/reflector/Reflector.js</h1>
+                    </header>
+                    
+                    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Mesh, Color, Program, Vec4, Vec3, Mat3, Mat4, Camera, RenderTarget } from '../../Core.js';
+import reflectorShader from './shaders/reflectorShader.js';
+
+/**
+ * Create a Reflector Mesh
+ * 
+ * @class
+ * @extends Geometry
+ * @param {Geometry}- The reflective geometry
+ * @param {Object} [options] -  The optional plane parameters
+ */
+export class Reflector extends Mesh {
+	constructor(geometry, {
+		shader = reflectorShader,
+		clipBias = 0.003,
+		textureWidth = 512,
+		textureHeight = 512,
+		color = new Color(.46),
+	} = {}) {
+		let gl = geometry.gl;
+		let reflectorPlane = {
+			normal: new Vec3(1, 0, 0),
+			constant: 0,
+			v1: new Vec3(),
+			m1: new Mat3(),
+			m2: new Mat4(),
+		};
+		let normal = new Vec3();
+		let reflectorWorldPosition = new Vec3();
+		let cameraWorldPosition = new Vec3();
+		let rotationMatrix = new Mat4();
+		let lookAtPosition = new Vec3(0, 0, -1);
+		let clipPlane = new Vec4();
+
+		let view = new Vec3();
+		let target = new Vec3();
+		let q = new Vec4();
+
+		let textureMatrix = new Mat4();
+		let virtualCamera = new Camera();
+
+		let renderTarget = new RenderTarget(gl, {
+			width: textureWidth,
+			height: textureHeight,
+			format: gl.RGB,
+		});
+
+		let program = new Program(gl, {
+			vertex: shader.vertex,
+			fragment: shader.fragment,
+			uniforms: {
+				color: { value: color },
+				tDiffuse: { value: renderTarget.texture },
+				textureMatrix: { value: textureMatrix },
+			}
+		});
+		super(gl, { geometry, program });
+
+		this.renderOrder = - Infinity; // render first
+		this.meshType = 'reflectorMesh';
+
+		this.render = ({ scene, camera }) => {
+			let renderer = this.gl.renderer;
+			camera.updateMatrixWorld();
+			this.updateMatrixWorld();
+			reflectorWorldPosition.setFromMatrixPosition(this.worldMatrix);
+			cameraWorldPosition.setFromMatrixPosition(camera.worldMatrix);
+			rotationMatrix.extractRotation(this.worldMatrix);
+
+			// 1.Caculate VirtualCamera
+			normal.set(0, 0, 1);
+			normal.applyMatrix4(rotationMatrix);
+
+			view.sub(reflectorWorldPosition, cameraWorldPosition);// incidence ray
+
+			// Avoid rendering when reflector is facing away
+			if (view.dot(normal) > 0) return;
+
+			view.reflect(normal).negate();// reflect ray
+			view.add(reflectorWorldPosition);// move to reflecting plane symmetric point(virtualCamera pos)
+
+			rotationMatrix.extractRotation(camera.worldMatrix);// synchronous rotation
+
+			lookAtPosition.set(0, 0, -1);
+			lookAtPosition.applyMatrix4(rotationMatrix);
+			lookAtPosition.add(cameraWorldPosition);
+
+			target.sub(reflectorWorldPosition, lookAtPosition);
+			target.reflect(normal).negate();
+			target.add(reflectorWorldPosition);
+
+			virtualCamera.position.copy(view);
+			virtualCamera.up.set(0, 1, 0);
+			virtualCamera.up.applyMatrix4(rotationMatrix);
+			virtualCamera.up.reflect(normal);
+			virtualCamera.lookAt(target);
+
+			virtualCamera.far = camera.far; // Used in WebGLBackground
+
+			virtualCamera.updateMatrixWorld();
+			virtualCamera.projectionMatrix.copy(camera.projectionMatrix);
+
+			// 2.Update TextureMatrix
+			textureMatrix.set(
+				0.5, 0.0, 0.0, 0,
+				0.0, 0.5, 0.0, 0,
+				0.0, 0.0, 0.5, 0,
+				0.5, 0.5, 0.5, 1.0
+			);//Clip Space:[-1,1] => UV:[0,1]
+			textureMatrix.multiply(virtualCamera.projectionMatrix);//P
+			textureMatrix.multiply(virtualCamera.viewMatrix);//V
+			textureMatrix.multiply(this.worldMatrix);//M
+
+			// 3.Update projection ClipPlane
+			// Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+			// Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+			
+			//setFromNormalAndCoplanarPoint
+			reflectorPlane.normal.copy(normal);
+			reflectorPlane.constant = -reflectorWorldPosition.dot(reflectorPlane.normal);
+
+			//reflectorPlane.applyMatrix4
+			reflectorPlane.m1.getNormalMatrix(virtualCamera.viewMatrix);
+			reflectorPlane.v1.copy(reflectorPlane.normal).multiply(-reflectorPlane.constant);
+			reflectorPlane.v1.applyMatrix4(virtualCamera.viewMatrix);
+			reflectorPlane.normal.applyMatrix3(reflectorPlane.m1).normalize();
+			reflectorPlane.constant = -reflectorPlane.v1.dot(reflectorPlane.normal);
+
+			clipPlane.set(reflectorPlane.normal.x, reflectorPlane.normal.y, reflectorPlane.normal.z, reflectorPlane.constant);
+
+			let projectionMatrix = virtualCamera.projectionMatrix;
+			q.x = (Math.sign(clipPlane.x) + projectionMatrix[8]) / projectionMatrix[0];
+			q.y = (Math.sign(clipPlane.y) + projectionMatrix[9]) / projectionMatrix[5];
+			q.z = - 1.0;
+			q.w = (1.0 + projectionMatrix[10]) / projectionMatrix[14];
+
+			// Calculate the scaled plane vector
+			let res = 2.0 / clipPlane.dot(q);
+			clipPlane.multiply(res);
+
+			// Replacing the third row of the projection matrix
+			projectionMatrix[2] = clipPlane.x;
+			projectionMatrix[6] = clipPlane.y;
+			projectionMatrix[10] = clipPlane.z + 1.0 - clipBias;
+			projectionMatrix[14] = clipPlane.w;
+
+			// Render
+			this.visible = false;
+			renderer.render({ scene, camera: virtualCamera, target: renderTarget });
+			this.visible = true;
+		}
+	}
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jul 31 2019 09:04:39 GMT+0800 (CST)</p>
+        <p class="sidebar-created-by">
+            <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
+            <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
+        </p>
+    </div>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/app.min.js"></script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

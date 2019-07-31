@@ -42,7 +42,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Reflector.html">Reflector</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -88,7 +88,7 @@
     
     
     <div class="description">
-        Four order matrix
+        Four order matrix(column-major order)
     </div>
     
 
@@ -162,7 +162,7 @@
       </td>
   
 
-  <td class="description last">The 0 row 0 column element of matrix</td>
+  <td class="description last">The 0 column 0 row element of matrix</td>
 </tr>
 
 
@@ -203,7 +203,7 @@
       </td>
   
 
-  <td class="description last">The 0 row 1 column element of matrix</td>
+  <td class="description last">The 0 column 1 row element of matrix</td>
 </tr>
 
 
@@ -244,7 +244,7 @@
       </td>
   
 
-  <td class="description last">The 0 row 2 column element of matrix</td>
+  <td class="description last">The 0 column 2 row element of matrix</td>
 </tr>
 
 
@@ -285,7 +285,7 @@
       </td>
   
 
-  <td class="description last">The 0 row 3 column element of matrix</td>
+  <td class="description last">The 0 column 3 row element of matrix</td>
 </tr>
 
 
@@ -326,7 +326,7 @@
       </td>
   
 
-  <td class="description last">The 1 row 0 column element of matrix</td>
+  <td class="description last">The 1 column 0 row element of matrix</td>
 </tr>
 
 
@@ -367,7 +367,7 @@
       </td>
   
 
-  <td class="description last">The 1 row 1 column element of matrix</td>
+  <td class="description last">The 1 column 1 row element of matrix</td>
 </tr>
 
 
@@ -408,7 +408,7 @@
       </td>
   
 
-  <td class="description last">The 1 row 2 column element of matrix</td>
+  <td class="description last">The 1 column 2 row element of matrix</td>
 </tr>
 
 
@@ -449,7 +449,7 @@
       </td>
   
 
-  <td class="description last">The 1 row 3 column element of matrix</td>
+  <td class="description last">The 1 column 3 row element of matrix</td>
 </tr>
 
 
@@ -490,7 +490,7 @@
       </td>
   
 
-  <td class="description last">The 2 row 0 column element of matrix</td>
+  <td class="description last">The 2 column 0 row element of matrix</td>
 </tr>
 
 
@@ -531,7 +531,7 @@
       </td>
   
 
-  <td class="description last">The 2 row 1 column element of matrix</td>
+  <td class="description last">The 2 column 1 row element of matrix</td>
 </tr>
 
 
@@ -572,7 +572,7 @@
       </td>
   
 
-  <td class="description last">The 2 row 2 column element of matrix</td>
+  <td class="description last">The 2 column 2 row element of matrix</td>
 </tr>
 
 
@@ -613,7 +613,7 @@
       </td>
   
 
-  <td class="description last">The 2 row 3 column element of matrix</td>
+  <td class="description last">The 2 column 3 row element of matrix</td>
 </tr>
 
 
@@ -1172,7 +1172,7 @@ This is equivalent to (but much faster than):
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line328">line 328</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line346">line 346</a>
             </span>
         </p>
     
@@ -1363,7 +1363,7 @@ This is equivalent to (but much faster than):
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line338">line 338</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line356">line 356</a>
             </span>
         </p>
     
@@ -2231,7 +2231,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line308">line 308</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line314">line 314</a>
             </span>
         </p>
     
@@ -2353,7 +2353,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
 
   
 
-  <td class="description last">Matrix to be decomposed (input)</td>
+  <td class="description last">Quaternion to receive the rotation component</td>
 </tr>
 
 
@@ -2570,7 +2570,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line298">line 298</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line304">line 304</a>
             </span>
         </p>
     
@@ -2739,7 +2739,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line284">line 284</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line290">line 290</a>
             </span>
         </p>
     
@@ -3187,7 +3187,223 @@ https://www.cnblogs.com/wuminye/p/5496950.html
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line319">line 319</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line325">line 325</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type"><a href="Mat4.html">Mat4</a></span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="lookAtTarget">
+        
+        <span class="code-name">
+            lookAtTarget<span class="signature">(eye, target, up)</span><span class="type-signature"> &rarr; {<a href="Mat4.html">Mat4</a>}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Generates a look-at matrix with the given eye position, focal point, and up axis. If you want a matrix that actually makes an object look at another object, you should use targetTo instead.
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>eye</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">vec3</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Position of the viewer</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>target</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">vec3</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Point the viewer is looking at</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>up</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">vec3</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">vec3 pointing up</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Mat4.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line337">line 337</a>
             </span>
         </p>
     
@@ -5168,7 +5384,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
         <p class="tag-source">
             <a href="math_Mat4.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line351">line 351</a>
+                <a href="math_Mat4.js.html">math/Mat4.js</a>, <a href="math_Mat4.js.html#line369">line 369</a>
             </span>
         </p>
     
@@ -5463,7 +5679,7 @@ https://www.cnblogs.com/wuminye/p/5496950.html
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jul 31 2019 09:04:39 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>

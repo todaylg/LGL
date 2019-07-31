@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>JSDoc: Mesh</title>
+    <title>JSDoc: Reflector</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -50,7 +50,7 @@
                 <div class="content" id="main-content-wrapper">
                     <header class="page-title">
                         <p>Class</p>
-                        <h1>Mesh</h1>
+                        <h1>Reflector</h1>
                     </header>
                     
                     
@@ -62,9 +62,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Mesh<span class="signature">(gl, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Reflector<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Create Mesh</div>
+            <div class="class-description">Create a Reflector Mesh</div>
         
     
 </header>
@@ -79,10 +79,10 @@
                     <div class="member">
 
     
-    <h4 class="name" id="Mesh">
+    <h4 class="name" id="Reflector">
         
         <span class="code-name">
-            new Mesh<span class="signature">(gl, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+            new Reflector<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -115,8 +115,6 @@
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -128,13 +126,13 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>gl</code></td>
+      <td class="name"><code></code></td>
   
 
   <td class="type">
   
       
-<span class="param-type">WebGLContext</span>
+<span class="param-type"><a href="Geometry.html">Geometry</a></span>
 
 
   
@@ -151,12 +149,8 @@
   
 
   
-      <td class="default">
-      
-      </td>
-  
 
-  <td class="description last"></td>
+  <td class="description last">The reflective geometry</td>
 </tr>
 
 
@@ -190,207 +184,9 @@
   
 
   
-      <td class="default">
-      
-      </td>
-  
 
-  <td class="description last">The optional mesh parameters</td>
+  <td class="description last">The optional plane parameters</td>
 </tr>
-
-  
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>geometry</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type"><a href="Geometry.html">Geometry</a></span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last">The geometry of mesh</td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>program</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type"><a href="Program.html">Program</a></span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last">The program of mesh</td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>mode</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">GLenum</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          gl.TRIANGLES
-      
-      </td>
-  
-
-  <td class="description last">A GLenum specifying the type primitive to render</td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>frustumCulled</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Boolean</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          true
-      
-      </td>
-  
-
-  <td class="description last">Whether enable frustum Culled</td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>renderOrder</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Number</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          0
-      
-      </td>
-  
-
-  <td class="description last">The render order</td>
-</tr>
-
-  
 
 
     
@@ -434,9 +230,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Mesh.js.html" class="button">View Source</a>
+            <a href="extras_reflector_Reflector.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Mesh.js.html">core/Mesh.js</a>, <a href="core_Mesh.js.html#line20">line 20</a>
+                <a href="extras_reflector_Reflector.js.html">extras/reflector/Reflector.js</a>, <a href="extras_reflector_Reflector.js.html#line12">line 12</a>
             </span>
         </p>
     
@@ -476,7 +272,7 @@
 
 
     <ul>
-        <li><a href="Transform.html">Transform</a></li>
+        <li><a href="Geometry.html">Geometry</a></li>
     </ul>
 
 
@@ -502,10 +298,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="addChild">
+    <h4 class="name" id="addAttribute">
         
         <span class="code-name">
-            addChild<span class="signature">(child, notifyChild<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+            addAttribute<span class="signature">()</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -513,7 +309,7 @@
     
     
     <div class="description">
-        Add the Transform object to parent Transform object
+        Add attribute to geometry
     </div>
     
 
@@ -524,113 +320,6 @@
 
 
 
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>child</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type"><a href="Transform.html">Transform</a></span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last">The child to add</td>
-</tr>
-
-
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>notifyChild</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Boolean</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          true
-      
-      </td>
-  
-
-  <td class="description last">Whether sync info to child's parent</td>
-</tr>
-
-
-    
-    </tbody>
-</table>
 
 
 
@@ -645,7 +334,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#addChild">Transform#addChild</a>
+        <a href="Geometry.html#addAttribute">Geometry#addAttribute</a>
     </li></ul></dd>
     
 
@@ -674,9 +363,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line61">line 61</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line49">line 49</a>
             </span>
         </p>
     
@@ -707,10 +396,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="applyMatrix">
+    <h4 class="name" id="bindAttributes">
         
         <span class="code-name">
-            applyMatrix<span class="signature">(matrix)</span><span class="type-signature"></span>
+            bindAttributes<span class="signature">(program)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -718,7 +407,7 @@
     
     
     <div class="description">
-        Transform the matrix by input
+        Bind attribute to program
     </div>
     
 
@@ -756,13 +445,13 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>matrix</code></td>
+      <td class="name"><code>program</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type"><a href="Mat4.html">Mat4</a></span>
+<span class="param-type"><a href="Program.html">Program</a></span>
 
 
   
@@ -772,7 +461,7 @@
 
   
 
-  <td class="description last">The matrix to tranform</td>
+  <td class="description last">The program to bind attribute</td>
 </tr>
 
 
@@ -793,7 +482,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#applyMatrix">Transform#applyMatrix</a>
+        <a href="Geometry.html#bindAttributes">Geometry#bindAttributes</a>
     </li></ul></dd>
     
 
@@ -822,9 +511,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line50">line 50</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line137">line 137</a>
             </span>
         </p>
     
@@ -855,10 +544,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="decompose">
+    <h4 class="name" id="computeBoundingBox">
         
         <span class="code-name">
-            decompose<span class="signature">()</span><span class="type-signature"></span>
+            computeBoundingBox<span class="signature">(array)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -866,7 +555,7 @@
     
     
     <div class="description">
-        Decompose the matrix to a quaternion rotation, vector translation ,vector rotation, vector scale
+        Calculate geometry bounding box
     </div>
     
 
@@ -877,6 +566,56 @@
 
 
 
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>array</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Array</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The geometry position data</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
 
 
 
@@ -891,7 +630,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#decompose">Transform#decompose</a>
+        <a href="Geometry.html#computeBoundingBox">Geometry#computeBoundingBox</a>
     </li></ul></dd>
     
 
@@ -920,9 +659,305 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line114">line 114</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line208">line 208</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="computeBoundingSphere">
+        
+        <span class="code-name">
+            computeBoundingSphere<span class="signature">(array)</span><span class="type-signature"></span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Calculate geometry bounding sphere
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>array</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Array</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The geometry position data</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Geometry.html#computeBoundingSphere">Geometry#computeBoundingSphere</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="core_Geometry.js.html" class="button">View Source</a>
+            <span>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line249">line 249</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="createVAO">
+        
+        <span class="code-name">
+            createVAO<span class="signature">(program)</span><span class="type-signature"></span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Create Vertex Array Object and bind program
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>program</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type"><a href="Program.html">Program</a></span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The program to bind new vao</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Geometry.html#createVAO">Geometry#createVAO</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="core_Geometry.js.html" class="button">View Source</a>
+            <span>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line126">line 126</a>
             </span>
         </p>
     
@@ -964,7 +999,7 @@
     
     
     <div class="description">
-        Render the Mesh
+        Draw the Geometry
     </div>
     
 
@@ -992,6 +1027,8 @@
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1029,8 +1066,12 @@
   
 
   
+      <td class="default">
+      
+      </td>
+  
 
-  <td class="description last">The optional mesh parameters</td>
+  <td class="description last">The options of drawing parameters</td>
 </tr>
 
   
@@ -1038,13 +1079,13 @@
     
 <tr class="deep-level-1">
   
-      <td class="name"><code>camera</code></td>
+      <td class="name"><code>mode</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type"><a href="Camera.html">Camera</a></span>
+<span class="param-type">GLenum</span>
 
 
   
@@ -1063,168 +1104,21 @@
   
 
   
-
-  <td class="description last">The view of mesh</td>
-</tr>
-
-  
-
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="core_Mesh.js.html" class="button">View Source</a>
-            <span>
-                <a href="core_Mesh.js.html">core/Mesh.js</a>, <a href="core_Mesh.js.html#line66">line 66</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-            
-                <div class="member">
-
-    
-    <h4 class="name" id="lookAt">
-        
-        <span class="code-name">
-            lookAt<span class="signature">(target, invert)</span><span class="type-signature"></span>
-        </span>
-    </h4>
-    
-
-    
-    
-    <div class="description">
-        Update matrix to lookAt the target
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>target</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Transfrom</span>
-
-
-  
-  </td>
-
-  
-
-  
       <td class="default">
+      
+          gl.TRIANGLES
       
       </td>
   
 
-  <td class="description last">the target to lookAt</td>
+  <td class="description last">A GLenum specifying the type primitive to render.</td>
 </tr>
 
-
-    
-
-        
-<tr class="deep-level-0">
   
-      <td class="name"><code>invert</code></td>
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>geometryBound</code></td>
   
 
   <td class="type">
@@ -1236,6 +1130,16 @@
   
   </td>
 
+  
+      <td class="attributes">
+      
+          &lt;optional><br>
+      
+
+      
+
+      
+      </td>
   
 
   
@@ -1246,8 +1150,10 @@
       </td>
   
 
-  <td class="description last">Whether invert lookAt target to self</td>
+  <td class="description last">Calculate geometry bounding or not</td>
 </tr>
+
+  
 
 
     
@@ -1267,7 +1173,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#lookAt">Transform#lookAt</a>
+        <a href="Geometry.html#draw">Geometry#draw</a>
     </li></ul></dd>
     
 
@@ -1296,9 +1202,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line126">line 126</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line171">line 171</a>
             </span>
         </p>
     
@@ -1329,10 +1235,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="removeChild">
+    <h4 class="name" id="remove">
         
         <span class="code-name">
-            removeChild<span class="signature">(child, notifyChild<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+            remove<span class="signature">()</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -1340,7 +1246,7 @@
     
     
     <div class="description">
-        Remove the Transform object from parent Transform object
+        Remove geometry attributes
     </div>
     
 
@@ -1352,113 +1258,6 @@
 
 
 
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>child</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type"><a href="Transform.html">Transform</a></span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last">The child to remove</td>
-</tr>
-
-
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>notifyChild</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Boolean</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          true
-      
-      </td>
-  
-
-  <td class="description last">Whether sync info to child's parent</td>
-</tr>
-
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -1472,7 +1271,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#removeChild">Transform#removeChild</a>
+        <a href="Geometry.html#remove">Geometry#remove</a>
     </li></ul></dd>
     
 
@@ -1501,9 +1300,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line71">line 71</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line266">line 266</a>
             </span>
         </p>
     
@@ -1534,10 +1333,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="setParent">
+    <h4 class="name" id="setDrawRange">
         
         <span class="code-name">
-            setParent<span class="signature">(parent, notifyParent<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+            setDrawRange<span class="signature">(start, count)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -1545,212 +1344,7 @@
     
     
     <div class="description">
-        Set the parent Transform object
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>parent</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type"><a href="Transform.html">Transform</a></span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last">The parent to add this object to</td>
-</tr>
-
-
-    
-
-        
-<tr class="deep-level-0">
-  
-      <td class="name"><code>notifyParent</code></td>
-  
-
-  <td class="type">
-  
-      
-<span class="param-type">Boolean</span>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          true
-      
-      </td>
-  
-
-  <td class="description last">Whether sync info to parent's children list</td>
-</tr>
-
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#setParent">Transform#setParent</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
-            <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line40">line 40</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-            
-                <div class="member">
-
-    
-    <h4 class="name" id="traverse">
-        
-        <span class="code-name">
-            traverse<span class="signature">(callback)</span><span class="type-signature"></span>
-        </span>
-    </h4>
-    
-
-    
-    
-    <div class="description">
-        Traverse the callback function to all this Transfrom group
+        Set the attribute draw range start and count
     </div>
     
 
@@ -1788,13 +1382,13 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>callback</code></td>
+      <td class="name"><code>start</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type">function</span>
+<span class="param-type">Number</span>
 
 
   
@@ -1804,7 +1398,32 @@
 
   
 
-  <td class="description last"></td>
+  <td class="description last">The start value</td>
+</tr>
+
+
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>count</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The count value</td>
 </tr>
 
 
@@ -1825,7 +1444,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#traverse">Transform#traverse</a>
+        <a href="Geometry.html#setDrawRange">Geometry#setDrawRange</a>
     </li></ul></dd>
     
 
@@ -1854,9 +1473,9 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line105">line 105</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line109">line 109</a>
             </span>
         </p>
     
@@ -1887,10 +1506,10 @@
                 <div class="member">
 
     
-    <h4 class="name" id="updateMatrix">
+    <h4 class="name" id="setIndex">
         
         <span class="code-name">
-            updateMatrix<span class="signature">()</span><span class="type-signature"></span>
+            setIndex<span class="signature">(value)</span><span class="type-signature"></span>
         </span>
     </h4>
     
@@ -1898,105 +1517,7 @@
     
     
     <div class="description">
-        Update the matrix from a quaternion rotation, vector translation and vector scale
-    </div>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#updateMatrix">Transform#updateMatrix</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
-            <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line96">line 96</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-            
-                <div class="member">
-
-    
-    <h4 class="name" id="updateMatrixWorld">
-        
-        <span class="code-name">
-            updateMatrixWorld<span class="signature">(force)</span><span class="type-signature"></span>
-        </span>
-    </h4>
-    
-
-    
-    
-    <div class="description">
-        Update the world matrix of this Transform group
+        Set the attribute draw range count
     </div>
     
 
@@ -2034,13 +1555,13 @@
         
 <tr class="deep-level-0">
   
-      <td class="name"><code>force</code></td>
+      <td class="name"><code>value</code></td>
   
 
   <td class="type">
   
       
-<span class="param-type">Boolean</span>
+<span class="param-type">Object</span>
 
 
   
@@ -2050,7 +1571,7 @@
 
   
 
-  <td class="description last">Whether force update matrix</td>
+  <td class="description last">The value of index key</td>
 </tr>
 
 
@@ -2071,7 +1592,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Transform.html#updateMatrixWorld">Transform#updateMatrixWorld</a>
+        <a href="Geometry.html#setIndex">Geometry#setIndex</a>
     </li></ul></dd>
     
 
@@ -2100,9 +1621,255 @@
 
     
         <p class="tag-source">
-            <a href="core_Transform.js.html" class="button">View Source</a>
+            <a href="core_Geometry.js.html" class="button">View Source</a>
             <span>
-                <a href="core_Transform.js.html">core/Transform.js</a>, <a href="core_Transform.js.html#line80">line 80</a>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line100">line 100</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="setInstancedCount">
+        
+        <span class="code-name">
+            setInstancedCount<span class="signature">(value)</span><span class="type-signature"></span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Set the instance count value
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>value</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">Number</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The instance count value</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Geometry.html#setInstancedCount">Geometry#setInstancedCount</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="core_Geometry.js.html" class="button">View Source</a>
+            <span>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line118">line 118</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="updateAttribute">
+        
+        <span class="code-name">
+            updateAttribute<span class="signature">()</span><span class="type-signature"></span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Bind buffer and push attribute data to buffer
+    </div>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Geometry.html#updateAttribute">Geometry#updateAttribute</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="core_Geometry.js.html" class="button">View Source</a>
+            <span>
+                <a href="core_Geometry.js.html">core/Geometry.js</a>, <a href="core_Geometry.js.html#line86">line 86</a>
             </span>
         </p>
     

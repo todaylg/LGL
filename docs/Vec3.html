@@ -42,7 +42,7 @@
             <div class="column is-3" id="sidebarNav">
                 <div class="sidebar">
                     <nav>
-                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
+                        <h2><a href="index.html">Home</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Camera.html">Camera</a></li><li><a href="Color.html">Color</a></li><li><a href="Cube.html">Cube</a></li><li><a href="Euler.html">Euler</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Mat3.html">Mat3</a></li><li><a href="Mat4.html">Mat4</a></li><li><a href="Mesh.html">Mesh</a></li><li><a href="Orbit.html">Orbit</a></li><li><a href="Plane.html">Plane</a></li><li><a href="Post.html">Post</a></li><li><a href="Program.html">Program</a></li><li><a href="Quat.html">Quat</a></li><li><a href="Reflector.html">Reflector</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="RenderTarget.html">RenderTarget</a></li><li><a href="Sphere.html">Sphere</a></li><li><a href="Texture.html">Texture</a></li><li><a href="Torus.html">Torus</a></li><li><a href="Transform.html">Transform</a></li><li><a href="Vec2.html">Vec2</a></li><li><a href="Vec3.html">Vec3</a></li><li><a href="Vec4.html">Vec4</a></li></ul></div>
                     </nav>
                 </div>
             </div>
@@ -687,7 +687,7 @@ new Vec3(0, 0, 0);</code></pre>
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line293">line 293</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line322">line 322</a>
             </span>
         </p>
     
@@ -725,6 +725,172 @@ new Vec3(0, 0, 0);</code></pre>
         <label>Type: </label>
         
 <span class="param-type">Number</span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="applyMatrix3">
+        
+        <span class="code-name">
+            applyMatrix3<span class="signature">(m)</span><span class="type-signature"> &rarr; {<a href="Vec3.html">Vec3</a>}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Transforms the vec3 with a mat3
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>m</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">mat4</span>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">matrix to transform with</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Vec3.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line292">line 292</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type"><a href="Vec3.html">Vec3</a></span>
 
 
     </div>
@@ -858,7 +1024,7 @@ i.e.,[m[0] × x + m[4] × y + m[8] × z + m[12], m[1] × x + m[5] × y + m[9] ×
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line270">line 270</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line281">line 281</a>
             </span>
         </p>
     
@@ -1025,7 +1191,7 @@ benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line282">line 282</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line304">line 304</a>
             </span>
         </p>
     
@@ -1291,7 +1457,7 @@ benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line256">line 256</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line267">line 267</a>
             </span>
         </p>
     
@@ -1407,7 +1573,7 @@ benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line311">line 311</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line340">line 340</a>
             </span>
         </p>
     
@@ -1768,7 +1934,7 @@ https://blog.csdn.net/dcrmg/article/details/52416832
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line215">line 215</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line226">line 226</a>
             </span>
         </p>
     
@@ -2293,7 +2459,7 @@ https://blog.csdn.net/dcrmg/article/details/52416832
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line202">line 202</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line213">line 213</a>
             </span>
         </p>
     
@@ -2461,7 +2627,7 @@ https://blog.csdn.net/dcrmg/article/details/52416832
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line303">line 303</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line332">line 332</a>
             </span>
         </p>
     
@@ -2666,7 +2832,7 @@ https://blog.csdn.net/dcrmg/article/details/52416832
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line321">line 321</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line350">line 350</a>
             </span>
         </p>
     
@@ -2932,7 +3098,7 @@ https://blog.csdn.net/dcrmg/article/details/52416832
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line242">line 242</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line253">line 253</a>
             </span>
         </p>
     
@@ -3119,7 +3285,7 @@ i.e.,(1/x,1/y,1/z)
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line180">line 180</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line191">line 191</a>
             </span>
         </p>
     
@@ -3455,7 +3621,7 @@ i.e.,[x+t×(v[0]-x),y+t×(v[1]-x),z+t×(v[2]-z)];
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line228">line 228</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line239">line 239</a>
             </span>
         </p>
     
@@ -3925,7 +4091,185 @@ i.e.,v/|v| => (x/√(x²+y²+z²),y/√(x²+y²+z²),z/√(x²+y²+z²))
         <p class="tag-source">
             <a href="math_Vec3.js.html" class="button">View Source</a>
             <span>
-                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line190">line 190</a>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line201">line 201</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<span class="param-type"><a href="Vec3.html">Vec3</a></span>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    
+    <h4 class="name" id="reflect">
+        
+        <span class="code-name">
+            reflect<span class="signature">(normal<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Vec3.html">Vec3</a>}</span>
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Reflect incident vector off plane orthogonal to normal(normal is assumed to have unit length)
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        
+<tr class="deep-level-0">
+  
+      <td class="name"><code>normal</code></td>
+  
+
+  <td class="type">
+  
+      
+<span class="param-type">vec3</span>
+
+
+  
+  </td>
+
+  
+      <td class="attributes">
+      
+          &lt;optional><br>
+      
+
+      
+
+      
+      </td>
+  
+
+  
+
+  <td class="description last">the normal vector</td>
+</tr>
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="math_Vec3.js.html" class="button">View Source</a>
+            <span>
+                <a href="math_Vec3.js.html">math/Vec3.js</a>, <a href="math_Vec3.js.html#line180">line 180</a>
             </span>
         </p>
     
@@ -4959,7 +5303,7 @@ i.e.,x²+y²+z²
 
 <footer class="footer">
     <div class="content has-text-centered">
-        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 28 2019 05:34:12 GMT+0800 (CST)</p>
+        <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jul 31 2019 09:04:39 GMT+0800 (CST)</p>
         <p class="sidebar-created-by">
             <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by 
             <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers</a>
