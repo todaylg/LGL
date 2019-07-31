@@ -1,9 +1,73 @@
 # LGL
 
-> Personal WebGL rendering framework (Learning...)
+> Little WebGL Rendering Framework (For Learning WebGL...)
 
-[Example](http://todaylg.com/LGL/examples)
+LGL is a WebGL rendering framework that is modified and expanded based on [ogl](https://github.com/oframe/ogl).
+
+Aiming to learn WebGL and serve as the PlayGround for implementing some features.
+
+[Examples](http://todaylg.com/LGL/examples)
 
 [Doc](http://todaylg.com/LGL/docs/)
 
-Learning a lot from [o-gl](https://github.com/oframe/ogl) and [three.js](https://github.com/mrdoob/three.js) 
+## Features
+
+* **Base**
+
+* - [x] Base Primitives
+
+  - [x] PaticleSystem
+
+  - [x] Reflector
+
+  - [x] Instance
+
+  - [ ] Text
+
+  - [ ] Raycasting
+
+  - [ ] Fog
+
+  - [ ] Deferred Shading
+
+* **glTF Loader**
+
+* - [x] Base (Parser + PBR)
+
+  - [x] Skinning Animaiton
+
+  - [x] Morph Target Animation
+
+  - [ ] Extension
+
+  - [ ] .glb Loader
+
+* **Post-Processing**
+
+* - [x] Transition
+
+  - [x] FXAA
+
+  - [x] Glitch
+
+  - [x] Bloom
+
+  - [x] Vignette
+
+  - [x] DOF
+
+  - [ ] LensFlare
+
+  - [ ] ToneMapping
+
+  - [ ] Motion Blur
+
+* **ShadowMap**
+
+* - [x] Direaction Light
+
+  - [x] Spot Light
+
+  - [x] Point Light
+
+  - [x] PCF
