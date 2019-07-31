@@ -31,19 +31,12 @@
 
             let lightArrConf = [
                 {
-                    lightType: 'dir',
-                    lightPos: new Vec3(0, 30, 1),
-                    target: new Vec3(0, 0, 0),
-                    diffuseFactor: 0.4,
-                    specularFactor: 0.5,
-                },
-                {
                     lightType: 'spot',
                     lightPos: new Vec3(0, 40, 50),
                     target: new Vec3(0, 0, 0),
                     diffuseFactor: 30,
                     specularFactor: 30,
-                },
+                }
             ]
             // Init Shadow
             let shadowMap = new ShadowMap(gl, lightArrConf);
