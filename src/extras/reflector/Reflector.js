@@ -1,5 +1,4 @@
-import { Mesh, Color, Program, Vec4, Vec3, Mat3, Mat4, Camera, RenderTarget, Transform } from '../../Core.js';
-import { Plane } from '../../Extras.js';
+import { Mesh, Color, Program, Vec4, Vec3, Mat3, Mat4, Camera, RenderTarget } from '../../Core.js';
 import reflectorShader from './shaders/reflectorShader.js';
 
 /**
@@ -32,7 +31,6 @@ export class Reflector extends Mesh {
 		let rotationMatrix = new Mat4();
 		let lookAtPosition = new Vec3(0, 0, -1);
 		let clipPlane = new Vec4();
-		let viewport = new Vec4();
 
 		let view = new Vec3();
 		let target = new Vec3();

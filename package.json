@@ -1,7 +1,7 @@
 {
     "name": "lgl",
     "version": "0.0.01",
-    "description": "Learning Write a WebGL Renderer",
+    "description": "Little WebGL Rendering Framework (For Learning WebGL...)",
     "main": "src",
     "scripts": {
         "docs": "jsdoc -c jsdoc.conf.json -R README.md",

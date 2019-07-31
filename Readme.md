@@ -2,6 +2,8 @@
 
 > Little WebGL Rendering Framework (For Learning WebGL...)
 
+[![npm](https://img.shields.io/npm/v/lgl.svg?style=flat-square)](https://www.npmjs.com/package/lgl)[![npm](https://img.shields.io/npm/l/beatdetector.svg?style=flat-square)](https://github.com/todaylg/lgl/blob/master/LICENSE)
+
 LGL is a WebGL rendering framework that is modified and expanded based on [ogl](https://github.com/oframe/ogl).
 
 Aiming to learn WebGL and serve as the PlayGround for implementing some features.
