@@ -144,11 +144,6 @@ export class Texture {
             this.state.wrapT = this.wrapT;
         }
 
-        if (this.wrapR !== this.state.wrapR) {
-            this.gl.texParameteri(this.target, this.gl.TEXTURE_WRAP_R, this.gl.CLAMP_TO_EDGE);
-            this.state.wrapR = this.wrapR;
-        }
-
         if (this.image || this.images) {
             if (this.image && this.image.width) {
                 this.width = this.image.width;
