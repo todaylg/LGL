@@ -1,4 +1,4 @@
-import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Vec2 } from '../../Core.js';
+import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '../../Core.js';
 import { Skin } from '../Skin.js';
 import { GLTFRegistry, resolveURL, definesToString, sliceBlockData, isPrimitiveEqual, radToDeg } from './Util.js';
 import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
@@ -578,7 +578,7 @@ export default class GLTFParser {
             // Load Texture resource.
             let src = resolveURL(sourceURI, parser.path);
             const texture = new Texture(parser.gl, {
-                flipY: false
+                flipY: false,
             });
             const image = new Image();
             image.onload = () => {
@@ -606,9 +606,10 @@ export default class GLTFParser {
             let sampler = samplers[textureDef.sampler] || {};
             texture.magFilter = sampler.magFilter || parser.gl.LINEAR;
             texture.minFilter = sampler.minFilter || parser.gl.LINEAR_MIPMAP_LINEAR;
-            //默认为 gl.REPEAT
-            texture.wrapS = sampler.wrapS || parser.gl.REPEAT;
-            texture.wrapT = sampler.wrapT || parser.gl.REPEAT;
+            // 默认为 gl.REPEAT
+            // texture.wrapS = sampler.wrapS || parser.gl.REPEAT;
+            // texture.wrapT = sampler.wrapT || parser.gl.REPEAT;
+            // texture.needsUpdate = true;
             return texture;
         });
     }
@@ -651,13 +652,11 @@ export default class GLTFParser {
             })
             pendings.push(pending)
         }
-        return Promise.all(pendings).then(function (obj) {
+        return Promise.all(pendings).then(function (images) {
             const texture = new Texture(parser.gl, {
                 target: parser.gl.TEXTURE_CUBE_MAP,
-                image: obj[0],
-                images: obj,
+                image: images,
                 flipY: false,
-                generateMipmaps: false
             });
             materialParams[key] = { value: texture };
         })

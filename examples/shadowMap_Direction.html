@@ -166,8 +166,8 @@
                 if(animationSys) animationSys.update(delta);
                 controls.update();
                 shadowMap.render(scene);
-                // post.render({scene, camera}); //See The Depth Texture
-                renderer.render({scene, camera});
+                post.render({scene, camera}); //See The Depth Texture
+                // renderer.render({scene, camera});
                 requestAnimationFrame(update);
             }
         }

@@ -1,6 +1,3 @@
-// TODO: multi target rendering
-// TODO: test stencil and depth
-// TODO: destroy
 import { Texture } from './Texture.js';
 
 /**
@@ -38,7 +35,7 @@ export class RenderTarget {
         internalFormat = format,
         unpackAlignment,
         premultiplyAlpha,
-        cubeMapFlag,
+        cubeDepthTexture = false,
     } = {}) {
         this.gl = gl;
         this.width = width;
@@ -47,6 +44,8 @@ export class RenderTarget {
         this.target = target;
         this.gl.bindFramebuffer(this.target, this.buffer);
         this.textures = [];
+        const drawBuffers = [];
+
         // create and attach required num of color textures
         // framebufferTexture2D / framebufferRenderbuffer
         for (let i = 0; i < color; i++) {
@@ -56,38 +55,35 @@ export class RenderTarget {
                 generateMipmaps: false,
             }));
             this.textures[i].update();
-            // Todo : Mutiple Render Target
             this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
+            drawBuffers.push(this.gl.COLOR_ATTACHMENT0 + i);
         }
+
+        // MRT
+        if (drawBuffers.length > 1) this.gl.renderer.drawBuffers(drawBuffers);
 
         // alias for majority of use cases
         this.texture = this.textures[0];
+
         // depth and stencil
         // note depth textures break stencil - so can't use together
         // (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
         if (depthTexture && (this.gl.renderer.isWebgl2 || this.gl.renderer.getExtension('WEBGL_depth_texture'))) {
             this.depthTexture = new Texture(gl, {
-                width, height, wrapS, wrapT,
-                target: cubeMapFlag ? gl.TEXTURE_CUBE_MAP: gl.TEXTURE_2D,
+                width, height,
+                target: cubeDepthTexture ? gl.TEXTURE_CUBE_MAP: gl.TEXTURE_2D,
                 minFilter: this.gl.NEAREST,
                 magFilter: this.gl.NEAREST,
-                flipY: false,
+                generateMipmaps: false,
                 format: this.gl.DEPTH_COMPONENT,
                 internalFormat: gl.renderer.isWebgl2 ? this.gl.DEPTH_COMPONENT24 : this.gl.DEPTH_COMPONENT,
                 type: this.gl.UNSIGNED_INT,
-                generateMipmaps: false,
             });
-            if(cubeMapFlag){
-                // Render Depth Info To Cube Map
-                this.depthTexture.images = [null, null, null, null, null, null];
-                this.depthTexture.update();
-            }else{
-                this.depthTexture.update();
-                this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0);
-            }
+            this.depthTexture.update();
+            this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0);
             // Not Need Color Write
-            this.gl.drawBuffers([this.gl.NONE]);
-            this.gl.readBuffer(this.gl.NONE);
+            // this.gl.drawBuffers([this.gl.NONE]);
+            // this.gl.readBuffer(this.gl.NONE);
         } else {
             // Renderbuffer Object
             if (depth && !stencil) {
@@ -114,7 +110,7 @@ export class RenderTarget {
         if (this.gl.checkFramebufferStatus(this.target) != this.gl.FRAMEBUFFER_COMPLETE){
             console.error("checkFramebufferStatus no complete");
         }
-        // 解绑，在renderer中再进行绑定
+        // unBind frameBuffer then bing in renderer
         this.gl.bindFramebuffer(this.target, null);
     }
     clone() {

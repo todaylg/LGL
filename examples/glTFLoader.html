@@ -22,7 +22,6 @@
             gl.clearColor(.1, .1, .1, 1);
             const camera = new Camera(gl, { fov: 35 });
             camera.position.set(0, 0, -7);
-            camera.lookAt([0, 0, 0]);
 
             const controls = new Orbit(camera);
 
@@ -73,7 +72,7 @@
             Promise.all(pendings).then(function (images) {
                 const texture = new Texture(gl, {
                     target: gl.TEXTURE_CUBE_MAP,
-                    images: images,
+                    image: images,
                     flipY: false
                 });
                 const geometry = new Cube(gl);
@@ -89,16 +88,9 @@
                 skybox.scale.set(30);
                 skybox.setParent(scene);
 
-                requestAnimationFrame(update);
-                function update() {
-                    requestAnimationFrame(update);
-
-                    controls.update();
-                    renderer.render({ scene, camera });
-                }
+                update();
             });
 
-            requestAnimationFrame(update);
             function update() {
                 controls.update();
                 renderer.render({ scene, camera });

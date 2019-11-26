@@ -4,7 +4,7 @@ function isPowerOf2(value) {
     return (value & (value - 1)) === 0;
 }
 
-let ID = 0;
+let ID = 1;
 
 /**
  * Create Texture
@@ -31,11 +31,11 @@ let ID = 0;
 export class Texture {
     constructor(gl, {
         image,
-        images,
         target = gl.TEXTURE_2D,
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
         internalFormat = format,
+        anisotropy = 0,
         level = 0,
         width, // used for RenderTargets or Data Textures
         height = width,
@@ -50,12 +50,12 @@ export class Texture {
     } = {}) {
         this.gl = gl;
         this.id = ID++;
-        this.images = images;
-        this.image = image || (images && images[0]);
+        this.image = image;
         this.target = target;
         this.type = type;
         this.format = format;
         this.internalFormat = internalFormat;
+        this.anisotropy = anisotropy;
         this.level = level;
         this.width = width;
         this.height = height;
@@ -78,11 +78,13 @@ export class Texture {
 
         // State store to avoid redundant calls for per-texture state
         this.state = {};
-        this.state.minFilter = this.gl.NEAREST_MIPMAP_LINEAR;
-        this.state.magFilter = this.gl.LINEAR;
-        this.state.wrapS = this.gl.REPEAT;
-        this.state.wrapT = this.gl.REPEAT;
+        this.state.minFilter = this.minFilter;
+        this.state.magFilter = this.magFilter;
+        this.state.wrapS = this.wrapS;
+        this.state.wrapT = this.wrapT;
+        this.state.anisotropy = this.anisotropy;
     }
+
     /**
      * Bind to active texture unit
      */
@@ -92,10 +94,11 @@ export class Texture {
         this.gl.bindTexture(this.target, this.texture);
         this.glState.textureUnits[this.glState.activeTextureUnit] = this.id;
     }
+
     /**
      * Update the texture
      * 
-     * @param {Number} [textureUnit=0] -  The textureUnit of update
+     * @param {Number} [textureUnit = 0] -  The textureUnit of update
      */
     update(textureUnit = 0) {
         const needsUpdate = !(this.image === this.store.image && !this.needsUpdate);
@@ -144,49 +147,57 @@ export class Texture {
             this.state.wrapT = this.wrapT;
         }
 
-        if (this.image || this.images) {
-            if (this.image && this.image.width) {
+        // Rely EXT_texture_filter_anisotropic
+        if (this.anisotropy && this.anisotropy !== this.state.anisotropy) {
+            this.gl.texParameterf(this.target, this.gl.renderer.getExtension('EXT_texture_filter_anisotropic').TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
+            this.state.anisotropy = this.anisotropy;
+        }
+
+        // texImage2D API from https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/texImage2D
+        // WebGL1:
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);
+        // gl.texImage2D(target, level, internalformat, format, type, ImageData? pixels);
+        // gl.texImage2D(target, level, internalformat, format, type, HTMLImageElement? pixels);
+        // gl.texImage2D(target, level, internalformat, format, type, HTMLCanvasElement? pixels);
+        // gl.texImage2D(target, level, internalformat, format, type, HTMLVideoElement? pixels);
+        // gl.texImage2D(target, level, internalformat, format, type, Ima geBitmap? pixels);
+
+        // WebGL2:
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, GLintptr offset);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLCanvasElement source);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLImageElement source);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLVideoElement source);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageBitmap source);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageData source);
+        // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView srcData, srcOffset);
+            
+        if (this.image) {
+            if (this.image.width) {
                 this.width = this.image.width;
                 this.height = this.image.height;
             }
             // CubeMap
-            if (this.images && this.images.length === 6) {
-                for (let i = 0; i < this.images.length; i++) {
+            if (this.target === this.gl.TEXTURE_CUBE_MAP) {
+                for (let i = 0; i < 6; i++) {
+                    this.width = this.image[0].width;
+                    this.height = this.image[0].height;
                     if (this.gl.renderer.isWebgl2){
-                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.images[i]);
+                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.image[i]);
                     }else{
-                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, this.images[i]);
+                        this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.format, this.type, this.image[i]);
                     }
                 }
             } else {
-                // TODO: check is ArrayBuffer.isView is best way to check for Typed Arrays?
                 if (this.gl.renderer.isWebgl2 || ArrayBuffer.isView(this.image)) {
-                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0 /* border */, this.format, this.type, this.image);
+                    this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.image);
                 } else {
                     this.gl.texImage2D(this.target, this.level, this.internalFormat, this.format, this.type, this.image);
                 }
             }
-            // TODO: support everything
-            // WebGL1:
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView? pixels);
-            // gl.texImage2D(target, level, internalformat, format, type, ImageData? pixels);
-            // gl.texImage2D(target, level, internalformat, format, type, HTMLImageElement? pixels);
-            // gl.texImage2D(target, level, internalformat, format, type, HTMLCanvasElement? pixels);
-            // gl.texImage2D(target, level, internalformat, format, type, HTMLVideoElement? pixels);
-            // gl.texImage2D(target, level, internalformat, format, type, ImageBitmap? pixels);
-
-            // WebGL2:
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, GLintptr offset);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLCanvasElement source);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLImageElement source);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, HTMLVideoElement source);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageBitmap source);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ImageData source);
-            // gl.texImage2D(target, level, internalformat, width, height, border, format, type, ArrayBufferView srcData, srcOffset);
-
+            // Mipmaps
             if (this.generateMipmaps) {
                 // For WebGL1, if not a power of 2, turn off mips, set wrapping to clamp to edge and minFilter to linear
-                if (!this.gl.renderer.isWebgl2 && (!isPowerOf2(this.image.width) || !isPowerOf2(this.image.height))) {
+                if (!this.gl.renderer.isWebgl2 && (!isPowerOf2(this.width) || !isPowerOf2(this.height))) {
                     this.generateMipmaps = false;
                     this.wrapS = this.wrapT = this.gl.CLAMP_TO_EDGE;
                     this.minFilter = this.gl.LINEAR;
@@ -195,7 +206,13 @@ export class Texture {
                 }
             }
         } else {
-            if (this.width) {
+            // CubeMap
+            if (this.target === this.gl.TEXTURE_CUBE_MAP) {
+                // Upload empty pixel for each side while no image to avoid errors while image or video loading
+                for (let i = 0; i < 6; i++) {
+                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, emptyPixel);
+                }
+            } else if (this.width) {
                 // image intentionally left null for RenderTarget
                 this.gl.texImage2D(this.target, this.level, this.internalFormat, this.width, this.height, 0, this.format, this.type, null);
             } else {

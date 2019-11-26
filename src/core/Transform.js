@@ -42,6 +42,7 @@ export class Transform {
         this.parent = parent;
         if (notifyParent && parent) parent.addChild(this, false);
     }
+
      /**
      * Transform the matrix by input
      *
@@ -52,6 +53,7 @@ export class Transform {
         // Sync change
         this.decompose();
     }
+
     /**
      * Add the Transform object to parent Transform object
      *
@@ -62,6 +64,7 @@ export class Transform {
         if (!~this.children.indexOf(child)) this.children.push(child);
         if (notifyChild) child.setParent(this, false);
     }
+
     /**
      * Remove the Transform object from parent Transform object
      *
@@ -72,6 +75,7 @@ export class Transform {
         if (!!~this.children.indexOf(child)) this.children.splice(this.children.indexOf(child), 1);
         if (notifyChild) child.setParent(null, false);
     }
+
     /**
      * Update the world matrix of this Transform group
      *
@@ -90,6 +94,7 @@ export class Transform {
             children[i].updateMatrixWorld(force);
         }
     }
+
     /**
      * Update the matrix from a quaternion rotation, vector translation and vector scale
      */
@@ -97,6 +102,7 @@ export class Transform {
         this.matrix.compose(this.quaternion, this.position, this.scale);
         this.worldMatrixNeedsUpdate = true;
     }
+
     /**
      * Traverse the callback function to all this Transfrom group
      * 
@@ -108,6 +114,7 @@ export class Transform {
             this.children[i].traverse(callback);
         }
     }
+
     /**
     * Decompose the matrix to a quaternion rotation, vector translation ,vector rotation, vector scale
     */
@@ -117,6 +124,7 @@ export class Transform {
         this.matrix.getScaling(this.scale);
         this.rotation.fromQuaternion(this.quaternion);
     }
+
     /**
     * Update matrix to lookAt the target
     * 
@@ -130,7 +138,12 @@ export class Transform {
         this.rotation.fromQuaternion(this.quaternion);
     };
     
-    clone(recursive=true){
+    /**
+    * Clone transform
+    * 
+    * @param {Boolean} recursive - Whether deep clone
+    */
+    clone(recursive = true){
         let cloneTransform = new Transform();
         let source = this;
         //export link

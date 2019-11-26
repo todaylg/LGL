@@ -1,4 +1,4 @@
-let ID = 0;
+let ID = 1;
 
 // cache of typed arrays used to flatten uniform arrays
 const arrayCacheF32 = {};
@@ -51,7 +51,7 @@ export class Program {
         this.blendFunc = {};
         this.blendEquation = {};
         
-        // blend
+        // Apply blend mode
         this.setBlendMode(blendMode);
 
         // compile vertex shader and log errors
@@ -95,6 +95,7 @@ export class Program {
 
             uniform.uniformName = split[0];
 
+            // Struct
             if (split.length === 3) {
                 uniform.isStructArray = true;
                 uniform.structIndex = Number(split[1]);
@@ -162,6 +163,7 @@ export class Program {
             }
         }
     }
+
     /**
      * Defines which function is used for blending pixel arithmetic.
      * 
@@ -177,6 +179,7 @@ export class Program {
         this.blendFunc.dstAlpha = dstAlpha;
         if (src) this.transparent = true;
     }
+
     /**
      * Set the RGB blend equation and alpha blend equation separately
      * 
@@ -187,6 +190,7 @@ export class Program {
         this.blendEquation.modeRGB = modeRGB;
         this.blendEquation.modeAlpha = modeAlpha;
     }
+
     /**
      * Apply the options state to renderer
      */
@@ -207,6 +211,7 @@ export class Program {
         if (this.blendFunc.src) this.gl.renderer.setBlendFunc(this.blendFunc.src, this.blendFunc.dst, this.blendFunc.srcAlpha, this.blendFunc.dstAlpha);
         if (this.blendEquation.modeRGB) this.gl.renderer.setBlendEquation(this.blendEquation.modeRGB, this.blendEquation.modeAlpha);
     }
+
     /**
      * Use the Programe according to the options setting
      * 
@@ -252,6 +257,7 @@ export class Program {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 
+            // texture
             if (uniform.value.texture) {
                 textureUnit = textureUnit + 1;
                 // Check if texture needs to be updated
@@ -279,12 +285,10 @@ export class Program {
         if (flipFaces) this.gl.renderer.setFrontFace(this.frontFace === this.gl.CCW ? this.gl.CW : this.gl.CCW);
     }
     /**
-     * Delete the program and shader
+     * Delete the program
      */
     remove() {
         this.gl.deleteProgram(this.program);
-        this.gl.deleteShader(vertexShader);
-        this.gl.deleteShader(fragmentShader);
     }
 }
 

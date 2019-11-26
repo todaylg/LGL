@@ -11,7 +11,7 @@ export class Skin extends Mesh {
         mode = gl.TRIANGLES,
     } = {}) {
         super(gl, {geometry, program, mode});
-        this.meshType = 'skinnedMesh';
+        this.isSkinnedMesh = true;
     }
 
     init(rig = {}){

@@ -10,6 +10,7 @@ export class ShadowMap {
     constructor(gl, lightArr) {
         this.gl = gl;
         this.renderer = gl.renderer;
+
         this.sceneDepth = new Transform();
 
         this.lightArr = lightArr;
@@ -28,7 +29,7 @@ export class ShadowMap {
                 width: 1024 * 2,
                 height: 1024 * 2,
                 depthTexture: true,
-                cubeMapFlag: light.lightType === 'point' ? true : false  //Point Light => Cube Depth Map
+                cubeDepthTexture: light.lightType === 'point' ? true : false  // Point Light => Cube Depth Map
             });
             light.depthTexture = light.depthBuffer.depthTexture;
             switch (light.lightType) {
@@ -65,6 +66,7 @@ export class ShadowMap {
         }
         this.shaderDefines = this.initShaderDefines(lightArr);
     }
+
     initShaderDefines(lightArr){
         let dirLightSpaceMatrix = [], spotLightSpaceMatrix = [], pointLightSpaceMatrix = [];
         let dirShadowMap = [], spotShadowMap = [], pointShadowMap = [];
@@ -140,19 +142,21 @@ export class ShadowMap {
         `#define NUM_POINT_LIGHTS ${NUM_POINT_LIGHTS}\n` +
         `#define SHADOWMAP_TYPE_PCF 1\n`;
     }
+
     calLightSpaceMatrix(light, center, up) {
         let { lightPos, shadowCamera, lightSpaceMatrix } = light;
-        tempMat4.lookAtTarget(lightPos, center, up);//V
-        lightSpaceMatrix.multiply(shadowCamera.projectionMatrix, tempMat4);//P
+        tempMat4.lookAtTarget(lightPos, center, up); // V
+        lightSpaceMatrix.multiply(shadowCamera.projectionMatrix, tempMat4); // P
     }
+
     renderScene(scene, light, lookCenter = this.center, lookUp = this.up) {
         //Todo: frustum culling
         scene.traverse((transform) => {
             let parent = transform.parent;
-            if (parent && transform.meshType && transform.castShadowMap) {
+            if (parent && transform.isMesh && transform.castShadowMap) {
                 let shaderDefines = `#version 300 es\n`;
                 // Variable vertex information needs to be processed separately：Skinnig/MorphTarget
-                if (transform.meshType == 'skinnedMesh' && !transform.shadowProgram) {
+                if (transform.isSkinnedMesh && !transform.shadowProgram) {
                     shaderDefines += `#define USE_SKINNING 1\n`;
                     if (light.lightType === 'point') shaderDefines += `#define POINT_SHADOW 1\n`;
                     transform.shadowProgram = new Program(this.gl, {
@@ -193,6 +197,7 @@ export class ShadowMap {
             }
         });
     }
+
     render(scene) {
         let lightArr = this.lightArr;
         for (let i = 0; i < lightArr.length; i++) {
