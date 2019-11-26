@@ -9,7 +9,7 @@
 </head>
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Mat4, Texture, RenderTarget, Color } from '../src/Core.js';
         import { Orbit, Post, Plane, Sphere, Cube, Reflector, GLTFLoader } from '../src/Extras.js';
         import BasePrimitivesShader from './shaders/BasePrimitivesShader.js';
         import TextureShader from './shaders/TextureShader.js';
@@ -71,6 +71,7 @@
             }, err => {
                 console.error("Loader Error:", err);
             });
+            // CornellBox
             // Wall
             const wallGroup = new Transform();
             // Top/Bottom/Front/Right/Left

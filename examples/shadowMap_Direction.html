@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,24 +8,25 @@
     <title>ShadowMap</title>
     <link href="assets/main.css" rel="stylesheet">
 </head>
+
 <body>
     <script type="module">
-        import {Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color} from '../src/Core.js';
+        import { Renderer, Camera, Transform, Geometry, Program, Mesh, Vec3, Vec4, Mat4, Texture, RenderTarget, Color } from '../src/Core.js';
         import { Orbit, Post, Plane, Sphere, Cube, Torus, ShadowMap, GLTFLoader } from '../src/Extras.js';
         import ShadowMapShader from './shaders/ShadowMapShader.js';
         import ShowDepthShader from './shaders/ShowDepthShader.js';
         import BaseGeoShader from './shaders/BaseGeoShader.js';
         {
-            const renderer = new Renderer({dpr: 2});
+            const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
             gl.clearColor(1, 1, 1, 1);
             document.body.appendChild(gl.canvas);
-            const camera = new Camera({ far:500 });
+            const camera = new Camera({ far: 500 });
             camera.position.set(0, 80, 80);
             const controls = new Orbit(camera);
             function resize() {
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
+                camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
             }
             window.addEventListener('resize', resize, false);
             resize();
@@ -41,7 +43,7 @@
             // Init Shadow
             let shadowMap = new ShadowMap(gl, lightArrConf);
             let { lightArr, shaderDefines, lightInfos } = shadowMap;
-            let {dirLights, dirShadowMap, dirLightSpaceMatrix, spotLights, spotShadowMap, spotLightSpaceMatrix, pointLights, pointShadowMap, pointLightSpaceMatrix} = lightInfos;
+            let { dirLights, dirShadowMap, dirLightSpaceMatrix, spotLights, spotShadowMap, spotLightSpaceMatrix, pointLights, pointShadowMap, pointLightSpaceMatrix } = lightInfos;
 
             // Init Scene 
             const scene = new Transform();
@@ -64,14 +66,16 @@
             const sphereSimpleGeometry = new Sphere(gl, {
                 widthSegments: 8
             });
-            for(let i=0,l=lightArr.length; i<l; i++){
-                const sphereMesh = new Mesh(gl, { geometry: sphereSimpleGeometry, program: new Program(gl, {
-                    vertex: BaseGeoShader.vertex,
-                    fragment: BaseGeoShader.fragment,
-                    uniforms: {
-                        baseColor: {value: lightArr[i].lightColor},
-                    },
-                })});
+            for (let i = 0, l = lightArr.length; i < l; i++) {
+                const sphereMesh = new Mesh(gl, {
+                    geometry: sphereSimpleGeometry, program: new Program(gl, {
+                        vertex: BaseGeoShader.vertex,
+                        fragment: BaseGeoShader.fragment,
+                        uniforms: {
+                            baseColor: { value: lightArr[i].lightColor },
+                        },
+                    })
+                });
                 sphereMesh.position.set(lightArr[i].lightPos);
                 scene.addChild(sphereMesh);
             }
@@ -87,19 +91,19 @@
                     ambientStrength: { value: .02 },
 
                     dirLights: { value: dirLights },
-                    dirLightSpaceMatrix: {value: dirLightSpaceMatrix},
-                    dirShadowMap:{ value: dirShadowMap },
+                    dirLightSpaceMatrix: { value: dirLightSpaceMatrix },
+                    dirShadowMap: { value: dirShadowMap },
 
                     spotLights: { value: spotLights },
-                    spotLightSpaceMatrix: {value: spotLightSpaceMatrix},
-                    spotShadowMap:{ value: spotShadowMap },
+                    spotLightSpaceMatrix: { value: spotLightSpaceMatrix },
+                    spotShadowMap: { value: spotShadowMap },
 
                     // pointLights: { value: .2 },
-                    pointLightSpaceMatrix: {value: pointLightSpaceMatrix},
-                    pointShadowMap: {value: pointShadowMap},
+                    pointLightSpaceMatrix: { value: pointLightSpaceMatrix },
+                    pointShadowMap: { value: pointShadowMap },
 
                     cameraNear: { value: camera.near },
-					cameraFar:  { value: camera.far },
+                    cameraFar: { value: camera.far },
                 }
             });
             const planeMesh = new Mesh(gl, { geometry: planeGeometry, program });
@@ -131,7 +135,7 @@
             let loader = new GLTFLoader(gl);
             let animationSys;
             let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
-            loader.load( skinAnimationModel, {castShadowMap:true}, gltf => {
+            loader.load(skinAnimationModel, { castShadowMap: true }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 // Animation
@@ -148,9 +152,9 @@
             post.addPass({
                 fragment: ShowDepthShader.fragment,
                 uniforms: {
-                    tMap: { value: spotShadowMap[0] },
+                    tMap: { value: dirShadowMap[0] },
                     cameraNear: { value: camera.near },
-					cameraFar:  { value: camera.far },
+                    cameraFar: { value: camera.far },
                 }
             });
             let startTime = performance.now();
@@ -163,14 +167,15 @@
                 tick += delta;
                 cubeMesh.rotation.y += 0.01;
                 torusMesh.rotation.y += 0.01;
-                if(animationSys) animationSys.update(delta);
+                if (animationSys) animationSys.update(delta);
                 controls.update();
                 shadowMap.render(scene);
-                post.render({scene, camera}); //See The Depth Texture
+                post.render({ scene, camera }); //See The Depth Texture
                 // renderer.render({scene, camera});
                 requestAnimationFrame(update);
             }
         }
     </script>
 </body>
+
 </html>

@@ -607,9 +607,8 @@ export default class GLTFParser {
             texture.magFilter = sampler.magFilter || parser.gl.LINEAR;
             texture.minFilter = sampler.minFilter || parser.gl.LINEAR_MIPMAP_LINEAR;
             // 默认为 gl.REPEAT
-            // texture.wrapS = sampler.wrapS || parser.gl.REPEAT;
-            // texture.wrapT = sampler.wrapT || parser.gl.REPEAT;
-            // texture.needsUpdate = true;
+            texture.wrapS = sampler.wrapS || parser.gl.REPEAT;
+            texture.wrapT = sampler.wrapT || parser.gl.REPEAT;
             return texture;
         });
     }

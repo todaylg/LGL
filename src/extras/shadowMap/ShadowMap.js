@@ -1,4 +1,4 @@
-import { Program, Transform, RenderTarget, Camera, Vec3, Mat4, Color } from '../../Core.js';
+import { Program, RenderTarget, Camera, Vec3, Mat4, Color } from '../../Core.js';
 import simpleDepthShader from './shaders/simpleDepthShader.js';
 let tempMat4 = new Mat4();
 let tempVec3 = new Vec3();
@@ -10,8 +10,6 @@ export class ShadowMap {
     constructor(gl, lightArr) {
         this.gl = gl;
         this.renderer = gl.renderer;
-
-        this.sceneDepth = new Transform();
 
         this.lightArr = lightArr;
         this.center = new Vec3(0, 0, 0);

@@ -78,11 +78,11 @@ export class Texture {
 
         // State store to avoid redundant calls for per-texture state
         this.state = {};
-        this.state.minFilter = this.minFilter;
-        this.state.magFilter = this.magFilter;
-        this.state.wrapS = this.wrapS;
-        this.state.wrapT = this.wrapT;
-        this.state.anisotropy = this.anisotropy;
+        this.state.minFilter = this.gl.NEAREST_MIPMAP_LINEAR;
+        this.state.magFilter = this.gl.LINEAR;
+        this.state.wrapS = this.gl.REPEAT;
+        this.state.wrapT = this.gl.REPEAT;
+        this.state.anisotropy = 0;
     }
 
     /**

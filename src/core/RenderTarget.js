@@ -50,7 +50,8 @@ export class RenderTarget {
         // framebufferTexture2D / framebufferRenderbuffer
         for (let i = 0; i < color; i++) {
             this.textures.push(new Texture(gl, {
-                width, height, wrapS, wrapT, minFilter, magFilter, type, format, internalFormat, unpackAlignment, premultiplyAlpha,
+                width, height, 
+                wrapS, wrapT, minFilter, magFilter, type, format, internalFormat, unpackAlignment, premultiplyAlpha,
                 flipY: false,
                 generateMipmaps: false,
             }));
