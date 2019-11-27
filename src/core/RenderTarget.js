@@ -80,8 +80,13 @@ export class RenderTarget {
                 internalFormat: gl.renderer.isWebgl2 ? this.gl.DEPTH_COMPONENT24 : this.gl.DEPTH_COMPONENT,
                 type: this.gl.UNSIGNED_INT,
             });
-            this.depthTexture.update();
-            this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0);
+            if(cubeDepthTexture){
+                // Render Depth Info To Cube Map
+                this.depthTexture.update();	
+            }else{
+                this.depthTexture.update();	
+                this.gl.framebufferTexture2D(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, this.depthTexture.texture, 0);	
+            }
             // Not Need Color Write
             // this.gl.drawBuffers([this.gl.NONE]);
             // this.gl.readBuffer(this.gl.NONE);

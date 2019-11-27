@@ -41,13 +41,13 @@ float viewZToPerspectiveDepth( const in float viewZ, const in float near, const 
 float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
 }
-
+float unpackRGBA (vec4 v) {
+    return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
+}
 
 float readCubeDepth( samplerCube depthSampler, vec3 coord ) {
-    float fragCoordZ = texture( depthSampler, coord ).r;// Screen Space
-    fragCoordZ = fragCoordZ * 2.0 - 1.0; // Clip Space
-    float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-    return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
+    float fragCoordZ = texture( depthSampler, coord ).r; // Screen Space
+    return fragCoordZ;
 }
 
 void main() {

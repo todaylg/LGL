@@ -108,7 +108,6 @@ export class Texture {
             this.gl.renderer.activeTexture(textureUnit);
             this.bind();
         }
-
         if (!needsUpdate) return;
         this.needsUpdate = false;
 
@@ -210,7 +209,7 @@ export class Texture {
             if (this.target === this.gl.TEXTURE_CUBE_MAP) {
                 // Upload empty pixel for each side while no image to avoid errors while image or video loading
                 for (let i = 0; i < 6; i++) {
-                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, emptyPixel);
+                    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, null);
                 }
             } else if (this.width) {
                 // image intentionally left null for RenderTarget

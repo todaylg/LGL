@@ -165,7 +165,8 @@ export class ShadowMap {
                             boneTexture: { value: transform.boneTexture },
                             boneTextureSize: { value: transform.boneTextureSize },
                             lightPos: { value: light.lightPos },
-                            far: { value: light.shadowCamera.far }
+                            far: { value: light.shadowCamera.far },
+                            near: { value: light.shadowCamera.near }
                         }
                     })
                 } else if (!transform.shadowProgram) {
@@ -177,7 +178,8 @@ export class ShadowMap {
                         cullFace: this.gl.FRONT,
                         uniforms: {
                             lightPos: { value: light.lightPos },
-                            far: { value: light.shadowCamera.far }
+                            far: { value: light.shadowCamera.far },
+                            near: { value: light.shadowCamera.near }
                         }
                     })
                 }

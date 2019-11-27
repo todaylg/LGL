@@ -68,20 +68,29 @@ precision highp int;
 #ifdef POINT_SHADOW
 uniform vec3 lightPos;
 uniform float far;
+uniform float near;
 #endif
 
+vec4 packRGBA (float v) {
+    vec4 pack = fract(vec4(1.0, 255.0, 65025.0, 16581375.0) * v);
+    pack -= pack.yzww * vec2(1.0 / 255.0, 0.0).xxxy;
+    return pack;
+}
+
 in vec3 vFragPos;
+out vec4 FragColor;
 
 void main() {
     #ifdef POINT_SHADOW
         // get distance between fragment and light source
         float lightDistance = length(vFragPos - lightPos);
-        // map to [0;1] range by dividing by far_plane
-        lightDistance = lightDistance / far;
+        // map to [0,1] range by dividing by far_plane
+        lightDistance = (lightDistance - near) / (far-near);
         // write this as modified depth
+        // FragColor = packRGBA(lightDistance);
         gl_FragDepth = lightDistance;
     #endif
-    // gl_FragDepth = gl_FragCoord.z;
+    FragColor = packRGBA(gl_FragCoord.z);
 }
 `;
 

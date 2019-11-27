@@ -185,27 +185,29 @@ float viewZToPerspectiveDepth( const in float viewZ, const in float near, const 
 float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
 }
-
+float unpackRGBA (vec4 v) {
+    return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
+}
 float readOrthoDepth(sampler2D depthSampler, vec2 coord ) {
-    float depth = texture(depthSampler, coord).r;
+    float depth = unpackRGBA(texture(depthSampler, coord));
     return depth;
 }
 
 float readPerspectiveDepth(sampler2D depthSampler, vec2 coord, float near, float far ) {
     // Screen Space => Clip Space => View Space
-    float fragCoordZ = texture(depthSampler, coord).r; // Screen Space 
+    float fragCoordZ = unpackRGBA(texture(depthSampler, coord)); // Screen Space 
     float z = fragCoordZ * 2.0 - 1.0; // Clip Space 
     float viewZ = perspectiveDepthToViewZ(z, near, far);
     viewZ = viewZToOrthographicDepth(viewZ, near, far);
     return viewZ;
 }
 
-float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float far ) {
+float readCubeMapDepth(samplerCube depthSampler, vec3 coord, float near, float far ) {
     float distanceZ = texture(depthSampler, coord).r; // Screen Space [0,1]
     // (0=>1) => (0=>far)
     // bias
     distanceZ +=  0.0002;
-    distanceZ *= far;
+    distanceZ *= (far-near);
     return distanceZ;
 }
 
@@ -287,8 +289,7 @@ float pointShadowMaskCal(samplerCube shadowMap, PointLight pointLight) {
     // Get vector between fragment position and light position
     vec3 fragToLight = vFragPos - pointLight.lightPos; //View Space
     float currentDepth = length(fragToLight);//View Distance
-    // get linear depth: (0=>1)
-    float closestDepth = readCubeMapDepth(shadowMap, fragToLight, pointLight.lightCameraFar);
+    float closestDepth = readCubeMapDepth(shadowMap, fragToLight, pointLight.lightCameraNear, pointLight.lightCameraFar);
     float shadow = step(currentDepth, closestDepth);
     return shadow;
 }
