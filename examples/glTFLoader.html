@@ -121,14 +121,14 @@
                 pbrFolder.open();
                 // lightingFolder
                 const lightingFolder = gui.addFolder("Light");
-                lightingFolder.add(params, 'u_LightDirectionX', 0, 10).name("LightDirectionX").step(0.1).onChange((value) => {
+                lightingFolder.add(params, 'u_LightDirectionX', -10, 10).name("LightDirectionX").step(0.1).onChange((value) => {
                     gltf.traverse((node) => {
                         if(node.isMesh){
                             node.program.uniforms.u_LightDirection.value.x = value;
                         }
                     })
                 });
-                lightingFolder.add(params, 'u_LightDirectionZ', 0, 10).name("LightDirectionZ").step(0.1).onChange((value) => {
+                lightingFolder.add(params, 'u_LightDirectionZ', -10, 10).name("LightDirectionZ").step(0.1).onChange((value) => {
                     gltf.traverse((node) => {
                         if(node.isMesh){
                             node.program.uniforms.u_LightDirection.value.z = value;
