@@ -193,9 +193,10 @@ uniform vec2 u_MetallicRoughnessValues;
 uniform vec4 u_BaseColorFactor;
 uniform vec3 cameraPosition;
 
-// Light(Test)
+// Basic Param
 uniform float u_Alpha;
 uniform float u_EnvSpecularFactor;
+// Light
 uniform vec3 u_LightDirection;
 uniform vec3 u_LightColor;
 
