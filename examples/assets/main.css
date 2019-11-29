@@ -97,7 +97,7 @@ a {
     margin: 0;
 }
 
-.title {
+.lglTitle {
     font-size: 22px;
     margin: 20px 0;
     display: block;
@@ -105,7 +105,7 @@ a {
     color: #00a5e6;
 }
 
-.title:hover {
+.lglTitle:hover {
     color: #00b7ff;
 }
 
