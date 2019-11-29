@@ -194,12 +194,14 @@ uniform vec4 u_BaseColorFactor;
 uniform vec3 cameraPosition;
 
 // Basic Param
+uniform mat4 u_EnvRotationMat;
 uniform float u_Alpha;
-uniform float u_EnvSpecularFactor;
+uniform float u_Brightness;
 // Light
 uniform vec3 u_LightDirection;
 uniform vec3 u_LightColor;
 
+mat3 environmentTransform;
 const float PI = 3.14159265359;
 const float RECIPROCAL_PI = 0.31830988618;
 const float RECIPROCAL_PI2 = 0.15915494;
@@ -226,6 +228,14 @@ vec2 cartesianToPolar(vec3 n) {
     uv.x = atan(n.z, n.x) * RECIPROCAL_PI2 + 0.5;
     uv.y = asin(n.y) * RECIPROCAL_PI + 0.5;
     return uv;
+}
+
+mat3 getEnvironmentTransfrom(mat4 transform) {
+    vec3 x = vec3(transform[0][0], transform[1][0], transform[2][0]);
+    vec3 y = vec3(transform[0][1], transform[1][1], transform[2][1]);
+    vec3 z = vec3(transform[0][2], transform[1][2], transform[2][2]);
+    mat3 m = mat3(x,y,z);
+    return m;
 }
 
 // Find the normal for this fragment, pulling either from a predefined normal map
@@ -268,6 +278,7 @@ vec3 getNormal()
 // Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
 // See our README.md on Environment Maps [3] for additional discussion.
 #ifdef USE_IBL
+// TODO:
 // void getIBLContribution(inout vec3 diffuse, inout vec3 specular, float NdotV, float roughness, vec3 n, vec3 reflection, vec3 diffuseColor, vec3 specularColor) {
 //     vec3 brdf = SRGBtoLinear(texture(tLUT, vec2(NdotV, roughness))).rgb;
 //     vec3 diffuseLight = RGBMToLinear(texture(tEnvDiffuse, cartesianToPolar(n))).rgb;
@@ -310,14 +321,14 @@ void getIBLContribution(inout vec3 diffuse, inout vec3 specular, float NdotV, fl
     vec3 diffuseLight = SRGBtoLinear(texture(tEnvDiffuse, n)).rgb;
     // RGBM Texture
     // vec3 diffuseLight = RGBMToLinear(texture(tEnvDiffuse, cartesianToPolar(n))).rgb;
+    vec3 R = environmentTransform * reflection;  
     #ifdef USE_TEX_LOD
-    vec3 specularLight = SRGBtoLinear(textureCubeLodEXT(tEnvSpecular, reflection, lod)).rgb;
+    vec3 specularLight = SRGBtoLinear(textureCubeLodEXT(tEnvSpecular, R, lod)).rgb;
     #else
-    vec3 specularLight = SRGBtoLinear(texture(tEnvSpecular, reflection)).rgb;
+    vec3 specularLight = SRGBtoLinear(texture(tEnvSpecular, R)).rgb;
     #endif
     diffuse = diffuseLight * diffuseColor;
     specular = specularLight * (specularColor * brdf.x + brdf.y);
-    specular *= u_EnvSpecularFactor;
 }
 #endif
 
@@ -357,6 +368,7 @@ float microfacetDistribution(float roughness, float NdotH) {
 
 void main()
 {
+    environmentTransform = getEnvironmentTransfrom( u_EnvRotationMat );
     // The albedo may be defined from a base texture or a flat color
     #ifdef HAS_BASECOLORMAP
         vec4 baseColor = SRGBtoLinear(texture(u_BaseColorSampler, vUv)) * u_BaseColorFactor;
@@ -378,10 +390,6 @@ void main()
     #endif
     roughness = clamp(roughness, c_MinRoughness, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
-
-    // Roughness is authored as perceptual roughness; as is convention,
-    // convert to material roughness by squaring the perceptual roughness [2].
-    float alphaRoughness = roughness * roughness; // a^2
 
     vec3 f0 = vec3(0.04);
     vec3 diffuseColor = baseColor.rgb * (vec3(1.0) - f0) * (1.0 - metallic);
@@ -429,7 +437,7 @@ void main()
     #ifdef USE_IBL
         getIBLContribution(diffuseIBL, specularIBL, NdotV, roughness, N, reflection, diffuseColor, specularColor);
         // Add IBL on top of color
-        color += diffuseIBL + specularIBL;
+        color += u_Brightness * (diffuseIBL + specularIBL);
     #endif
 
     // Apply optional PBR terms for additional (optional) shading

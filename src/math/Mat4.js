@@ -278,6 +278,10 @@ export class Mat4 extends Array {
         Mat4Func.fromQuat(this, q);
         return this;
     }
+    fromRotation(rotation, axis){
+        Mat4Func.fromRotation(this, rotation, axis);
+        return this;
+    }
     /**
      * @function
      * @description Returns the translation vector component of a transformation

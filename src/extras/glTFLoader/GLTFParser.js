@@ -471,7 +471,7 @@ export default class GLTFParser {
         materialParams.u_Alpha = {
             value: 1.0
         };
-        materialParams.u_EnvSpecularFactor = {
+        materialParams.u_Brightness = {
             value: 1.0
         };
         materialParams.u_LightDirection = {
@@ -480,6 +480,9 @@ export default class GLTFParser {
         materialParams.u_LightColor = {
             value: new Color(1, 1, 1)
         };
+        materialParams.u_EnvRotationMat = {
+            value: new Mat4()
+        }
         // Specification:
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#metallic-roughness-material
         let metallicRoughness = materialDef.pbrMetallicRoughness || {};

@@ -11,7 +11,7 @@
 </head>
 <body>
     <script type="module">
-        import { Mesh, Renderer, Camera, Transform, Vec3, Texture, Program, Color } from '../src/Core.js';
+        import { Mesh, Renderer, Camera, Transform, Vec3, Mat4, Texture, Program, Color } from '../src/Core.js';
         import { Orbit, Cube, GLTFLoader } from '../src/Extras.js';
         import CubeMapShader from './shaders/CubeMapShader.js';
         import { GUI } from './libs/dat.gui.module.js';
@@ -94,16 +94,33 @@
             update();
             function initGUI(gltf){
                 let params = {
+                    u_EnvRotation: 0,
                     u_Alpha: 1,
-                    u_EnvSpecularFactor: 1,
+                    u_Brightness: 1,
                     u_LightDirectionX: 0,
                     u_LightDirectionY: 0,
                     u_LightDirectionZ: 0,
-                    u_LightColor: new Color(1,1,1)
+                    u_LightColor: Color.rgbToHex([255,255,255])
                 }
+                let envRotationMat = new Mat4();
                 let gui = new GUI();
                 // pbrFolder
                 const pbrFolder = gui.addFolder("PBR");
+                pbrFolder.add(params, 'u_EnvRotation', -Math.PI, Math.PI).name("EnvRotation").step(0.1).onChange((value) => {
+                    envRotationMat.fromRotation(value, [0, 0, 1]);
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_EnvRotationMat.value = envRotationMat;
+                        }
+                    })
+                });
+                pbrFolder.add(params, 'u_Brightness', 0, 25).name("Brightness").step(0.1).onChange((value) => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_Brightness.value = value;
+                        }
+                    })
+                });
                 pbrFolder.add(params, 'u_Alpha', 0, 1).name("Alpha").step(0.01).onChange((value) => {
                     gltf.traverse((node) => {
                         if(node.isMesh){
@@ -111,13 +128,7 @@
                         }
                     })
                 });
-                pbrFolder.add(params, 'u_EnvSpecularFactor', 0, 5).name("SpecularFactor").step(0.1).onChange((value) => {
-                    gltf.traverse((node) => {
-                        if(node.isMesh){
-                            node.program.uniforms.u_EnvSpecularFactor.value = value;
-                        }
-                    })
-                });
+                
                 pbrFolder.open();
                 // lightingFolder
                 const lightingFolder = gui.addFolder("Light");
@@ -138,7 +149,7 @@
                 lightingFolder.addColor(params, "u_LightColor").name("LightColor").onChange(() => {
                     gltf.traverse((node) => {
                         if(node.isMesh){
-                            node.program.uniforms.u_LightColor.value = params.u_LightColor;
+                            node.program.uniforms.u_LightColor.value = Color.hexToRGB(params.u_LightColor);
                         }
                     })
                 });
