@@ -21,12 +21,11 @@ a {
     left: 0;
     height: 100%;
     width: 100%;
-    background: #333;
-    background: radial-gradient(ellipse at center, #333 0, #000 100%);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .isLoading canvas {
-    opacity: 0;
+    opacity: 1;
 }
 
 .loadingText {
