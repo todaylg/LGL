@@ -35,7 +35,7 @@
             let directionalLight = {
                 lightPos: new Vec3(0, 100, 0),
                 target: new Vec3(0, 0, -1),
-                lightColor: new Color(1),
+                lightColor: new Color(.8),
                 diffuseFactor: 0.4,
                 specularFactor: 0.5,
             }
@@ -75,14 +75,14 @@
             // Wall
             const wallGroup = new Transform();
             // Top/Bottom/Front/Right/Left
-            const wallColors = [new Color(1), new Color(1), new Color(139,193,241), new Color(170,230,170), new Color(220,70,70)];
+            const wallColors = [new Color(1), new Color(1), new Color(139,193,255), new Color(170,230,170), new Color(220,70,70)];
             for(let i=0; i<5; i++){
                 const wallPlane = new Mesh(gl, { geometry: planeGeometry, program: new Program(gl, {
                     vertex: BasePrimitivesShader.vertex,
                     fragment: BasePrimitivesShader.fragment,
                     uniforms: {
                         baseColor: { value: wallColors[i] },
-                        ambientLightColor: { value: new Color(1) },
+                        ambientLightColor: { value: new Color(.8) },
                         ambientStrength: { value: 0.5 },
                         directionalLight: { value: directionalLight },
                     }
