@@ -9,12 +9,12 @@
     <title>glTF-Loader</title>
     <link rel="stylesheet" href="./assets/main.css">
 </head>
-<body class="preLoading isLoading">
-    <p class="loadingText">Loading Assets...</p>
+<body>
     <script type="module">
-        import { Mesh, Renderer, Camera, Transform, Vec3, Texture, Program } from '../src/Core.js';
+        import { Mesh, Renderer, Camera, Transform, Vec3, Mat4, Texture, Program, Color } from '../src/Core.js';
         import { Orbit, Cube, GLTFLoader } from '../src/Extras.js';
         import CubeMapShader from './shaders/CubeMapShader.js';
+        import { GUI } from './libs/dat.gui.module.js';
         {
             const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
@@ -37,16 +37,17 @@
             let defaultModel = './assets/models/DamagedHelmet/glTF/DamagedHelmet.gltf';
             loader.load( defaultModel, {
                 useIBL: true,
+                lutSrc: './assets/images/brdfLUT.png',
                 envDiffuseCubeMapSrc: './assets/images/cube/papermill/diffuse/',
                 envSpecularCubeMapSrc: './assets/images/cube/papermill/specular/'
             }, gltf => {
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 scene.addChild(glTF);
-                document.body.classList.remove("isLoading");
+                
+                initGUI(glTF);
             }, err => {
                 console.error("Loader Error:", err);
-                document.body.classList.remove("isLoading");
             });
 
             // Texture is equirectangular
@@ -75,6 +76,7 @@
                     image: images,
                     flipY: false
                 });
+                
                 const geometry = new Cube(gl);
                 const program = new Program(gl, {
                     vertex: CubeMapShader.vertex,
@@ -87,9 +89,72 @@
                 const skybox = new Mesh(gl, { geometry, program });
                 skybox.scale.set(30);
                 skybox.setParent(scene);
-
-                update();
             });
+
+            update();
+            function initGUI(gltf){
+                let params = {
+                    u_EnvRotation: 0,
+                    u_Alpha: 1,
+                    u_Brightness: 1,
+                    u_LightDirectionX: 0,
+                    u_LightDirectionY: 0,
+                    u_LightDirectionZ: 0,
+                    u_LightColor: Color.rgbToHex([255,255,255])
+                }
+                let envRotationMat = new Mat4();
+                let gui = new GUI();
+                // pbrFolder
+                const pbrFolder = gui.addFolder("PBR");
+                pbrFolder.add(params, 'u_EnvRotation', -Math.PI, Math.PI).name("EnvRotation").step(0.1).onChange((value) => {
+                    envRotationMat.fromRotation(value, [0, 0, 1]);
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_EnvRotationMat.value = envRotationMat;
+                        }
+                    })
+                });
+                pbrFolder.add(params, 'u_Brightness', 0, 25).name("Brightness").step(0.1).onChange((value) => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_Brightness.value = value;
+                        }
+                    })
+                });
+                pbrFolder.add(params, 'u_Alpha', 0, 1).name("Alpha").step(0.01).onChange((value) => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_Alpha.value = value;
+                        }
+                    })
+                });
+                
+                pbrFolder.open();
+                // lightingFolder
+                const lightingFolder = gui.addFolder("Light");
+                lightingFolder.add(params, 'u_LightDirectionX', -10, 10).name("LightDirectionX").step(0.1).onChange((value) => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_LightDirection.value.x = value;
+                        }
+                    })
+                });
+                lightingFolder.add(params, 'u_LightDirectionZ', -10, 10).name("LightDirectionZ").step(0.1).onChange((value) => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_LightDirection.value.z = value;
+                        }
+                    })
+                });
+                lightingFolder.addColor(params, "u_LightColor").name("LightColor").onChange(() => {
+                    gltf.traverse((node) => {
+                        if(node.isMesh){
+                            node.program.uniforms.u_LightColor.value = Color.hexToRGB(params.u_LightColor);
+                        }
+                    })
+                });
+                lightingFolder.open();
+            }
 
             function update() {
                 controls.update();

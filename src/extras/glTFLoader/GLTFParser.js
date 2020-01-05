@@ -1,4 +1,4 @@
-import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4 } from '../../Core.js';
+import { Transform, Mat4, Camera, Color, Program, Geometry, Texture, Mesh, Vec4, Vec3 } from '../../Core.js';
 import { Skin } from '../Skin.js';
 import { GLTFRegistry, resolveURL, definesToString, sliceBlockData, isPrimitiveEqual, radToDeg } from './Util.js';
 import { WEBGL_TYPE_SIZES, WEBGL_COMPONENT_TYPES, ALPHA_MODES, ATTRIBUTES, WEBGL_CONSTANTS, BRDF_LUT_URL } from './Const.js';
@@ -12,6 +12,7 @@ export default class GLTFParser {
         this.json = json || {};
         this.path = options.path || '';
         this.useIBL = options.useIBL == undefined ? false : options.useIBL;
+        this.lutSrc = options.lutSrc || BRDF_LUT_URL;
         this.envDiffuseCubeMapSrc = options.envDiffuseCubeMapSrc;
         this.envSpecularCubeMapSrc = options.envSpecularCubeMapSrc;
         this.glExtension = options.glExtension || {};
@@ -466,7 +467,22 @@ export default class GLTFParser {
         let pending = [];
         let defines = {};
         let programOpt = {};
-
+        // Basic param
+        materialParams.u_Alpha = {
+            value: 1.0
+        };
+        materialParams.u_Brightness = {
+            value: 1.0
+        };
+        materialParams.u_LightDirection = {
+            value: new Vec3(0, 5, 0)
+        };
+        materialParams.u_LightColor = {
+            value: new Color(1, 1, 1)
+        };
+        materialParams.u_EnvRotationMat = {
+            value: new Mat4()
+        }
         // Specification:
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#metallic-roughness-material
         let metallicRoughness = materialDef.pbrMetallicRoughness || {};
@@ -499,7 +515,7 @@ export default class GLTFParser {
             defines.HAS_NORMALMAP = 1;
         }
         // BRDFLUT
-        pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', BRDF_LUT_URL, false));
+        pending.push(parser.loadTextureFromSrc(materialParams, 'tLUT', parser.lutSrc, false));
         if (parser.envDiffuseCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvDiffuse', parser.envDiffuseCubeMapSrc, false));
         if (parser.envSpecularCubeMapSrc) pending.push(parser.loadCubeMapFromSrc(materialParams, 'tEnvSpecular', parser.envSpecularCubeMapSrc, false));
 
