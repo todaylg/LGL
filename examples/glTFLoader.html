@@ -9,7 +9,8 @@
     <title>glTF-Loader</title>
     <link rel="stylesheet" href="./assets/main.css">
 </head>
-<body>
+<body class="preLoading isLoading">
+    <p class="loadingText">Loading...</p>
     <script type="module">
         import { Mesh, Renderer, Camera, Transform, Vec3, Mat4, Texture, Program, Color } from '../src/Core.js';
         import { Orbit, Cube, GLTFLoader } from '../src/Extras.js';
@@ -44,12 +45,14 @@
                 console.log("gltfLoaderFin：", gltf);
                 let glTF = gltf.scene;
                 scene.addChild(glTF);
-                
+                document.body.classList.remove("isLoading");
                 initGUI(glTF);
             }, err => {
                 console.error("Loader Error:", err);
+                document.body.classList.remove("isLoading");
             });
 
+            let skybox;
             // Texture is equirectangular
             let path = './assets/images/cube/papermill/environment/';
             let paths = [
@@ -83,10 +86,11 @@
                     fragment: CubeMapShader.fragment,
                     uniforms: {
                         cubeMap: { value: texture },
+                        u_EnvRotationMat: { value: new Mat4() }
                     },
                     cullFace: null,
                 });
-                const skybox = new Mesh(gl, { geometry, program });
+                skybox = new Mesh(gl, { geometry, program });
                 skybox.scale.set(30);
                 skybox.setParent(scene);
             });
@@ -107,12 +111,13 @@
                 // pbrFolder
                 const pbrFolder = gui.addFolder("PBR");
                 pbrFolder.add(params, 'u_EnvRotation', -Math.PI, Math.PI).name("EnvRotation").step(0.1).onChange((value) => {
-                    envRotationMat.fromRotation(value, [0, 0, 1]);
+                    envRotationMat.fromRotation(value, [0, 1, 0]);
                     gltf.traverse((node) => {
                         if(node.isMesh){
                             node.program.uniforms.u_EnvRotationMat.value = envRotationMat;
                         }
                     })
+                    if(skybox) skybox.program.uniforms.u_EnvRotationMat.value = envRotationMat;
                 });
                 pbrFolder.add(params, 'u_Brightness', 0, 25).name("Brightness").step(0.1).onChange((value) => {
                     gltf.traverse((node) => {
