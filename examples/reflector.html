@@ -33,8 +33,8 @@
             const scene = new Transform();
 
             let directionalLight = {
-                lightPos: new Vec3(0, 100, 0),
-                target: new Vec3(0, 0, -1),
+                lightPos: new Vec3(0, 1, 0),
+                target: new Vec3(0, 0, 0),
                 lightColor: new Color(.8),
                 diffuseFactor: 0.4,
                 specularFactor: 0.5,
@@ -58,20 +58,22 @@
             mirrorPlane.position.z = -50;
             scene.addChild( mirrorPlane );
 
-            let loader = new GLTFLoader(gl);
-            let animationSys;
-            let skinAnimationModel = './assets/models/CesiumMan/glTF/CesiumMan.gltf';
-            loader.load( skinAnimationModel, {}, gltf => {
-                console.log("gltfLoaderFin：", gltf);
-                let glTF = gltf.scene;
-                // Animation
-                glTF.scale.set(50);
-                animationSys = gltf.animations;
-                scene.addChild(glTF);
-            }, err => {
-                console.error("Loader Error:", err);
-            });
-            // CornellBox
+            // Cube
+            const cubeGeometry = new Cube(gl);
+            const cubeMesh = new Mesh(gl, { geometry: cubeGeometry, program: new Program(gl, {
+                vertex: BasePrimitivesShader.vertex,
+                fragment: BasePrimitivesShader.fragment,
+                uniforms: {
+                    baseColor: { value: new Color(1) },
+                    ambientLightColor: { value: new Color(1) },
+                    ambientStrength: { value: 0.5 },
+                    directionalLight: { value: directionalLight },
+                }
+            })});
+            cubeMesh.scale.set(20, 50, 20);
+            cubeMesh.position.set(-20, 25 ,0);
+            scene.addChild(cubeMesh);
+
             // Wall
             const wallGroup = new Transform();
             // Top/Bottom/Front/Right/Left
@@ -82,7 +84,7 @@
                     fragment: BasePrimitivesShader.fragment,
                     uniforms: {
                         baseColor: { value: wallColors[i] },
-                        ambientLightColor: { value: new Color(.8) },
+                        ambientLightColor: { value: new Color(1) },
                         ambientStrength: { value: 0.5 },
                         directionalLight: { value: directionalLight },
                     }
@@ -125,7 +127,6 @@
             function update(t) {
                 deltaTime = (Date.now() - lastTime)/1000;
                 lastTime = Date.now();
-                if(animationSys) animationSys.update(deltaTime);
                 controls.update();
                 mirrorPlane.render({scene, camera});
                 renderer.render({scene, camera});

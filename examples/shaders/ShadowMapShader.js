@@ -300,27 +300,28 @@ void main() {
     vec3 ambient = ambientStrength * ambientLightColor;
     vec3 normal = normalize(vNormal);
     vec3 result = vec3(0.);
+    // Todo: unrolling
      #if NUM_POINT_LIGHTS > 0
         vec3 perPointLightRes = vec3(0.);
-        for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
-            perPointLightRes = CalcPointLight(pointLights[i], normal);
-            float shadow = pointShadowMaskCal(pointShadowMap[i], pointLights[i]);
+        for ( int i = 0; i < NUM_POINT_LIGHTS; i++ ) {
+            perPointLightRes = CalcPointLight(pointLights[0], normal);
+            float shadow = pointShadowMaskCal(pointShadowMap[0], pointLights[0]);
             result += perPointLightRes * shadow;
         }
     #endif
     #if NUM_DIR_LIGHTS > 0
         vec3 perDirLightRes = vec3(0.);
-        for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
-            perDirLightRes = CalcDirLight(dirLights[i], normal);
-            float shadow = dirShadowMaskCal(dirShadowMap[i], dirFragPos[i], dirLights[i], normal);
+        for ( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {
+            perDirLightRes = CalcDirLight(dirLights[0], normal);
+            float shadow = dirShadowMaskCal(dirShadowMap[0], dirFragPos[0], dirLights[0], normal);
             result += perDirLightRes * shadow;
         }
     #endif
     #if NUM_SPOT_LIGHTS > 0
         vec3 perSpotLightRes = vec3(0.);
-        for ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ ) {
-            perSpotLightRes = CalcSpotLight(spotLights[i], normal);
-            float shadow = spotShadowMaskCal(spotShadowMap[i], spotFragPos[i], spotLights[i], normal);
+        for ( int i = 0; i < NUM_SPOT_LIGHTS; i++ ) {
+            perSpotLightRes = CalcSpotLight(spotLights[0], normal);
+            float shadow = spotShadowMaskCal(spotShadowMap[0], spotFragPos[0], spotLights[0], normal);
             result += perSpotLightRes * shadow;
         }
     #endif

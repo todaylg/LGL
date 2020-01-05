@@ -438,6 +438,9 @@ void main()
         getIBLContribution(diffuseIBL, specularIBL, NdotV, roughness, N, reflection, diffuseColor, specularColor);
         // Add IBL on top of color
         color += u_Brightness * (diffuseIBL + specularIBL);
+    #else
+    // Test
+        color *= 2.0;
     #endif
 
     // Apply optional PBR terms for additional (optional) shading

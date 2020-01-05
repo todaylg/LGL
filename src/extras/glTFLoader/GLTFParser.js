@@ -902,4 +902,3 @@ function addPrimitiveAttributes(geometry, primitiveDef, accessors) {
     }
     geometry.glTFLoaderDefines = defines;
 }
-
